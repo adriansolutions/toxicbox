@@ -1,7 +1,7 @@
 (() => {
 
 /* =========================================
-   TOXIC BOX - FIXED NEXT.JS VERSION
+   TOXIC BOX - FULL FIXED NEXT.JS VERSION
 ========================================= */
 
 /* =========================
@@ -30,15 +30,15 @@ let messages = {
     random: []
 };
 
-const typingUsers = new Set();
 const channel = new BroadcastChannel("toxic_box_chat");
+const typingUsers = new Set();
 
-const myUserId =
+let myUserId =
     localStorage.getItem("toxbox-id") ||
     crypto.randomUUID();
 
 /* =========================
-   SAFE DOM INIT
+   DOM (SAFE FOR NEXT.JS)
 ========================= */
 
 let chatContainer;
@@ -54,7 +54,7 @@ function initDOM() {
 }
 
 /* =========================
-   STARTUP (NEXT.JS SAFE)
+   STARTUP FIX (IMPORTANT)
 ========================= */
 
 window.addEventListener("DOMContentLoaded", () => {
@@ -63,6 +63,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
     renderRooms();
     switchRoom("general");
+
     loadReactions();
     saveReactions();
 
@@ -71,7 +72,65 @@ window.addEventListener("DOMContentLoaded", () => {
 });
 
 /* =========================
-   CHAT SYSTEM
+   LOGIN FIX (ENTER CHAT NOT WORKING FIXED)
+========================= */
+
+function startChat() {
+
+    initDOM();
+
+    const input = document.getElementById("usernameInput");
+
+    if (!input || input.value.trim() === "") {
+        alert("Please enter a username");
+        return;
+    }
+
+    username = input.value.trim();
+
+    const savedData = localStorage.getItem("toxicbox_user");
+
+    if (savedData) {
+        const data = JSON.parse(savedData);
+
+        if (data.username === username) {
+            userId = data.id;
+        } else {
+            userId = generateId();
+            localStorage.setItem(
+                "toxicbox_user",
+                JSON.stringify({ username, id: userId })
+            );
+        }
+    } else {
+        userId = generateId();
+        localStorage.setItem(
+            "toxicbox_user",
+            JSON.stringify({ username, id: userId })
+        );
+    }
+
+    const loginScreen = document.getElementById("loginScreen");
+
+    if (userTag) {
+        userTag.innerText = `${username}#${userId} ${userFlag}`;
+    }
+
+    if (loginScreen) {
+        loginScreen.style.display = "none";
+    }
+}
+
+/* =========================
+   ID
+========================= */
+
+function generateId() {
+    return Math.floor(1000 + Math.random() * 9000);
+}
+
+/* =========================
+   CHAT CORE
 ========================= */
 
 function renderTyping() {
@@ -92,11 +151,12 @@ function renderTyping() {
         return;
     }
 
-    typingBox.innerText = [...typingUsers].join(", ") + " is typing...";
+    typingBox.innerText =
+        [...typingUsers].join(", ") + " is typing...";
 }
 
 /* =========================
-   MESSAGE CHANNEL (FIXED)
+   CHANNEL MESSAGE SYSTEM
 ========================= */
 
 channel.onmessage = (event) => {
@@ -162,9 +222,7 @@ function renderRooms() {
 
         div.innerHTML = `
             ${room[0].toUpperCase()}
-            <div class="badge">
-                ${count > 99 ? "99+" : count}
-            </div>
+            <div class="badge">${count > 99 ? "99+" : count}</div>
         `;
 
         div.onclick = () => switchRoom(room);
@@ -202,6 +260,7 @@ function createMessage(data, own = false) {
     const div = document.createElement("div");
 
     div.className = own ? "message own" : "message";
+
     div.dataset.id = id;
 
     div.innerHTML = `
@@ -234,6 +293,8 @@ function createMessage(data, own = false) {
 
 function sendMessage() {
 
+    if (!messageInput) return;
+
     const text = messageInput.value.trim();
     if (!text) return;
 
@@ -253,6 +314,8 @@ function sendMessage() {
 
     replyTo = null;
 
+    if (!messages[currentRoom]) messages[currentRoom] = [];
+
     messages[currentRoom].push(messageData);
 
     createMessage(messageData, true);
@@ -263,7 +326,7 @@ function sendMessage() {
 }
 
 /* =========================
-   REACTIONS (SAFE)
+   REACTIONS
 ========================= */
 
 function handleReaction(data) {
@@ -324,6 +387,19 @@ function renderReactions(id, room) {
 }
 
 /* =========================
+   SETTINGS
+========================= */
+
+function toggleSettings() {
+    document.getElementById("settingsPanel")
+        ?.classList.toggle("active");
+}
+
+function setMode(mode) {
+    localStorage.setItem("theme", mode);
+}
+
+/* =========================
    HELPERS
 ========================= */
 
@@ -331,7 +407,7 @@ function systemMessage(text) {
     const div = document.createElement("div");
     div.className = "system-msg";
     div.innerText = text;
-    chatContainer.appendChild(div);
+    chatContainer?.appendChild(div);
 }
 
 function escapeHtml(text) {
@@ -346,32 +422,16 @@ function isInappropriate(text) {
 }
 
 /* =========================
-   SETTINGS
-========================= */
-
-function toggleSettings() {
-    document.getElementById("settingsPanel")
-        .classList.toggle("active");
-}
-
-function setMode(mode) {
-
-    const isDark = mode === "dark";
-
-    document.body.classList.toggle("light-mode", mode === "light");
-
-    localStorage.setItem("theme", mode);
-}
-
-/* =========================
-   REPLY SYSTEM
+   REPLY
 ========================= */
 
 let replyTo = null;
 
 function setReply(user) {
     replyTo = user;
-    messageInput.placeholder = "Replying to " + user;
+    if (messageInput) {
+        messageInput.placeholder = "Replying to " + user;
+    }
 }
 
 /* =========================
@@ -397,7 +457,22 @@ function sendTyping() {
 }
 
 /* =========================
-   GLOBAL EXPORTS (IMPORTANT)
+   KEYBOARD EVENTS
+========================= */
+
+window.addEventListener("DOMContentLoaded", () => {
+
+    if (messageInput) {
+        messageInput.addEventListener("keypress", (e) => {
+            if (e.key === "Enter") sendMessage();
+        });
+
+        messageInput.addEventListener("input", sendTyping);
+    }
+});
+
+/* =========================
+   GLOBAL EXPORTS (IMPORTANT FOR HTML ONCLICK)
 ========================= */
 
 window.startChat = startChat;
