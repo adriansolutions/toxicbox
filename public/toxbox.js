@@ -1,7 +1,7 @@
 (() => {
 
 /* =========================================
-   TOXIC BOX - FULL FIXED NEXT.JS VERSION
+   TOXIC BOX - FIXED FULL VERSION
 ========================================= */
 
 /* =========================
@@ -14,6 +14,9 @@ let userFlag = "🌍";
 
 let isTyping = false;
 let typingTimeout;
+
+let replyTo = null;
+
 let reactions = {};
 
 const rooms = {
@@ -38,7 +41,7 @@ let myUserId =
     crypto.randomUUID();
 
 /* =========================
-   DOM (SAFE FOR NEXT.JS)
+   DOM SAFE INIT (NEXT.JS FIX)
 ========================= */
 
 let chatContainer;
@@ -54,7 +57,7 @@ function initDOM() {
 }
 
 /* =========================
-   STARTUP FIX (IMPORTANT)
+   STARTUP
 ========================= */
 
 window.addEventListener("DOMContentLoaded", () => {
@@ -65,14 +68,13 @@ window.addEventListener("DOMContentLoaded", () => {
     switchRoom("general");
 
     loadReactions();
-    saveReactions();
 
     const saved = localStorage.getItem("theme") || "light";
     setMode(saved);
 });
 
 /* =========================
-   LOGIN FIX (ENTER CHAT NOT WORKING FIXED)
+   LOGIN FIX (ENTER CHAT WORKS)
 ========================= */
 
 function startChat() {
@@ -88,27 +90,24 @@ function startChat() {
 
     username = input.value.trim();
 
-    const savedData = localStorage.getItem("toxicbox_user");
+    const saved = localStorage.getItem("toxicbox_user");
 
-    if (savedData) {
-        const data = JSON.parse(savedData);
+    if (saved) {
+        const data = JSON.parse(saved);
 
         if (data.username === username) {
             userId = data.id;
         } else {
             userId = generateId();
-            localStorage.setItem(
-                "toxicbox_user",
-                JSON.stringify({ username, id: userId })
-            );
         }
     } else {
         userId = generateId();
-        localStorage.setItem(
-            "toxicbox_user",
-            JSON.stringify({ username, id: userId })
-        );
     }
+
+    localStorage.setItem(
+        "toxicbox_user",
+        JSON.stringify({ username, id: userId })
+    );
 
     const loginScreen = document.getElementById("loginScreen");
 
@@ -122,88 +121,33 @@ function startChat() {
 }
 
 /* =========================
-   ID
+   UTIL
 ========================= */
 
 function generateId() {
     return Math.floor(1000 + Math.random() * 9000);
 }
 
-/* =========================
-   CHAT CORE
-========================= */
+function escapeHtml(text) {
+    const div = document.createElement("div");
+    div.innerText = text;
+    return div.innerHTML;
+}
 
-function renderTyping() {
+function formatTime(timestamp) {
+    return new Date(timestamp).toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit"
+    });
+}
 
-    let typingBox = document.getElementById("typingBox");
-
-    if (!typingBox) {
-        typingBox = document.createElement("div");
-        typingBox.id = "typingBox";
-        typingBox.style.padding = "10px";
-        typingBox.style.opacity = "0.7";
-        typingBox.style.fontSize = "13px";
-        chatContainer.appendChild(typingBox);
-    }
-
-    if (typingUsers.size === 0) {
-        typingBox.innerText = "";
-        return;
-    }
-
-    typingBox.innerText =
-        [...typingUsers].join(", ") + " is typing...";
+function isInappropriate(text) {
+    const badWords = ["fuck", "shit", "bitch", "asshole"];
+    return badWords.some(w => text.toLowerCase().includes(w));
 }
 
 /* =========================
-   CHANNEL MESSAGE SYSTEM
-========================= */
-
-channel.onmessage = (event) => {
-
-    const data = event.data;
-    if (!data) return;
-
-    if (data.type === "typing") {
-        typingUsers.add(data.user);
-
-        setTimeout(() => {
-            typingUsers.delete(data.user);
-            renderTyping();
-        }, 1500);
-
-        renderTyping();
-        return;
-    }
-
-    if (data.type === "system") {
-        if (data.room === currentRoom) {
-            systemMessage(data.text);
-        }
-        return;
-    }
-
-    if (data.type === "reaction") {
-        handleReaction(data);
-        return;
-    }
-
-    if (!data.text) return;
-
-    if (!messages[data.room]) messages[data.room] = [];
-
-    messages[data.room].push(data);
-
-    if (data.room === currentRoom) {
-        createMessage(data, false);
-    }
-
-    rooms[data.room].count++;
-    renderRooms();
-};
-
-/* =========================
-   ROOMS
+   ROOMS (FIXED SIDEBAR)
 ========================= */
 
 function renderRooms() {
@@ -218,7 +162,7 @@ function renderRooms() {
         const div = document.createElement("div");
         div.className = "room" + (room === currentRoom ? " active" : "");
 
-        const count = rooms[room].count;
+        const count = rooms[room].count || 0;
 
         div.innerHTML = `
             ${room[0].toUpperCase()}
@@ -241,14 +185,22 @@ function switchRoom(room) {
 
     if (!messages[room]) messages[room] = [];
 
+    if (messages[room].length === 0 && emptyText) {
+        emptyText.style.display = "block";
+    } else if (emptyText) {
+        emptyText.style.display = "none";
+    }
+
     messages[room].forEach(msg => {
         createMessage(msg, false);
         renderReactions(msg.id, room);
     });
+
+    renderRooms();
 }
 
 /* =========================
-   MESSAGE CREATION
+   MESSAGE CREATE
 ========================= */
 
 function createMessage(data, own = false) {
@@ -258,9 +210,7 @@ function createMessage(data, own = false) {
     const id = data.id;
 
     const div = document.createElement("div");
-
     div.className = own ? "message own" : "message";
-
     div.dataset.id = id;
 
     div.innerHTML = `
@@ -293,13 +243,11 @@ function createMessage(data, own = false) {
 
 function sendMessage() {
 
-    if (!messageInput) return;
-
-    const text = messageInput.value.trim();
+    const text = messageInput?.value.trim();
     if (!text) return;
 
     if (isInappropriate(text)) {
-        systemMessage("Message blocked.");
+        alert("Blocked message");
         return;
     }
 
@@ -308,11 +256,12 @@ function sendMessage() {
         user: `${username}#${userId} ${userFlag}`,
         text,
         time: Date.now(),
-        replyTo: replyTo,
+        replyTo,
         room: currentRoom
     };
 
     replyTo = null;
+    messageInput.placeholder = "Type your message...";
 
     if (!messages[currentRoom]) messages[currentRoom] = [];
 
@@ -324,6 +273,46 @@ function sendMessage() {
 
     messageInput.value = "";
 }
+
+/* =========================
+   CHANNEL (FIXED SINGLE HANDLER)
+========================= */
+
+channel.onmessage = (event) => {
+
+    const data = event.data;
+    if (!data) return;
+
+    if (data.type === "typing") {
+        typingUsers.add(data.user);
+
+        setTimeout(() => {
+            typingUsers.delete(data.user);
+            renderTyping();
+        }, 1500);
+
+        renderTyping();
+        return;
+    }
+
+    if (data.type === "reaction") {
+        handleReaction(data);
+        return;
+    }
+
+    if (!data.text) return;
+
+    if (!messages[data.room]) messages[data.room] = [];
+
+    messages[data.room].push(data);
+
+    if (data.room === currentRoom) {
+        createMessage(data, false);
+    }
+
+    rooms[data.room].count++;
+    renderRooms();
+};
 
 /* =========================
    REACTIONS
@@ -339,13 +328,10 @@ function handleReaction(data) {
 
     const arr = reactions[data.room][data.id][data.emoji];
 
-    const index = arr.indexOf(data.user);
+    const i = arr.indexOf(data.user);
 
-    if (index !== -1) {
-        arr.splice(index, 1);
-    } else {
-        arr.push(data.user);
-    }
+    if (i !== -1) arr.splice(i, 1);
+    else arr.push(data.user);
 
     renderReactions(data.id, data.room);
 }
@@ -378,60 +364,33 @@ function renderReactions(id, room) {
 
     let html = "";
 
-    for (let emoji in data) {
-        const count = data[emoji].length;
-        if (count > 0) html += `${emoji} ${count} `;
+    for (let e in data) {
+        const count = data[e].length;
+        if (count > 0) html += `${e} ${count} `;
     }
 
     box.innerHTML = html;
 }
 
 /* =========================
-   SETTINGS
+   SETTINGS / THEME FIXED
 ========================= */
+
+function setMode(mode) {
+
+    const isDark = mode === "dark";
+
+    document.body.classList.toggle("light-mode", !isDark);
+
+    localStorage.setItem("theme", mode);
+
+    const toggle = document.getElementById("themeToggle");
+    if (toggle) toggle.checked = isDark;
+}
 
 function toggleSettings() {
     document.getElementById("settingsPanel")
         ?.classList.toggle("active");
-}
-
-function setMode(mode) {
-    localStorage.setItem("theme", mode);
-}
-
-/* =========================
-   HELPERS
-========================= */
-
-function systemMessage(text) {
-    const div = document.createElement("div");
-    div.className = "system-msg";
-    div.innerText = text;
-    chatContainer?.appendChild(div);
-}
-
-function escapeHtml(text) {
-    const div = document.createElement("div");
-    div.innerText = text;
-    return div.innerHTML;
-}
-
-function isInappropriate(text) {
-    const badWords = ["fuck", "shit", "bitch", "asshole"];
-    return badWords.some(w => text.toLowerCase().includes(w));
-}
-
-/* =========================
-   REPLY
-========================= */
-
-let replyTo = null;
-
-function setReply(user) {
-    replyTo = user;
-    if (messageInput) {
-        messageInput.placeholder = "Replying to " + user;
-    }
 }
 
 /* =========================
@@ -457,13 +416,13 @@ function sendTyping() {
 }
 
 /* =========================
-   KEYBOARD EVENTS
+   EVENTS
 ========================= */
 
 window.addEventListener("DOMContentLoaded", () => {
 
     if (messageInput) {
-        messageInput.addEventListener("keypress", (e) => {
+        messageInput.addEventListener("keypress", e => {
             if (e.key === "Enter") sendMessage();
         });
 
@@ -472,7 +431,7 @@ window.addEventListener("DOMContentLoaded", () => {
 });
 
 /* =========================
-   GLOBAL EXPORTS (IMPORTANT FOR HTML ONCLICK)
+   GLOBAL EXPORTS (IMPORTANT)
 ========================= */
 
 window.startChat = startChat;
@@ -482,4 +441,11 @@ window.setMode = setMode;
 window.react = react;
 window.setReply = setReply;
 
-})(); // END
+function setReply(user) {
+    replyTo = user;
+    if (messageInput) {
+        messageInput.placeholder = "Replying to " + user;
+    }
+}
+
+})();
