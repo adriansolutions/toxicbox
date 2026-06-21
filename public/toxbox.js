@@ -1,4 +1,4 @@
-window.addEventListener("DOMContentLoaded", () => {
+(function () {
     /*
 =========================================
 TOXIC BOX
@@ -648,4 +648,4 @@ renderRooms();
 switchRoom("general");
 saveReactions();
 loadReactions();
-});
+})();
