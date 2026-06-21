@@ -1,4 +1,4 @@
-(() => {
+window.addEventListener("DOMContentLoaded", () => {
 
   firebaseConfig = {
   apiKey: "AIzaSyAICZc6Q2bbwsv_UtUjRoWiQYtoxp3WB7U",
@@ -446,4 +446,4 @@ function setReply(user) {
     }
 }
 
-})();
+});
