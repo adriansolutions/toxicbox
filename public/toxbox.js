@@ -41,7 +41,6 @@ let messages = {
     random: []
 };
 
-const channel = new BroadcastChannel("toxic_box_chat");
 const typingUsers = new Set();
 
 let myUserId =
