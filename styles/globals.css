@@ -1,0 +1,78 @@
+body {
+  margin: 0;
+  font-family: Poppins;
+}
+
+.app {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.dark {
+  background: #0d0d0d;
+  color: white;
+}
+
+.light {
+  background: #f4f4f4;
+  color: black;
+}
+
+.header {
+  padding: 10px;
+  display: flex;
+  gap: 10px;
+  background: #222;
+  color: white;
+}
+
+.rooms {
+  display: flex;
+  gap: 10px;
+  padding: 10px;
+}
+
+.chat {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px;
+}
+
+.msg {
+  padding: 10px;
+  margin-bottom: 10px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 10px;
+}
+
+.system {
+  color: red;
+  text-align: center;
+}
+
+.name {
+  font-weight: bold;
+}
+
+.time {
+  font-size: 10px;
+  opacity: 0.5;
+}
+
+.input {
+  display: flex;
+  gap: 10px;
+  padding: 10px;
+}
+
+.input input {
+  flex: 1;
+  padding: 10px;
+}
+
+.reply-box {
+  background: #444;
+  padding: 5px;
+  margin-bottom: 5px;
+}
