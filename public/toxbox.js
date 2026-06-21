@@ -1,4 +1,5 @@
-/*
+window.addEventListener("DOMContentLoaded", () => {
+    /*
 =========================================
 TOXIC BOX
 Public Temporary Chat
@@ -647,3 +648,4 @@ renderRooms();
 switchRoom("general");
 saveReactions();
 loadReactions();
+});
