@@ -54,7 +54,15 @@ let myUserId =
 /* =========================
    DOM SAFE INIT (NEXT.JS FIX)
 ========================= */
+let db = null;
 
+try {
+    firebase.initializeApp(firebaseConfig);
+    db = firebase.database();
+} catch (e) {
+    console.error("Firebase failed:", e);
+    db = null;
+}
 let chatContainer;
 let messageInput;
 let userTag;
@@ -88,11 +96,7 @@ window.addEventListener("DOMContentLoaded", () => {
    LOGIN FIX (ENTER CHAT WORKS)
 ========================= */
 
-function startChat() {
-
-    if (typeof initDOM === "function") {
-        initDOM();
-    }
+window.startChat = function () {
 
     const input = document.getElementById("usernameInput");
 
@@ -108,11 +112,9 @@ function startChat() {
     if (saved) {
         const data = JSON.parse(saved);
 
-        if (data.username === username) {
-            userId = data.id;
-        } else {
-            userId = generateId();
-        }
+        userId = (data.username === username)
+            ? data.id
+            : generateId();
     } else {
         userId = generateId();
     }
@@ -122,9 +124,11 @@ function startChat() {
         JSON.stringify({ username, id: userId })
     );
 
-    const loginScreen = document.getElementById("loginScreen");
+    userFlag = userFlag || "🌍";
 
+    const loginScreen = document.getElementById("loginScreen");
     const userTag = document.getElementById("userTag");
+
     if (userTag) {
         userTag.innerText = `${username}#${userId} ${userFlag}`;
     }
@@ -132,7 +136,7 @@ function startChat() {
     if (loginScreen) {
         loginScreen.style.display = "none";
     }
-}
+};
 
 /* =========================
    UTIL
@@ -291,30 +295,28 @@ function sendMessage() {
 /* =========================
    CHANNEL (FIXED SINGLE HANDLER)
 ========================= */
-onChildAdded(ref(db, "messages"), (snapshot) => {
+if (db) {
+    db.ref("messages").on("child_added", (snap) => {
+        const data = snap.val();
+        if (!data) return;
 
-    const data = snapshot.val();
+        if (!messages[data.room]) {
+            messages[data.room] = [];
+        }
 
-    if (!data) return;
+        messages[data.room].push(data);
 
-    if (!messages[data.room]) {
-        messages[data.room] = [];
-    }
+        if (data.room === currentRoom) {
+            createMessage(
+                data,
+                data.user === `${username}#${userId} ${userFlag}`
+            );
+        }
 
-    messages[data.room].push(data);
-
-    if (data.room === currentRoom) {
-        createMessage(
-            data,
-            data.user === `${username}#${userId} ${userFlag}`
-        );
-    }
-
-    rooms[data.room].count++;
-
-    renderRooms();
-});
-
+        rooms[data.room].count++;
+        renderRooms();
+    });
+}
 /* =========================
    REACTIONS
 ========================= */
