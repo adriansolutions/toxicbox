@@ -90,7 +90,9 @@ window.addEventListener("DOMContentLoaded", () => {
 
 function startChat() {
 
-    initDOM();
+    if (typeof initDOM === "function") {
+        initDOM();
+    }
 
     const input = document.getElementById("usernameInput");
 
@@ -122,6 +124,7 @@ function startChat() {
 
     const loginScreen = document.getElementById("loginScreen");
 
+    const userTag = document.getElementById("userTag");
     if (userTag) {
         userTag.innerText = `${username}#${userId} ${userFlag}`;
     }
