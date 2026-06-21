@@ -1,40 +1,163 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 
 export default function Home() {
-  const [username, setUsername] = useState("");
-  const [userId, setUserId] = useState("");
-  const [messages, setMessages] = useState({
-    general: [],
-    gaming: [],
-    random: []
-  });
-
-  const [currentRoom, setCurrentRoom] = useState("general");
-  const [text, setText] = useState("");
-  const [replyTo, setReplyTo] = useState(null);
-  const [theme, setTheme] = useState("light");
-
-  const channelRef = useRef(null);
   const chatRef = useRef(null);
 
-  // INIT CHANNEL
   useEffect(() => {
-    channelRef.current = new BroadcastChannel("toxic_box_chat");
+    // =========================
+    // YOUR ORIGINAL VARIABLES
+    // =========================
+    let username = "";
+    let userId = "";
+    let userFlag = "🌍";
+    let isTyping = false;
+    let typingTimeout;
+    let reactions = {};
 
-    channelRef.current.onmessage = (event) => {
-      const data = event.data;
-      if (!data?.text) return;
+    const rooms = {
+      general: { count: 0 },
+      gaming: { count: 0 },
+      random: { count: 0 }
+    };
 
-      if (data.type === "system") {
-        addSystem(data.text);
+    let currentRoom = "general";
+
+    let messages = {
+      general: [],
+      gaming: [],
+      random: []
+    };
+
+    const chatContainer = document.getElementById("chatContainer");
+    const messageInput = document.getElementById("messageInput");
+    const userTag = document.getElementById("userTag");
+    const emptyText = document.getElementById("emptyText");
+
+    const channel = new BroadcastChannel("toxic_box_chat");
+    const typingUsers = new Set();
+
+    // =========================
+    // YOUR FUNCTIONS (UNCHANGED LOGIC)
+    // =========================
+
+    function generateId() {
+      return Math.floor(1000 + Math.random() * 9000);
+    }
+
+    function systemMessage(text) {
+      const div = document.createElement("div");
+      div.className = "system-msg";
+      div.innerText = text;
+      chatContainer.appendChild(div);
+    }
+
+    function containsLink(text) {
+      return /(https?:\/\/|www\.)/i.test(text);
+    }
+
+    function isInappropriate(text) {
+      const badWords = ["fuck", "shit", "bitch", "asshole"];
+      return badWords.some(word =>
+        text.toLowerCase().includes(word)
+      );
+    }
+
+    function sendMessage() {
+      const text = messageInput.value.trim();
+      if (!text) return;
+
+      if (containsLink(text) || isInappropriate(text)) {
+        systemMessage("Your message has been removed due to inappropriate content.");
         return;
       }
 
-      setMessages((prev) => {
-        const roomMsgs = prev[data.room] || [];
-        return {
-          ...prev,
-          [data.room]: [...roomMsgs, data]
+      const messageData = {
+        id: crypto.randomUUID(),
+        user: `${username}#${userId} ${userFlag}`,
+        text,
+        time: Date.now(),
+        room: currentRoom
+      };
+
+      messages[currentRoom].push(messageData);
+      createMessage(messageData, true);
+
+      channel.postMessage(messageData);
+
+      messageInput.value = "";
+    }
+
+    function createMessage(data, own = false) {
+      const div = document.createElement("div");
+      div.className = own ? "message own" : "message";
+
+      div.innerHTML = `
+        <div class="name">${data.user}</div>
+        <div class="text">${escapeHtml(data.text)}</div>
+      `;
+
+      chatContainer.appendChild(div);
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement("div");
+      div.innerText = text;
+      return div.innerHTML;
+    }
+
+    function renderTyping() {}
+
+    // =========================
+    // CHANNEL (FIXED DUPLICATE ISSUE)
+    // =========================
+
+    channel.onmessage = (event) => {
+      const data = event.data;
+
+      if (!data || !data.text) return;
+      if (data.user === `${username}#${userId} ${userFlag}`) return;
+
+      if (!messages[data.room]) messages[data.room] = [];
+
+      messages[data.room].push(data);
+
+      createMessage(data, false);
+    };
+
+    // expose globals for onclick buttons
+    window.sendMessage = sendMessage;
+    window.systemMessage = systemMessage;
+
+  }, []);
+
+  return (
+    <>
+      {/* YOUR EXACT HTML STRUCTURE */}
+      <div className="chat-container" id="chatContainer">
+        <div className="empty" id="emptyText">
+          No messages yet...
+        </div>
+      </div>
+
+      <div className="chat-input">
+        <div className="input-wrap">
+
+          <button className="settings-btn">
+            ⚙️
+          </button>
+
+          <input id="messageInput" />
+
+          <button className="send-btn" onClick={() => window.sendMessage?.()}>
+            Send
+          </button>
+
+        </div>
+      </div>
+    </>
+  );
+    }          [data.room]: [...roomMsgs, data]
         };
       });
     };
