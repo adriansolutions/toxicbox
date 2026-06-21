@@ -1,5 +1,13 @@
 (() => {
 
+import { db } from "../lib/firebase";
+
+import {
+  ref,
+  push,
+  onChildAdded
+} from "firebase/database";
+
 /* =========================================
    TOXIC BOX - FIXED FULL VERSION
 ========================================= */
@@ -269,7 +277,7 @@ function sendMessage() {
 
     createMessage(messageData, true);
 
-    channel.postMessage(messageData);
+    push(ref(db, "messages"), messageData);
 
     messageInput.value = "";
 }
@@ -277,42 +285,29 @@ function sendMessage() {
 /* =========================
    CHANNEL (FIXED SINGLE HANDLER)
 ========================= */
+onChildAdded(ref(db, "messages"), (snapshot) => {
 
-channel.onmessage = (event) => {
+    const data = snapshot.val();
 
-    const data = event.data;
     if (!data) return;
 
-    if (data.type === "typing") {
-        typingUsers.add(data.user);
-
-        setTimeout(() => {
-            typingUsers.delete(data.user);
-            renderTyping();
-        }, 1500);
-
-        renderTyping();
-        return;
+    if (!messages[data.room]) {
+        messages[data.room] = [];
     }
-
-    if (data.type === "reaction") {
-        handleReaction(data);
-        return;
-    }
-
-    if (!data.text) return;
-
-    if (!messages[data.room]) messages[data.room] = [];
 
     messages[data.room].push(data);
 
     if (data.room === currentRoom) {
-        createMessage(data, false);
+        createMessage(
+            data,
+            data.user === `${username}#${userId} ${userFlag}`
+        );
     }
 
     rooms[data.room].count++;
+
     renderRooms();
-};
+});
 
 /* =========================
    REACTIONS
