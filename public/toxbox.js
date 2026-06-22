@@ -1,5 +1,26 @@
 window.addEventListener("DOMContentLoaded", () => {
+window.onerror = function(msg, src, line, col, err) {
 
+    const box = document.createElement("div");
+
+    box.style.position = "fixed";
+    box.style.top = "0";
+    box.style.left = "0";
+    box.style.width = "100%";
+    box.style.background = "red";
+    box.style.color = "white";
+    box.style.zIndex = "999999";
+    box.style.padding = "10px";
+    box.style.fontSize = "12px";
+    box.style.wordBreak = "break-word";
+
+    box.innerText =
+        "ERROR:\n" +
+        msg +
+        "\nLINE: " + line;
+
+    document.body.appendChild(box);
+};
  const firebaseConfig = {
   apiKey: "AIzaSyAICZc6Q2bbwsv_UtUjRoWiQYtoxp3WB7U",
   authDomain: "toxicbox-f25b6.firebaseapp.com",
