@@ -19,79 +19,122 @@ export default function Home() {
 useEffect(() => {
 
   // =========================
-  // SAFE USER STATE
+  // DEBUG CONSOLE (ON SCREEN)
+  // =========================
+
+  const debugBox = document.createElement("div");
+  debugBox.id = "debugBox";
+  debugBox.style.position = "fixed";
+  debugBox.style.bottom = "10px";
+  debugBox.style.left = "10px";
+  debugBox.style.right = "10px";
+  debugBox.style.maxHeight = "150px";
+  debugBox.style.overflow = "auto";
+  debugBox.style.background = "rgba(0,0,0,0.8)";
+  debugBox.style.color = "#0f0";
+  debugBox.style.fontSize = "12px";
+  debugBox.style.padding = "10px";
+  debugBox.style.zIndex = "99999";
+  debugBox.style.borderRadius = "8px";
+
+  document.body.appendChild(debugBox);
+
+  function log(msg) {
+    console.log(msg);
+    const div = document.createElement("div");
+    div.innerText = typeof msg === "object" ? JSON.stringify(msg) : msg;
+    debugBox.appendChild(div);
+    debugBox.scrollTop = debugBox.scrollHeight;
+  }
+
+  window.__log = log;
+
+  log("🚀 CHAT LOADED");
+
+  // =========================
+  // USER SYSTEM
   // =========================
 
   let username = "";
 
-  let userId =
-    localStorage.getItem("toxbox-id");
-
+  let userId = localStorage.getItem("toxbox-id");
   if (!userId) {
     userId = crypto.randomUUID();
     localStorage.setItem("toxbox-id", userId);
   }
 
   let currentRoom = "general";
-  let replyTo = null;
-
-  let messages = { general: [], gaming: [], random: [] };
 
   // =========================
-  // SAFE DOM ACCESS
+  // DOM SAFE INIT (MOBILE SAFE)
   // =========================
 
-  const chatContainer = document.getElementById("chatContainer");
-  const messageInput = document.getElementById("messageInput");
-  const userTag = document.getElementById("userTag");
-  const emptyText = document.getElementById("emptyText");
+  let chatContainer;
+  let messageInput;
+  let userTag;
+  let emptyText;
 
-  if (!chatContainer || !messageInput || !userTag) return;
+  const waitDOM = setInterval(() => {
+
+    chatContainer = document.getElementById("chatContainer");
+    messageInput = document.getElementById("messageInput");
+    userTag = document.getElementById("userTag");
+    emptyText = document.getElementById("emptyText");
+
+    if (chatContainer && messageInput && userTag) {
+
+      clearInterval(waitDOM);
+
+      log("✅ DOM READY");
+
+      startFirebase();
+
+    }
+
+  }, 300);
 
   // =========================
   // FIREBASE LISTENER
   // =========================
 
-  const q = query(
-    collection(db, "messages"),
-    orderBy("createdAt", "asc")
-  );
+  function startFirebase() {
 
-  const unsub = onSnapshot(q, (snapshot) => {
+    const q = query(
+      collection(db, "messages"),
+      orderBy("createdAt", "asc")
+    );
 
-    snapshot.docChanges().forEach((change) => {
+    onSnapshot(q, (snapshot) => {
 
-      if (change.type !== "added") return;
+      log("📡 Firebase update: " + snapshot.size);
 
-      const data = change.doc.data();
-      if (!data || !data.id) return;
+      snapshot.forEach((doc) => {
 
-      if (!messages[data.room]) {
-        messages[data.room] = [];
-      }
+        const data = doc.data();
+        if (!data?.text) return;
 
-      // prevent duplicates
-      if (messages[data.room].some(m => m.id === data.id)) return;
+        renderMessage(data);
+      });
 
-      messages[data.room].push(data);
-
-      const isOwn = data.senderId === userId;
-
-      if (data.room === currentRoom) {
-        renderMessage(data, isOwn);
-      }
+    }, (err) => {
+      log("❌ FIREBASE ERROR: " + err.message);
     });
-  });
+
+  }
 
   // =========================
   // RENDER MESSAGE
   // =========================
 
-  function renderMessage(data, isOwn) {
+  function renderMessage(data) {
+
+    if (!chatContainer) return;
 
     if (emptyText) emptyText.style.display = "none";
 
     const div = document.createElement("div");
+
+    const isOwn = data.senderId === userId;
 
     div.className = isOwn ? "message own" : "message";
 
@@ -111,10 +154,15 @@ useEffect(() => {
   }
 
   // =========================
-  // SEND MESSAGE (FIXED - NO DUPLICATION)
+  // SEND MESSAGE
   // =========================
 
   function sendMessage() {
+
+    if (!messageInput) {
+      log("❌ messageInput not ready");
+      return;
+    }
 
     const text = messageInput.value.trim();
     if (!text) return;
@@ -124,41 +172,45 @@ useEffect(() => {
     const messageData = {
       id: crypto.randomUUID(),
       text,
-      room: currentRoom,
-      time: Date.now(),
-
       user: username,
       senderId: userId,
-
-      replyTo
+      room: currentRoom,
+      createdAt: serverTimestamp()
     };
 
-    replyTo = null;
+    log("📤 Sending: " + text);
 
-    addDoc(collection(db, "messages"), {
-      ...messageData,
-      createdAt: serverTimestamp()
-    });
+    addDoc(collection(db, "messages"), messageData)
+      .then(() => log("✅ Sent"))
+      .catch(err => log("❌ SEND ERROR: " + err.message));
 
     messageInput.value = "";
   }
 
   // =========================
-  // GLOBAL FUNCTIONS (UI HOOKS)
+  // GLOBAL FUNCTIONS
   // =========================
 
   window.sendMessage = sendMessage;
 
   window.startChat = () => {
+
     const input = document.getElementById("usernameInput");
 
-    if (!input || !input.value.trim()) return;
+    if (!input || !input.value.trim()) {
+      log("❌ No username");
+      return;
+    }
 
     username = input.value.trim();
 
-    userTag.innerText = username;
+    if (userTag) {
+      userTag.innerText = username;
+    }
 
     document.getElementById("loginScreen").style.display = "none";
+
+    log("👤 User: " + username);
   };
 
   window.toggleSidebar = () => {
@@ -169,17 +221,13 @@ useEffect(() => {
     document.getElementById("settingsPanel")?.classList.toggle("active");
   };
 
-  window.setReply = (user) => {
-    replyTo = user;
-    messageInput.placeholder = "Replying to " + user;
-  };
-
   // =========================
   // CLEANUP
   // =========================
 
   return () => {
-    unsub();
+    clearInterval(waitDOM);
+    document.getElementById("debugBox")?.remove();
   };
 
 }, []);
@@ -246,4 +294,4 @@ return (
 </div>
 </>
 );
-  }
+    }
