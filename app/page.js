@@ -19,7 +19,41 @@ export default function Home() {
 useEffect(() => {
 
   // =========================
-  // USER ID (PERSISTENT)
+  // 🔥 DEBUG CONSOLE (ON SCREEN)
+  // =========================
+
+  const debug = document.createElement("div");
+
+  debug.style.position = "fixed";
+  debug.style.bottom = "90px";
+  debug.style.left = "10px";
+  debug.style.right = "10px";
+  debug.style.maxHeight = "160px";
+  debug.style.overflowY = "auto";
+  debug.style.background = "rgba(0,0,0,0.85)";
+  debug.style.color = "#00ff88";
+  debug.style.fontSize = "11px";
+  debug.style.padding = "8px";
+  debug.style.borderRadius = "8px";
+  debug.style.zIndex = "999999";
+  debug.style.pointerEvents = "none";
+
+  document.body.appendChild(debug);
+
+  function log(msg) {
+    console.log(msg);
+    debug.innerText += msg + "\n";
+    debug.scrollTop = debug.scrollHeight;
+  }
+
+  // Catch real errors
+  window.onerror = function (message, source, lineno, colno) {
+    log("❌ ERROR: " + message);
+    log("Line: " + lineno + ":" + colno);
+  };
+
+  // =========================
+  // USER DATA
   // =========================
 
   let username = "";
@@ -33,8 +67,10 @@ useEffect(() => {
 
   let currentRoom = "general";
 
+  log("🚀 User ID: " + userId);
+
   // =========================
-  // DOM SAFE INIT (MOBILE FIX)
+  // SAFE DOM INIT (MOBILE FIX)
   // =========================
 
   let chatContainer;
@@ -48,8 +84,12 @@ useEffect(() => {
     userTag = document.getElementById("userTag");
 
     if (chatContainer && messageInput && userTag) {
+
       clearInterval(waitDOM);
-      initFirebase();
+
+      log("✅ DOM READY");
+
+      startFirebase();
     }
 
   }, 200);
@@ -58,7 +98,9 @@ useEffect(() => {
   // FIREBASE LISTENER
   // =========================
 
-  function initFirebase() {
+  function startFirebase() {
+
+    log("🔥 Firebase listener starting...");
 
     const q = query(
       collection(db, "messages"),
@@ -67,32 +109,48 @@ useEffect(() => {
 
     onSnapshot(q, (snapshot) => {
 
-      // CLEAR BEFORE RE-RENDER (FIX DUPLICATE BUG)
-      chatContainer.innerHTML = "";
+      log("📩 Snapshot: " + snapshot.size);
 
       snapshot.forEach((doc) => {
+
         const data = doc.data();
+
+        log("📄 MSG: " + JSON.stringify(data));
+
         if (!data?.text) return;
 
-        const isOwn = data.senderId === userId;
+        renderMessage(data);
 
-        const div = document.createElement("div");
-
-        div.className = isOwn ? "message own" : "message";
-
-        div.innerHTML = `
-          <div class="name">${data.user}</div>
-          <div class="text">${escapeHtml(data.text)}</div>
-        `;
-
-        chatContainer.appendChild(div);
       });
 
-      chatContainer.scrollTop = chatContainer.scrollHeight;
-
     }, (err) => {
-      console.log("Firebase error:", err);
+      log("❌ FIREBASE ERROR: " + err.message);
     });
+  }
+
+  // =========================
+  // RENDER MESSAGE
+  // =========================
+
+  function renderMessage(data) {
+
+    if (!chatContainer) return;
+
+    const div = document.createElement("div");
+
+    const isOwn = data.senderId === userId;
+
+    div.className = isOwn ? "message own" : "message";
+
+    div.innerHTML = `
+      <div class="name">${data.user}</div>
+      <div class="text">${escapeHtml(data.text)}</div>
+    `;
+
+    chatContainer.appendChild(div);
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+
+    log("➡️ Rendered: " + data.text);
   }
 
   function escapeHtml(text) {
@@ -102,25 +160,42 @@ useEffect(() => {
   }
 
   // =========================
-  // SEND MESSAGE (FIXED)
+  // SEND MESSAGE
   // =========================
 
   async function sendMessage() {
 
-    const text = messageInput?.value?.trim();
+    if (!messageInput) {
+      log("❌ No message input");
+      return;
+    }
+
+    const text = messageInput.value.trim();
     if (!text) return;
 
-    await addDoc(collection(db, "messages"), {
-      id: crypto.randomUUID(),
-      text,
-      user: username || "Guest",
-      senderId: userId,
-      room: currentRoom,
-      createdAt: serverTimestamp()
-    });
+    log("📤 Sending: " + text);
 
-    messageInput.value = "";
+    try {
+
+      await addDoc(collection(db, "messages"), {
+        id: crypto.randomUUID(),
+        text,
+        user: username || "Guest",
+        senderId: userId,
+        room: currentRoom,
+        createdAt: serverTimestamp()
+      });
+
+      log("✅ SENT OK");
+
+      messageInput.value = "";
+
+    } catch (err) {
+      log("❌ SEND ERROR: " + err.message);
+    }
   }
+
+  window.sendMessage = sendMessage;
 
   // =========================
   // START CHAT
@@ -130,18 +205,19 @@ useEffect(() => {
 
     const input = document.getElementById("usernameInput");
 
-    if (!input || !input.value.trim()) return;
+    if (!input || !input.value.trim()) {
+      log("❌ Username empty");
+      return;
+    }
 
     username = input.value.trim();
 
-    if (userTag) {
-      userTag.innerText = username;
-    }
+    log("👤 Username: " + username);
+
+    if (userTag) userTag.innerText = username;
 
     document.getElementById("loginScreen").style.display = "none";
   };
-
-  window.sendMessage = sendMessage;
 
   // cleanup
   return () => clearInterval(waitDOM);
@@ -191,4 +267,4 @@ return (
 </div>
 </>
 );
-    }
+  }
