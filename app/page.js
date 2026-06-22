@@ -19,12 +19,16 @@ export default function Home() {
 useEffect(() => {
 
   // =========================
-  // STATE (UNCHANGED STRUCTURE)
+  // USER STATE (PERSISTENT ID)
   // =========================
 
   let username = "";
-  let userId = "";
-  let userFlag = "🌍";
+  let userId =
+    localStorage.getItem("toxbox-id") ||
+    crypto.randomUUID();
+
+  localStorage.setItem("toxbox-id", userId);
+
   let currentRoom = "general";
   let replyTo = null;
 
@@ -33,15 +37,6 @@ useEffect(() => {
     gaming: [],
     random: []
   };
-
-  let rooms = {
-    general: { count: 0 },
-    gaming: { count: 0 },
-    random: { count: 0 }
-  };
-
-  let reactions = {};
-  let typingUsers = new Set();
 
   const channel = new BroadcastChannel("toxicbox");
 
@@ -57,7 +52,7 @@ useEffect(() => {
   if (!chatContainer || !messageInput || !userTag) return;
 
   // =========================
-  // FIREBASE LISTENER (NO DUPLICATION FIX)
+  // FIREBASE REAL-TIME LISTENER
   // =========================
 
   const q = query(
@@ -66,59 +61,48 @@ useEffect(() => {
   );
 
   const unsub = onSnapshot(q, (snapshot) => {
+
     snapshot.docChanges().forEach((change) => {
 
       if (change.type !== "added") return;
 
       const data = change.doc.data();
-      if (!data || !data.text) return;
+      if (!data || !data.id) return;
 
       if (!messages[data.room]) {
         messages[data.room] = [];
       }
 
-      // 🚨 FIX: prevent duplicate render
-      const exists = messages[data.room].some(m => m.id === data.id);
-      if (exists) return;
+      // prevent duplicate render
+      if (messages[data.room].some(m => m.id === data.id)) return;
 
       messages[data.room].push(data);
 
+      const isOwn = data.senderId === userId;
+
       if (data.room === currentRoom) {
-        createMessage(data, false);
+        createMessage(data, isOwn);
       }
     });
   });
 
   // =========================
-  // MESSAGE RENDER
+  // MESSAGE RENDER (FIXED ALIGNMENT)
   // =========================
 
-  function createMessage(data, own = false) {
+  function createMessage(data, isOwn) {
 
     if (emptyText) emptyText.style.display = "none";
 
     const div = document.createElement("div");
-    div.className = own ? "message own" : "message";
+
+    div.className = isOwn
+      ? "message own"
+      : "message";
 
     div.innerHTML = `
       <div class="name">${data.user}</div>
-
-      ${data.replyTo ? `
-        <div style="font-size:12px;opacity:0.6;border-left:2px solid #888;padding-left:8px;margin-bottom:6px;">
-          Replying to ${data.replyTo}
-        </div>
-      ` : ""}
-
       <div class="text">${escapeHtml(data.text)}</div>
-
-      <div class="actions">
-        <button onclick="react('${data.id}','👍')">👍</button>
-        <button onclick="react('${data.id}','❤️')">❤️</button>
-        <button onclick="react('${data.id}','😂')">😂</button>
-        <button onclick="setReply('${data.user}')">Reply</button>
-      </div>
-
-      <div class="reactions" id="r-${data.id}"></div>
     `;
 
     chatContainer.appendChild(div);
@@ -131,15 +115,8 @@ useEffect(() => {
     return div.innerHTML;
   }
 
-  function systemMessage(text) {
-    const div = document.createElement("div");
-    div.className = "system-msg";
-    div.innerText = text;
-    chatContainer.appendChild(div);
-  }
-
   // =========================
-  // SEND MESSAGE (FIXED - NO LOCAL DUPLICATE)
+  // SEND MESSAGE (FIXED - NO DUPLICATE BUG)
   // =========================
 
   function sendMessage() {
@@ -149,17 +126,19 @@ useEffect(() => {
 
     const messageData = {
       id: crypto.randomUUID(),
-      user: `${username}#${userId} ${userFlag}`,
       text,
-      time: Date.now(),
       room: currentRoom,
+      time: Date.now(),
+
+      // IMPORTANT FIX FOR OWN DETECTION
+      user: `${username}#${userId}`,
+      senderId: userId,
+
       replyTo
     };
 
     replyTo = null;
-    messageInput.placeholder = "Type your message...";
 
-    // 🚨 FIX: ONLY FIREBASE (no local push, no local render)
     addDoc(collection(db, "messages"), {
       ...messageData,
       createdAt: serverTimestamp()
@@ -167,22 +146,6 @@ useEffect(() => {
 
     messageInput.value = "";
   }
-
-  // =========================
-  // BROADCAST CHANNEL (SAFE)
-  // =========================
-
-  channel.onmessage = (event) => {
-    const data = event.data;
-    if (!data) return;
-
-    if (data.type === "system") {
-      if (data.room === currentRoom) {
-        systemMessage(data.text);
-      }
-      return;
-    }
-  };
 
   // =========================
   // GLOBAL FUNCTIONS (UI HOOKS)
@@ -193,12 +156,11 @@ useEffect(() => {
   window.startChat = () => {
     const input = document.getElementById("usernameInput");
 
-    if (!input || input.value.trim() === "") return;
+    if (!input || !input.value.trim()) return;
 
     username = input.value.trim();
-    userId = Math.floor(1000 + Math.random() * 9000);
 
-    userTag.innerText = `${username}#${userId} ${userFlag}`;
+    userTag.innerText = `${username}#${userId}`;
 
     document.getElementById("loginScreen").style.display = "none";
   };
@@ -216,18 +178,8 @@ useEffect(() => {
     messageInput.placeholder = "Replying to " + user;
   };
 
-  window.react = (id, emoji) => {
-    channel.postMessage({
-      type: "reaction",
-      room: currentRoom,
-      id,
-      emoji,
-      user: `${username}#${userId}`
-    });
-  };
-
   // =========================
-  // CLEANUP
+  // CLEANUP (IMPORTANT)
   // =========================
 
   return () => {
@@ -239,6 +191,7 @@ useEffect(() => {
 
 return (
 <>
+{/* LOGIN SCREEN */}
 <div className="login-screen" id="loginScreen">
   <div className="login-box">
     <h2>Toxic Box</h2>
@@ -251,8 +204,10 @@ return (
   </div>
 </div>
 
+{/* MAIN APP */}
 <div className="app">
 
+  {/* HEADER */}
   <div className="header">
     <button onClick={() => window.toggleSidebar?.()} className="toggle-btn">☰</button>
 
@@ -264,8 +219,10 @@ return (
     <div className="user-tag" id="userTag">Guest</div>
   </div>
 
+  {/* SETTINGS */}
   <div id="settingsPanel" className="settings-panel">
     <h3>Settings</h3>
+
     <div className="setting-item">
       <span>Dark Mode</span>
       <label className="switch">
@@ -275,10 +232,12 @@ return (
     </div>
   </div>
 
+  {/* CHAT */}
   <div className="chat-container" id="chatContainer">
     <div className="empty" id="emptyText">No messages yet...</div>
   </div>
 
+  {/* INPUT */}
   <div className="chat-input">
     <div className="input-wrap">
 
@@ -295,9 +254,10 @@ return (
     </div>
   </div>
 
+  {/* SIDEBAR */}
   <div className="sidebar" id="sidebar"></div>
 
 </div>
 </>
 );
-  }
+    }
