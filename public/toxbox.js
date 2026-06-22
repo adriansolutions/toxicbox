@@ -1,3 +1,13 @@
+const firebaseConfig = {
+  apiKey: "AIzaSyAICZc6Q2bbwsv_UtUjRoWiQYtoxp3WB7U",
+  authDomain: "toxicbox-f25b6.firebaseapp.com",
+  projectId: "toxicbox-f25b6",
+  storageBucket: "toxicbox-f25b6.firebasestorage.app",
+  messagingSenderId: "818643014600",
+  appId: "1:818643014600:web:b0b5748dd129c0b3ebe6fd",
+  measurementId: "G-DY5Q68N3F3"
+};
+
 window.addEventListener("DOMContentLoaded", () => {
 window.onerror = function(msg, src, line, col, err) {
 
@@ -21,15 +31,14 @@ window.onerror = function(msg, src, line, col, err) {
 
     document.body.appendChild(box);
 };
- const firebaseConfig = {
-  apiKey: "AIzaSyAICZc6Q2bbwsv_UtUjRoWiQYtoxp3WB7U",
-  authDomain: "toxicbox-f25b6.firebaseapp.com",
-  projectId: "toxicbox-f25b6",
-  storageBucket: "toxicbox-f25b6.firebasestorage.app",
-  messagingSenderId: "818643014600",
-  appId: "1:818643014600:web:b0b5748dd129c0b3ebe6fd",
-  measurementId: "G-DY5Q68N3F3"
-};
+
+/* =========================================
+   TOXIC BOX - FIXED WORKING VERSION
+========================================= */
+
+/* =========================
+   FIREBASE SAFE INIT
+========================= */
 
 let db = null;
 
@@ -40,10 +49,6 @@ try {
     console.error("Firebase failed:", e);
     db = null;
 }
-
-/* =========================================
-   TOXIC BOX - FIXED FULL VERSION
-========================================= */
 
 /* =========================
    STATE
@@ -81,8 +86,9 @@ let myUserId =
     crypto.randomUUID();
 
 /* =========================
-   DOM SAFE INIT (NEXT.JS FIX)
+   DOM
 ========================= */
+
 let chatContainer;
 let messageInput;
 let userTag;
@@ -96,7 +102,7 @@ function initDOM() {
 }
 
 /* =========================
-   LOGIN FIX (ENTER CHAT WORKS)
+   START CHAT (FIXED)
 ========================= */
 
 window.startChat = function () {
@@ -114,10 +120,7 @@ window.startChat = function () {
 
     if (saved) {
         const data = JSON.parse(saved);
-
-        userId = (data.username === username)
-            ? data.id
-            : generateId();
+        userId = (data.username === username) ? data.id : generateId();
     } else {
         userId = generateId();
     }
@@ -127,10 +130,7 @@ window.startChat = function () {
         JSON.stringify({ username, id: userId })
     );
 
-    userFlag = userFlag || "🌍";
-
     const loginScreen = document.getElementById("loginScreen");
-    const userTag = document.getElementById("userTag");
 
     if (userTag) {
         userTag.innerText = `${username}#${userId} ${userFlag}`;
@@ -155,20 +155,20 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
-function formatTime(timestamp) {
-    return new Date(timestamp).toLocaleTimeString([], {
+function formatTime(t) {
+    return new Date(t).toLocaleTimeString([], {
         hour: "2-digit",
         minute: "2-digit"
     });
 }
 
 function isInappropriate(text) {
-    const badWords = ["fuck", "shit", "bitch", "asshole"];
-    return badWords.some(w => text.toLowerCase().includes(w));
+    const bad = ["fuck", "shit", "bitch", "asshole"];
+    return bad.some(w => text.toLowerCase().includes(w));
 }
 
 /* =========================
-   ROOMS (FIXED SIDEBAR)
+   ROOMS
 ========================= */
 
 function renderRooms() {
@@ -206,10 +206,9 @@ function switchRoom(room) {
 
     if (!messages[room]) messages[room] = [];
 
-    if (messages[room].length === 0 && emptyText) {
-        emptyText.style.display = "block";
-    } else if (emptyText) {
-        emptyText.style.display = "none";
+    if (emptyText) {
+        emptyText.style.display =
+            messages[room].length === 0 ? "block" : "none";
     }
 
     messages[room].forEach(msg => {
@@ -221,37 +220,36 @@ function switchRoom(room) {
 }
 
 /* =========================
-   MESSAGE CREATE
+   MESSAGE
 ========================= */
 
 function createMessage(data, own = false) {
 
     if (!chatContainer) return;
 
-    const id = data.id;
-
     const div = document.createElement("div");
+
     div.className = own ? "message own" : "message";
-    div.dataset.id = id;
+    div.dataset.id = data.id;
 
     div.innerHTML = `
         <div class="name">${data.user}</div>
 
         ${data.replyTo ? `
-            <div style="font-size:12px;opacity:0.6;border-left:2px solid #888;padding-left:8px;margin-bottom:6px;">
-                Replying to ${data.replyTo}
-            </div>` : ""}
+        <div style="font-size:12px;opacity:0.6;border-left:2px solid #888;padding-left:8px;margin-bottom:6px;">
+            Replying to ${data.replyTo}
+        </div>` : ""}
 
         <div class="text">${escapeHtml(data.text)}</div>
 
         <div class="actions">
-            <button onclick="react('${id}','👍')">👍</button>
-            <button onclick="react('${id}','❤️')">❤️</button>
-            <button onclick="react('${id}','😂')">😂</button>
+            <button onclick="react('${data.id}','👍')">👍</button>
+            <button onclick="react('${data.id}','❤️')">❤️</button>
+            <button onclick="react('${data.id}','😂')">😂</button>
             <button onclick="setReply('${data.user}')">Reply</button>
         </div>
 
-        <div class="reactions" id="r-${id}"></div>
+        <div class="reactions" id="r-${data.id}"></div>
     `;
 
     chatContainer.appendChild(div);
@@ -259,7 +257,7 @@ function createMessage(data, own = false) {
 }
 
 /* =========================
-   SEND MESSAGE
+   SEND MESSAGE (FIXED FIREBASE)
 ========================= */
 
 function sendMessage() {
@@ -282,7 +280,7 @@ function sendMessage() {
     };
 
     replyTo = null;
-    messageInput.placeholder = "Type your message...";
+    if (messageInput) messageInput.placeholder = "Type your message...";
 
     if (!messages[currentRoom]) messages[currentRoom] = [];
 
@@ -291,37 +289,57 @@ function sendMessage() {
     createMessage(messageData, true);
 
     if (db) {
-    db.ref("messages").push(messageData);
+        db.ref("messages").push(messageData);
     }
 
-    messageInput.value = "";
+    if (messageInput) messageInput.value = "";
 }
 
 /* =========================
-   CHANNEL (FIXED SINGLE HANDLER)
+   FIREBASE LISTENER (FIXED)
 ========================= */
-if (db) {
-    db.ref("messages").on("child_added", (snap) => {
-        const data = snap.val();
-        if (!data) return;
 
-        if (!messages[data.room]) {
-            messages[data.room] = [];
-        }
+window.addEventListener("DOMContentLoaded", () => {
 
-        messages[data.room].push(data);
+    initDOM();
 
-        if (data.room === currentRoom) {
-            createMessage(
-                data,
-                data.user === `${username}#${userId} ${userFlag}`
-            );
-        }
+    renderRooms();
+    switchRoom("general");
 
-        rooms[data.room].count++;
-        renderRooms();
-    });
-}
+    const savedTheme = localStorage.getItem("theme") || "light";
+    setMode(savedTheme);
+
+    if (messageInput) {
+
+        messageInput.addEventListener("keypress", e => {
+            if (e.key === "Enter") sendMessage();
+        });
+
+        messageInput.addEventListener("input", sendTyping);
+    }
+
+    if (db) {
+        db.ref("messages").on("child_added", snap => {
+
+            const data = snap.val();
+            if (!data) return;
+
+            if (!messages[data.room]) {
+                messages[data.room] = [];
+            }
+
+            messages[data.room].push(data);
+
+            if (data.room === currentRoom) {
+                createMessage(data, false);
+            }
+
+            rooms[data.room].count++;
+            renderRooms();
+        });
+    }
+});
+
 /* =========================
    REACTIONS
 ========================= */
@@ -345,16 +363,6 @@ function handleReaction(data) {
 }
 
 function react(id, emoji) {
-if (typeof channel !== "undefined") {
-    channel.postMessage({
-        type: "reaction",
-        room: currentRoom,
-        id,
-        emoji,
-        user: myUserId
-    });
-}
-
     handleReaction({
         room: currentRoom,
         id,
@@ -374,32 +382,12 @@ function renderReactions(id, room) {
     let html = "";
 
     for (let e in data) {
-        const count = data[e].length;
-        if (count > 0) html += `${e} ${count} `;
+        if (data[e].length > 0) {
+            html += `${e} ${data[e].length} `;
+        }
     }
 
     box.innerHTML = html;
-}
-
-/* =========================
-   SETTINGS / THEME FIXED
-========================= */
-
-function setMode(mode) {
-
-    const isDark = mode === "dark";
-
-    document.body.classList.toggle("light-mode", !isDark);
-
-    localStorage.setItem("theme", mode);
-
-    const toggle = document.getElementById("themeToggle");
-    if (toggle) toggle.checked = isDark;
-}
-
-function toggleSettings() {
-    document.getElementById("settingsPanel")
-        ?.classList.toggle("active");
 }
 
 /* =========================
@@ -407,16 +395,10 @@ function toggleSettings() {
 ========================= */
 
 function sendTyping() {
-
     if (isTyping) return;
 
     isTyping = true;
-if (typeof channel !== "undefined") {
-    channel.postMessage({
-        type: "typing",
-        user: `${username}#${userId}`
-    });
-}
+
     clearTimeout(typingTimeout);
 
     typingTimeout = setTimeout(() => {
@@ -425,38 +407,22 @@ if (typeof channel !== "undefined") {
 }
 
 /* =========================
-   EVENTS
-========================= */
-/* =========================
-   STARTUP
+   THEME
 ========================= */
 
-initDOM();
-
-renderRooms();
-switchRoom("general");
-
-const saved = localStorage.getItem("theme") || "light";
-setMode(saved);
-
-if (messageInput) {
-
-    messageInput.addEventListener("keypress", e => {
-        if (e.key === "Enter") sendMessage();
-    });
-
-    messageInput.addEventListener("input", sendTyping);
+function setMode(mode) {
+    document.body.classList.toggle("light-mode", mode === "light");
+    localStorage.setItem("theme", mode);
 }
 
 /* =========================
-   GLOBAL EXPORTS (IMPORTANT)
+   GLOBAL EXPORTS
 ========================= */
 
 window.startChat = startChat;
 window.sendMessage = sendMessage;
-window.toggleSettings = toggleSettings;
-window.setMode = setMode;
 window.react = react;
+window.setMode = setMode;
 window.setReply = setReply;
 
 function setReply(user) {
@@ -465,5 +431,5 @@ function setReply(user) {
         messageInput.placeholder = "Replying to " + user;
     }
 }
-
+    
 });
