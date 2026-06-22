@@ -19,7 +19,7 @@ export default function Home() {
 useEffect(() => {
 
   // =========================
-  // USER ID (GLOBAL SAFE)
+  // SAFE USER STATE
   // =========================
 
   let username = "";
@@ -35,11 +35,11 @@ useEffect(() => {
   let currentRoom = "general";
   let replyTo = null;
 
-  let messages = {
-    general: [],
-    gaming: [],
-    random: []
-  };
+  let messages = { general: [], gaming: [], random: [] };
+
+  // =========================
+  // SAFE DOM ACCESS
+  // =========================
 
   const chatContainer = document.getElementById("chatContainer");
   const messageInput = document.getElementById("messageInput");
@@ -49,7 +49,7 @@ useEffect(() => {
   if (!chatContainer || !messageInput || !userTag) return;
 
   // =========================
-  // FIREBASE REALTIME LISTENER
+  // FIREBASE LISTENER
   // =========================
 
   const q = query(
@@ -84,7 +84,7 @@ useEffect(() => {
   });
 
   // =========================
-  // RENDER MESSAGE (FIXED ALIGNMENT)
+  // RENDER MESSAGE
   // =========================
 
   function renderMessage(data, isOwn) {
@@ -111,7 +111,7 @@ useEffect(() => {
   }
 
   // =========================
-  // SEND MESSAGE (FIXED)
+  // SEND MESSAGE (FIXED - NO DUPLICATION)
   // =========================
 
   function sendMessage() {
@@ -119,13 +119,14 @@ useEffect(() => {
     const text = messageInput.value.trim();
     if (!text) return;
 
+    if (!username) username = "Guest";
+
     const messageData = {
       id: crypto.randomUUID(),
       text,
       room: currentRoom,
       time: Date.now(),
 
-      // IMPORTANT FIX FOR MULTI USER CHAT
       user: username,
       senderId: userId,
 
@@ -245,4 +246,4 @@ return (
 </div>
 </>
 );
-}
+  }
