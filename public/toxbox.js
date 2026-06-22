@@ -8,19 +8,34 @@ const firebaseConfig = {
   measurementId: "G-DY5Q68N3F3"
 };
 
-/* =========================
-   GLOBAL STATE
-========================= */
 let db = null;
 
+/* =========================
+   FIREBASE INIT (SAFE)
+========================= */
+function initFirebase() {
+    try {
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        db = firebase.database();
+    } catch (e) {
+        console.error("Firebase failed:", e);
+        db = null;
+    }
+}
+
+/* =========================
+   STATE
+========================= */
 let username = "";
 let userId = "";
 let userFlag = "🌍";
 
+let replyTo = null;
 let isTyping = false;
 let typingTimeout;
 
-let replyTo = null;
 let reactions = {};
 
 const rooms = {
@@ -37,7 +52,9 @@ let messages = {
     random: []
 };
 
-const typingUsers = new Set();
+let myUserId =
+    localStorage.getItem("toxbox-id") ||
+    crypto.randomUUID();
 
 /* =========================
    DOM
@@ -47,45 +64,6 @@ let messageInput;
 let userTag;
 let emptyText;
 
-/* =========================
-   ERROR DEBUG
-========================= */
-window.onerror = function(msg, src, line) {
-    const box = document.createElement("div");
-    box.style = `
-        position:fixed;top:0;left:0;width:100%;
-        background:red;color:white;z-index:999999;
-        padding:10px;font-size:12px;
-    `;
-    box.innerText = "ERROR: " + msg + " LINE: " + line;
-    document.body.appendChild(box);
-};
-
-/* =========================
-   SAFE FIREBASE INIT
-========================= */
-function initFirebase() {
-    try {
-        if (typeof firebase === "undefined") {
-            console.error("Firebase not loaded");
-            return;
-        }
-
-        if (!firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
-        }
-
-        db = firebase.database();
-
-    } catch (e) {
-        console.error("Firebase init failed:", e);
-        db = null;
-    }
-}
-
-/* =========================
-   INIT DOM
-========================= */
 function initDOM() {
     chatContainer = document.getElementById("chatContainer");
     messageInput = document.getElementById("messageInput");
@@ -100,7 +78,7 @@ window.startChat = function () {
 
     const input = document.getElementById("usernameInput");
 
-    if (!input || input.value.trim() === "") {
+    if (!input || !input.value.trim()) {
         alert("Please enter a username");
         return;
     }
@@ -193,7 +171,7 @@ function switchRoom(room) {
 }
 
 /* =========================
-   MESSAGE
+   CREATE MESSAGE
 ========================= */
 function createMessage(data, own = false) {
 
@@ -259,13 +237,24 @@ function startFirebaseListener() {
             messages[data.room] = [];
         }
 
-        messages[data.room].push(data);
+        // 🔥 prevent duplicates
+        const exists = messages[data.room].some(m => m.id === data.id);
+        if (!exists) {
+            messages[data.room].push(data);
+        }
 
-        if (data.room === currentRoom) {
+        const myTag = `${username}#${userId} ${userFlag}`;
+
+        // 🔥 prevent self duplicate render
+        if (data.room === currentRoom && data.user !== myTag) {
             createMessage(data, false);
         }
 
-        rooms[data.room].count++;
+        // 🔥 safe counter fix
+        if (data.user !== myTag) {
+            rooms[data.room].count++;
+        }
+
         renderRooms();
     });
 }
@@ -288,7 +277,7 @@ window.toggleSidebar = function () {
 };
 
 /* =========================
-   INIT ORDER (IMPORTANT FIX)
+   INIT (IMPORTANT ORDER FIX)
 ========================= */
 window.addEventListener("DOMContentLoaded", () => {
 
@@ -298,8 +287,7 @@ window.addEventListener("DOMContentLoaded", () => {
     renderRooms();
     switchRoom("general");
 
-    const savedTheme = localStorage.getItem("theme") || "light";
-    setMode(savedTheme);
+    setMode(localStorage.getItem("theme") || "light");
 
     if (messageInput) {
         messageInput.addEventListener("keypress", e => {
@@ -325,4 +313,4 @@ function setReply(user) {
     if (messageInput) {
         messageInput.placeholder = "Replying to " + user;
     }
-                        }
+}
