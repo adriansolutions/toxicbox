@@ -19,15 +19,18 @@ export default function Home() {
 useEffect(() => {
 
   // =========================
-  // USER STATE (PERSISTENT ID)
+  // USER ID (GLOBAL SAFE)
   // =========================
 
   let username = "";
-  let userId =
-    localStorage.getItem("toxbox-id") ||
-    crypto.randomUUID();
 
-  localStorage.setItem("toxbox-id", userId);
+  let userId =
+    localStorage.getItem("toxbox-id");
+
+  if (!userId) {
+    userId = crypto.randomUUID();
+    localStorage.setItem("toxbox-id", userId);
+  }
 
   let currentRoom = "general";
   let replyTo = null;
@@ -38,12 +41,6 @@ useEffect(() => {
     random: []
   };
 
-  const channel = new BroadcastChannel("toxicbox");
-
-  // =========================
-  // DOM SAFE INIT
-  // =========================
-
   const chatContainer = document.getElementById("chatContainer");
   const messageInput = document.getElementById("messageInput");
   const userTag = document.getElementById("userTag");
@@ -52,7 +49,7 @@ useEffect(() => {
   if (!chatContainer || !messageInput || !userTag) return;
 
   // =========================
-  // FIREBASE REAL-TIME LISTENER
+  // FIREBASE REALTIME LISTENER
   // =========================
 
   const q = query(
@@ -73,7 +70,7 @@ useEffect(() => {
         messages[data.room] = [];
       }
 
-      // prevent duplicate render
+      // prevent duplicates
       if (messages[data.room].some(m => m.id === data.id)) return;
 
       messages[data.room].push(data);
@@ -81,24 +78,22 @@ useEffect(() => {
       const isOwn = data.senderId === userId;
 
       if (data.room === currentRoom) {
-        createMessage(data, isOwn);
+        renderMessage(data, isOwn);
       }
     });
   });
 
   // =========================
-  // MESSAGE RENDER (FIXED ALIGNMENT)
+  // RENDER MESSAGE (FIXED ALIGNMENT)
   // =========================
 
-  function createMessage(data, isOwn) {
+  function renderMessage(data, isOwn) {
 
     if (emptyText) emptyText.style.display = "none";
 
     const div = document.createElement("div");
 
-    div.className = isOwn
-      ? "message own"
-      : "message";
+    div.className = isOwn ? "message own" : "message";
 
     div.innerHTML = `
       <div class="name">${data.user}</div>
@@ -116,7 +111,7 @@ useEffect(() => {
   }
 
   // =========================
-  // SEND MESSAGE (FIXED - NO DUPLICATE BUG)
+  // SEND MESSAGE (FIXED)
   // =========================
 
   function sendMessage() {
@@ -130,8 +125,8 @@ useEffect(() => {
       room: currentRoom,
       time: Date.now(),
 
-      // IMPORTANT FIX FOR OWN DETECTION
-      user: `${username}#${userId}`,
+      // IMPORTANT FIX FOR MULTI USER CHAT
+      user: username,
       senderId: userId,
 
       replyTo
@@ -160,7 +155,7 @@ useEffect(() => {
 
     username = input.value.trim();
 
-    userTag.innerText = `${username}#${userId}`;
+    userTag.innerText = username;
 
     document.getElementById("loginScreen").style.display = "none";
   };
@@ -179,19 +174,18 @@ useEffect(() => {
   };
 
   // =========================
-  // CLEANUP (IMPORTANT)
+  // CLEANUP
   // =========================
 
   return () => {
     unsub();
-    channel.close();
   };
 
 }, []);
 
 return (
 <>
-{/* LOGIN SCREEN */}
+{/* LOGIN */}
 <div className="login-screen" id="loginScreen">
   <div className="login-box">
     <h2>Toxic Box</h2>
@@ -204,10 +198,9 @@ return (
   </div>
 </div>
 
-{/* MAIN APP */}
+{/* APP */}
 <div className="app">
 
-  {/* HEADER */}
   <div className="header">
     <button onClick={() => window.toggleSidebar?.()} className="toggle-btn">☰</button>
 
@@ -222,14 +215,6 @@ return (
   {/* SETTINGS */}
   <div id="settingsPanel" className="settings-panel">
     <h3>Settings</h3>
-
-    <div className="setting-item">
-      <span>Dark Mode</span>
-      <label className="switch">
-        <input type="checkbox" id="themeToggle"/>
-        <span className="slider"></span>
-      </label>
-    </div>
   </div>
 
   {/* CHAT */}
@@ -260,4 +245,4 @@ return (
 </div>
 </>
 );
-    }
+}
