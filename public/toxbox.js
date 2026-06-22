@@ -42,14 +42,17 @@ window.onerror = function(msg, src, line, col, err) {
 
 let db = null;
 
-try {
-    firebase.initializeApp(firebaseConfig);
-    db = firebase.database();
-} catch (e) {
-    console.error("Firebase failed:", e);
-    db = null;
+function initFirebase() {
+    try {
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        db = firebase.database();
+    } catch (e) {
+        console.error("Firebase failed:", e);
+        db = null;
+    }
 }
-
 /* =========================
    STATE
 ========================= */
@@ -415,10 +418,17 @@ function setMode(mode) {
     localStorage.setItem("theme", mode);
 }
 
+window.toggleSidebar = function () {
+    const sidebar = document.getElementById("sidebar");
+    if (!sidebar) return;
+
+    sidebar.classList.toggle("active");
+};
+
 /* =========================
    GLOBAL EXPORTS
 ========================= */
-
+initFirebase();
 window.startChat = startChat;
 window.sendMessage = sendMessage;
 window.react = react;
