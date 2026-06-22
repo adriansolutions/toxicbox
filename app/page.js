@@ -19,13 +19,14 @@ export default function Home() {
 useEffect(() => {
 
   // =========================
-  // FIX 1: SAFE GLOBAL STATE
+  // STATE (UNCHANGED STRUCTURE)
   // =========================
 
   let username = "";
   let userId = "";
   let userFlag = "🌍";
   let currentRoom = "general";
+  let replyTo = null;
 
   let messages = {
     general: [],
@@ -42,13 +43,10 @@ useEffect(() => {
   let reactions = {};
   let typingUsers = new Set();
 
-  let isTyping = false;
-  let typingTimeout;
-
   const channel = new BroadcastChannel("toxicbox");
 
   // =========================
-  // FIX 2: WAIT FOR DOM SAFELY
+  // DOM SAFE INIT
   // =========================
 
   const chatContainer = document.getElementById("chatContainer");
@@ -59,7 +57,7 @@ useEffect(() => {
   if (!chatContainer || !messageInput || !userTag) return;
 
   // =========================
-  // FIX 3: FIREBASE SNAPSHOT (SAFE ORDER)
+  // FIREBASE LISTENER (NO DUPLICATION FIX)
   // =========================
 
   const q = query(
@@ -68,29 +66,31 @@ useEffect(() => {
   );
 
   const unsub = onSnapshot(q, (snapshot) => {
-
     snapshot.docChanges().forEach((change) => {
 
-      if (change.type === "added") {
+      if (change.type !== "added") return;
 
-        const data = change.doc.data();
-        if (!data) return;
+      const data = change.doc.data();
+      if (!data || !data.text) return;
 
-        if (!messages[data.room]) {
-          messages[data.room] = [];
-        }
+      if (!messages[data.room]) {
+        messages[data.room] = [];
+      }
 
-        messages[data.room].push(data);
+      // 🚨 FIX: prevent duplicate render
+      const exists = messages[data.room].some(m => m.id === data.id);
+      if (exists) return;
 
-        if (data.room === currentRoom) {
-          createMessage(data, false);
-        }
+      messages[data.room].push(data);
+
+      if (data.room === currentRoom) {
+        createMessage(data, false);
       }
     });
   });
 
   // =========================
-  // FIX 4: FUNCTIONS (UNCHANGED LOGIC)
+  // MESSAGE RENDER
   // =========================
 
   function createMessage(data, own = false) {
@@ -138,6 +138,10 @@ useEffect(() => {
     chatContainer.appendChild(div);
   }
 
+  // =========================
+  // SEND MESSAGE (FIXED - NO LOCAL DUPLICATE)
+  // =========================
+
   function sendMessage() {
 
     const text = messageInput.value.trim();
@@ -148,13 +152,14 @@ useEffect(() => {
       user: `${username}#${userId} ${userFlag}`,
       text,
       time: Date.now(),
-      room: currentRoom
+      room: currentRoom,
+      replyTo
     };
 
-    messages[currentRoom].push(messageData);
+    replyTo = null;
+    messageInput.placeholder = "Type your message...";
 
-    createMessage(messageData, true);
-
+    // 🚨 FIX: ONLY FIREBASE (no local push, no local render)
     addDoc(collection(db, "messages"), {
       ...messageData,
       createdAt: serverTimestamp()
@@ -164,11 +169,10 @@ useEffect(() => {
   }
 
   // =========================
-  // FIX 5: SINGLE CHANNEL LISTENER (NO DUPLICATE)
+  // BROADCAST CHANNEL (SAFE)
   // =========================
 
   channel.onmessage = (event) => {
-
     const data = event.data;
     if (!data) return;
 
@@ -178,43 +182,10 @@ useEffect(() => {
       }
       return;
     }
-
-    if (data.type === "reaction") {
-
-      if (!reactions[data.room]) reactions[data.room] = {};
-      if (!reactions[data.room][data.id]) reactions[data.room][data.id] = {};
-      if (!reactions[data.room][data.id][data.emoji]) {
-        reactions[data.room][data.id][data.emoji] = [];
-      }
-
-      const arr = reactions[data.room][data.id][data.emoji];
-
-      if (arr.includes(data.user)) {
-        reactions[data.room][data.id][data.emoji] =
-          arr.filter(u => u !== data.user);
-      } else {
-        arr.push(data.user);
-      }
-
-      renderReactions(data.id, data.room);
-      return;
-    }
-
-    if (!data.text || !data.user || !data.room) return;
-
-    if (!messages[data.room]) messages[data.room] = [];
-
-    messages[data.room].push(data);
-
-    if (data.room === currentRoom) {
-      createMessage(data, false);
-    }
-
-    rooms[data.room].count++;
   };
 
   // =========================
-  // FIX 6: EXPOSE GLOBAL FUNCTIONS (IMPORTANT FOR YOUR HTML ONCLICK)
+  // GLOBAL FUNCTIONS (UI HOOKS)
   // =========================
 
   window.sendMessage = sendMessage;
@@ -222,18 +193,14 @@ useEffect(() => {
   window.startChat = () => {
     const input = document.getElementById("usernameInput");
 
-    if (!input || input.value.trim() === "") {
-      alert("Enter username");
-      return;
-    }
+    if (!input || input.value.trim() === "") return;
 
     username = input.value.trim();
     userId = Math.floor(1000 + Math.random() * 9000);
 
     userTag.innerText = `${username}#${userId} ${userFlag}`;
 
-    const login = document.getElementById("loginScreen");
-    if (login) login.style.display = "none";
+    document.getElementById("loginScreen").style.display = "none";
   };
 
   window.toggleSidebar = () => {
@@ -245,11 +212,11 @@ useEffect(() => {
   };
 
   window.setReply = (user) => {
+    replyTo = user;
     messageInput.placeholder = "Replying to " + user;
   };
 
   window.react = (id, emoji) => {
-
     channel.postMessage({
       type: "reaction",
       room: currentRoom,
@@ -259,27 +226,8 @@ useEffect(() => {
     });
   };
 
-  function renderReactions(id, room) {
-    const box = document.getElementById("r-" + id);
-    if (!box) return;
-
-    const data = reactions?.[room]?.[id];
-    if (!data) return;
-
-    let html = "";
-    for (let emoji in data) {
-      html += `${emoji} ${data[emoji].length} `;
-    }
-
-    box.innerHTML = html;
-  }
-
-  messageInput?.addEventListener("keypress", (e) => {
-    if (e.key === "Enter") sendMessage();
-  });
-
   // =========================
-  // CLEANUP (IMPORTANT FOR VERCEL)
+  // CLEANUP
   // =========================
 
   return () => {
@@ -291,7 +239,6 @@ useEffect(() => {
 
 return (
 <>
-{/* YOUR ORIGINAL UI UNCHANGED */}
 <div className="login-screen" id="loginScreen">
   <div className="login-box">
     <h2>Toxic Box</h2>
