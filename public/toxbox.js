@@ -1,6 +1,6 @@
 window.addEventListener("DOMContentLoaded", () => {
 
-  firebaseConfig = {
+ const firebaseConfig = {
   apiKey: "AIzaSyAICZc6Q2bbwsv_UtUjRoWiQYtoxp3WB7U",
   authDomain: "toxicbox-f25b6.firebaseapp.com",
   projectId: "toxicbox-f25b6",
@@ -10,7 +10,15 @@ window.addEventListener("DOMContentLoaded", () => {
   measurementId: "G-DY5Q68N3F3"
 };
 
-const db = firebase.database();
+let db = null;
+
+try {
+    firebase.initializeApp(firebaseConfig);
+    db = firebase.database();
+} catch (e) {
+    console.error("Firebase failed:", e);
+    db = null;
+}
 
 /* =========================================
    TOXIC BOX - FIXED FULL VERSION
@@ -54,15 +62,6 @@ let myUserId =
 /* =========================
    DOM SAFE INIT (NEXT.JS FIX)
 ========================= */
-let db = null;
-
-try {
-    firebase.initializeApp(firebaseConfig);
-    db = firebase.database();
-} catch (e) {
-    console.error("Firebase failed:", e);
-    db = null;
-}
 let chatContainer;
 let messageInput;
 let userTag;
@@ -74,23 +73,6 @@ function initDOM() {
     userTag = document.getElementById("userTag");
     emptyText = document.getElementById("emptyText");
 }
-
-/* =========================
-   STARTUP
-========================= */
-
-window.addEventListener("DOMContentLoaded", () => {
-
-    initDOM();
-
-    renderRooms();
-    switchRoom("general");
-
-    loadReactions();
-
-    const saved = localStorage.getItem("theme") || "light";
-    setMode(saved);
-});
 
 /* =========================
    LOGIN FIX (ENTER CHAT WORKS)
@@ -287,7 +269,9 @@ function sendMessage() {
 
     createMessage(messageData, true);
 
-    push(ref(db, "messages"), messageData);
+    if (db) {
+    db.ref("messages").push(messageData);
+    }
 
     messageInput.value = "";
 }
@@ -341,13 +325,13 @@ function handleReaction(data) {
 
 function react(id, emoji) {
 
-    channel.postMessage({
-        type: "reaction",
-        room: currentRoom,
-        id,
-        emoji,
-        user: myUserId
-    });
+   // channel.postMessage({
+       // type: "reaction",
+       // room: currentRoom,
+        //id,
+       // emoji,
+       // user: myUserId
+    //});
 
     handleReaction({
         room: currentRoom,
@@ -406,10 +390,10 @@ function sendTyping() {
 
     isTyping = true;
 
-    channel.postMessage({
-        type: "typing",
-        user: `${username}#${userId}`
-    });
+    //channel.postMessage({
+        //type: "typing",
+       // user: `${username}#${userId}`
+   // });
 
     clearTimeout(typingTimeout);
 
@@ -421,17 +405,26 @@ function sendTyping() {
 /* =========================
    EVENTS
 ========================= */
+/* =========================
+   STARTUP
+========================= */
 
-window.addEventListener("DOMContentLoaded", () => {
+initDOM();
 
-    if (messageInput) {
-        messageInput.addEventListener("keypress", e => {
-            if (e.key === "Enter") sendMessage();
-        });
+renderRooms();
+switchRoom("general");
 
-        messageInput.addEventListener("input", sendTyping);
-    }
-});
+const saved = localStorage.getItem("theme") || "light";
+setMode(saved);
+
+if (messageInput) {
+
+    messageInput.addEventListener("keypress", e => {
+        if (e.key === "Enter") sendMessage();
+    });
+
+    messageInput.addEventListener("input", sendTyping);
+}
 
 /* =========================
    GLOBAL EXPORTS (IMPORTANT)
