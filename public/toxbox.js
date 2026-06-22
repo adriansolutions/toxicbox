@@ -345,14 +345,15 @@ function handleReaction(data) {
 }
 
 function react(id, emoji) {
-
-   // channel.postMessage({
-       // type: "reaction",
-       // room: currentRoom,
-        //id,
-       // emoji,
-       // user: myUserId
-    //});
+if (typeof channel !== "undefined") {
+    channel.postMessage({
+        type: "reaction",
+        room: currentRoom,
+        id,
+        emoji,
+        user: myUserId
+    });
+}
 
     handleReaction({
         room: currentRoom,
@@ -410,12 +411,12 @@ function sendTyping() {
     if (isTyping) return;
 
     isTyping = true;
-
-    //channel.postMessage({
-        //type: "typing",
-       // user: `${username}#${userId}`
-   // });
-
+if (typeof channel !== "undefined") {
+    channel.postMessage({
+        type: "typing",
+        user: `${username}#${userId}`
+    });
+}
     clearTimeout(typingTimeout);
 
     typingTimeout = setTimeout(() => {
