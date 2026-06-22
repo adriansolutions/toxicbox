@@ -1,39 +1,20 @@
-const firebaseConfig = {
-  apiKey: "AIzaSyAICZc6Q2bbwsv_UtUjRoWiQYtoxp3WB7U",
-  authDomain: "toxicbox-f25b6.firebaseapp.com",
-  projectId: "toxicbox-f25b6",
-  storageBucket: "toxicbox-f25b6.firebasestorage.app",
-  messagingSenderId: "818643014600",
-  appId: "1:818643014600:web:b0b5748dd129c0b3ebe6fd",
-  measurementId: "G-DY5Q68N3F3"
-};
-
-window.onerror = function(msg, src, line, col, err) {
-
-    const box = document.createElement("div");
-
-    box.style.position = "fixed";
-    box.style.top = "0";
-    box.style.left = "0";
-    box.style.width = "100%";
-    box.style.background = "red";
-    box.style.color = "white";
-    box.style.zIndex = "999999";
-    box.style.padding = "10px";
-    box.style.fontSize = "12px";
-    box.style.wordBreak = "break-word";
-
-    box.innerText =
-        "ERROR:\n" +
-        msg +
-        "\nLINE: " + line;
-
-    document.body.appendChild(box);
-};
-
 /* =========================================
    TOXIC BOX - FIXED WORKING VERSION
 ========================================= */
+
+/* =========================
+   FIREBASE CONFIG (MUST BE TOP)
+========================= */
+
+const firebaseConfig = {
+    apiKey: "AIzaSyAICZc6Q2bbwsv_UtUjRoWiQYtoxp3WB7U",
+    authDomain: "toxicbox-f25b6.firebaseapp.com",
+    projectId: "toxicbox-f25b6",
+    storageBucket: "toxicbox-f25b6.firebasestorage.app",
+    messagingSenderId: "818643014600",
+    appId: "1:818643014600:web:b0b5748dd129c0b3ebe6fd",
+    measurementId: "G-DY5Q68N3F3"
+};
 
 /* =========================
    FIREBASE SAFE INIT
@@ -429,4 +410,4 @@ function setReply(user) {
     if (messageInput) {
         messageInput.placeholder = "Replying to " + user;
     }
-}
+      }
