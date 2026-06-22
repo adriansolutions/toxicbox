@@ -8,33 +8,59 @@ const firebaseConfig = {
   measurementId: "G-DY5Q68N3F3"
 };
 
-let db = null;
+window.onerror = function(msg, src, line, col, err) {
+
+    const box = document.createElement("div");
+
+    box.style.position = "fixed";
+    box.style.top = "0";
+    box.style.left = "0";
+    box.style.width = "100%";
+    box.style.background = "red";
+    box.style.color = "white";
+    box.style.zIndex = "999999";
+    box.style.padding = "10px";
+    box.style.fontSize = "12px";
+    box.style.wordBreak = "break-word";
+
+    box.innerText =
+        "ERROR:\n" +
+        msg +
+        "\nLINE: " + line;
+
+    document.body.appendChild(box);
+};
+
+/* =========================================
+   TOXIC BOX - FIXED WORKING VERSION
+========================================= */
 
 /* =========================
-   FIREBASE INIT (SAFE)
+   FIREBASE SAFE INIT
 ========================= */
-function initFirebase() {
-    try {
-        if (!firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
-        }
-        db = firebase.database();
-    } catch (e) {
-        console.error("Firebase failed:", e);
-        db = null;
-    }
+
+let db = null;
+
+try {
+    firebase.initializeApp(firebaseConfig);
+    db = firebase.database();
+} catch (e) {
+    console.error("Firebase failed:", e);
+    db = null;
 }
 
 /* =========================
    STATE
 ========================= */
+
 let username = "";
 let userId = "";
 let userFlag = "🌍";
 
-let replyTo = null;
 let isTyping = false;
 let typingTimeout;
+
+let replyTo = null;
 
 let reactions = {};
 
@@ -52,6 +78,8 @@ let messages = {
     random: []
 };
 
+const typingUsers = new Set();
+
 let myUserId =
     localStorage.getItem("toxbox-id") ||
     crypto.randomUUID();
@@ -59,6 +87,7 @@ let myUserId =
 /* =========================
    DOM
 ========================= */
+
 let chatContainer;
 let messageInput;
 let userTag;
@@ -72,13 +101,14 @@ function initDOM() {
 }
 
 /* =========================
-   START CHAT
+   START CHAT (FIXED)
 ========================= */
+
 window.startChat = function () {
 
     const input = document.getElementById("usernameInput");
 
-    if (!input || !input.value.trim()) {
+    if (!input || input.value.trim() === "") {
         alert("Please enter a username");
         return;
     }
@@ -99,16 +129,21 @@ window.startChat = function () {
         JSON.stringify({ username, id: userId })
     );
 
+    const loginScreen = document.getElementById("loginScreen");
+
     if (userTag) {
         userTag.innerText = `${username}#${userId} ${userFlag}`;
     }
 
-    document.getElementById("loginScreen").style.display = "none";
+    if (loginScreen) {
+        loginScreen.style.display = "none";
+    }
 };
 
 /* =========================
    UTIL
 ========================= */
+
 function generateId() {
     return Math.floor(1000 + Math.random() * 9000);
 }
@@ -119,6 +154,13 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
+function formatTime(t) {
+    return new Date(t).toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit"
+    });
+}
+
 function isInappropriate(text) {
     const bad = ["fuck", "shit", "bitch", "asshole"];
     return bad.some(w => text.toLowerCase().includes(w));
@@ -127,13 +169,16 @@ function isInappropriate(text) {
 /* =========================
    ROOMS
 ========================= */
+
 function renderRooms() {
+
     const sidebar = document.getElementById("sidebar");
     if (!sidebar) return;
 
     sidebar.innerHTML = "";
 
     Object.keys(rooms).forEach(room => {
+
         const div = document.createElement("div");
         div.className = "room" + (room === currentRoom ? " active" : "");
 
@@ -145,11 +190,13 @@ function renderRooms() {
         `;
 
         div.onclick = () => switchRoom(room);
+
         sidebar.appendChild(div);
     });
 }
 
 function switchRoom(room) {
+
     currentRoom = room;
 
     if (!chatContainer) return;
@@ -165,22 +212,43 @@ function switchRoom(room) {
 
     messages[room].forEach(msg => {
         createMessage(msg, false);
+        renderReactions(msg.id, room);
     });
 
     renderRooms();
 }
 
 /* =========================
-   CREATE MESSAGE
+   MESSAGE
 ========================= */
+
 function createMessage(data, own = false) {
 
+    if (!chatContainer) return;
+
     const div = document.createElement("div");
+
     div.className = own ? "message own" : "message";
+    div.dataset.id = data.id;
 
     div.innerHTML = `
         <div class="name">${data.user}</div>
+
+        ${data.replyTo ? `
+        <div style="font-size:12px;opacity:0.6;border-left:2px solid #888;padding-left:8px;margin-bottom:6px;">
+            Replying to ${data.replyTo}
+        </div>` : ""}
+
         <div class="text">${escapeHtml(data.text)}</div>
+
+        <div class="actions">
+            <button onclick="react('${data.id}','👍')">👍</button>
+            <button onclick="react('${data.id}','❤️')">❤️</button>
+            <button onclick="react('${data.id}','😂')">😂</button>
+            <button onclick="setReply('${data.user}')">Reply</button>
+        </div>
+
+        <div class="reactions" id="r-${data.id}"></div>
     `;
 
     chatContainer.appendChild(div);
@@ -188,8 +256,9 @@ function createMessage(data, own = false) {
 }
 
 /* =========================
-   SEND MESSAGE
+   SEND MESSAGE (FIXED FIREBASE)
 ========================= */
+
 function sendMessage() {
 
     const text = messageInput?.value.trim();
@@ -210,6 +279,9 @@ function sendMessage() {
     };
 
     replyTo = null;
+    if (messageInput) messageInput.placeholder = "Type your message...";
+
+    if (!messages[currentRoom]) messages[currentRoom] = [];
 
     messages[currentRoom].push(messageData);
 
@@ -219,92 +291,136 @@ function sendMessage() {
         db.ref("messages").push(messageData);
     }
 
-    messageInput.value = "";
+    if (messageInput) messageInput.value = "";
 }
 
 /* =========================
    FIREBASE LISTENER (FIXED)
 ========================= */
-function startFirebaseListener() {
-    if (!db) return;
 
-    db.ref("messages").on("child_added", snap => {
+window.addEventListener("DOMContentLoaded", () => {
 
-        const data = snap.val();
-        if (!data) return;
+    initDOM();
 
-        if (!messages[data.room]) {
-            messages[data.room] = [];
-        }
+    renderRooms();
+    switchRoom("general");
 
-        // 🔥 prevent duplicates
-        const exists = messages[data.room].some(m => m.id === data.id);
-        if (!exists) {
+    const savedTheme = localStorage.getItem("theme") || "light";
+    setMode(savedTheme);
+
+    if (messageInput) {
+
+        messageInput.addEventListener("keypress", e => {
+            if (e.key === "Enter") sendMessage();
+        });
+
+        messageInput.addEventListener("input", sendTyping);
+    }
+
+    if (db) {
+        db.ref("messages").on("child_added", snap => {
+
+            const data = snap.val();
+            if (!data) return;
+
+            if (!messages[data.room]) {
+                messages[data.room] = [];
+            }
+
             messages[data.room].push(data);
-        }
 
-        const myTag = `${username}#${userId} ${userFlag}`;
+            if (data.room === currentRoom) {
+                createMessage(data, false);
+            }
 
-        // 🔥 prevent self duplicate render
-        if (data.room === currentRoom && data.user !== myTag) {
-            createMessage(data, false);
-        }
-
-        // 🔥 safe counter fix
-        if (data.user !== myTag) {
             rooms[data.room].count++;
-        }
+            renderRooms();
+        });
+    }
+});
 
-        renderRooms();
+/* =========================
+   REACTIONS
+========================= */
+
+function handleReaction(data) {
+
+    if (!reactions[data.room]) reactions[data.room] = {};
+    if (!reactions[data.room][data.id]) reactions[data.room][data.id] = {};
+    if (!reactions[data.room][data.id][data.emoji]) {
+        reactions[data.room][data.id][data.emoji] = [];
+    }
+
+    const arr = reactions[data.room][data.id][data.emoji];
+
+    const i = arr.indexOf(data.user);
+
+    if (i !== -1) arr.splice(i, 1);
+    else arr.push(data.user);
+
+    renderReactions(data.id, data.room);
+}
+
+function react(id, emoji) {
+    handleReaction({
+        room: currentRoom,
+        id,
+        emoji,
+        user: myUserId
     });
+}
+
+function renderReactions(id, room) {
+
+    const box = document.getElementById("r-" + id);
+    if (!box) return;
+
+    const data = reactions[room]?.[id];
+    if (!data) return;
+
+    let html = "";
+
+    for (let e in data) {
+        if (data[e].length > 0) {
+            html += `${e} ${data[e].length} `;
+        }
+    }
+
+    box.innerHTML = html;
+}
+
+/* =========================
+   TYPING
+========================= */
+
+function sendTyping() {
+    if (isTyping) return;
+
+    isTyping = true;
+
+    clearTimeout(typingTimeout);
+
+    typingTimeout = setTimeout(() => {
+        isTyping = false;
+    }, 1000);
 }
 
 /* =========================
    THEME
 ========================= */
+
 function setMode(mode) {
     document.body.classList.toggle("light-mode", mode === "light");
     localStorage.setItem("theme", mode);
 }
 
 /* =========================
-   SIDEBAR
-========================= */
-window.toggleSidebar = function () {
-    const sidebar = document.getElementById("sidebar");
-    if (!sidebar) return;
-    sidebar.classList.toggle("active");
-};
-
-/* =========================
-   INIT (IMPORTANT ORDER FIX)
-========================= */
-window.addEventListener("DOMContentLoaded", () => {
-
-    initFirebase();
-    initDOM();
-
-    renderRooms();
-    switchRoom("general");
-
-    setMode(localStorage.getItem("theme") || "light");
-
-    if (messageInput) {
-        messageInput.addEventListener("keypress", e => {
-            if (e.key === "Enter") sendMessage();
-        });
-    }
-
-    setTimeout(() => {
-        startFirebaseListener();
-    }, 300);
-});
-
-/* =========================
    GLOBAL EXPORTS
 ========================= */
+
 window.startChat = startChat;
 window.sendMessage = sendMessage;
+window.react = react;
 window.setMode = setMode;
 window.setReply = setReply;
 
