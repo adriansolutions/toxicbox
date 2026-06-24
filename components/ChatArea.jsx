@@ -11,9 +11,11 @@ export default function ChatArea({
   userId,
 }) {
 
-  const [messages, setMessages] = useState([]);
+  const [messages, setMessages] =
+    useState([]);
 
-  const [message, setMessage] = useState("");
+  const [message, setMessage] =
+    useState("");
 
   const [replyingTo, setReplyingTo] =
     useState(null);
@@ -27,10 +29,18 @@ export default function ChatArea({
       "receive-message",
       (data) => {
 
-        setMessages((prev) => [
-          ...prev,
-          data,
-        ]);
+        setMessages((prev) => {
+
+          // prevent duplicate message
+          const exists = prev.some(
+            (msg) => msg.id === data.id
+          );
+
+          if (exists) return prev;
+
+          return [...prev, data];
+
+        });
 
       }
     );
@@ -38,25 +48,54 @@ export default function ChatArea({
     // RECEIVE REACTION
     socket.on(
       "reaction-updated",
-      ({ messageId, emoji }) => {
+      ({
+        messageId,
+        emoji,
+        userId: reactedUserId,
+      }) => {
 
         setMessages((prev) =>
           prev.map((msg) => {
 
-            if (msg.id === messageId) {
+            if (msg.id !== messageId)
+              return msg;
 
-              return {
-                ...msg,
-                reactions: {
-                  ...msg.reactions,
-                  [emoji]:
-                    (msg.reactions?.[emoji] || 0) + 1
-                }
-              };
+            // users who reacted
+            const reactedUsers =
+              msg.reactedUsers || {};
 
+            const emojiUsers =
+              reactedUsers[emoji] || [];
+
+            // already reacted
+            if (
+              emojiUsers.includes(
+                reactedUserId
+              )
+            ) {
+              return msg;
             }
 
-            return msg;
+            return {
+              ...msg,
+
+              reactions: {
+                ...msg.reactions,
+                [emoji]:
+                  (msg.reactions?.[
+                    emoji
+                  ] || 0) + 1,
+              },
+
+              reactedUsers: {
+                ...reactedUsers,
+
+                [emoji]: [
+                  ...emojiUsers,
+                  reactedUserId,
+                ],
+              },
+            };
 
           })
         );
@@ -65,8 +104,13 @@ export default function ChatArea({
     );
 
     return () => {
+
       socket.off("receive-message");
-      socket.off("reaction-updated");
+
+      socket.off(
+        "reaction-updated"
+      );
+
     };
 
   }, []);
@@ -95,21 +139,27 @@ export default function ChatArea({
 
       text: message,
 
-      time: new Date().toLocaleTimeString(
-        [],
-        {
-          hour: "2-digit",
-          minute: "2-digit",
-        }
-      ),
+      time:
+        new Date().toLocaleTimeString(
+          [],
+          {
+            hour: "2-digit",
+            minute: "2-digit",
+          }
+        ),
 
       reactions: {},
+
+      reactedUsers: {},
 
       replyTo: replyingTo,
 
     };
 
-    socket.emit("send-message", data);
+    socket.emit(
+      "send-message",
+      data
+    );
 
     setMessage("");
 
@@ -119,11 +169,11 @@ export default function ChatArea({
 
   return (
 
-    <div className="flex-1 flex flex-col bg-[#f5f7fb] dark:bg-[#313338]">
+    <div className="chat-wrapper flex-1 flex flex-col overflow-hidden">
 
       {/* MESSAGES */}
 
-      <div className="chat-messages">
+      <div className="chat-messages flex-1 overflow-y-auto">
 
         {messages.map((msg) => (
 
@@ -133,7 +183,8 @@ export default function ChatArea({
             messages={messages}
             setMessages={setMessages}
             setReplyingTo={
-              setReplyingTo}
+              setReplyingTo
+            }
             userId={userId}
           />
 
@@ -147,12 +198,14 @@ export default function ChatArea({
 
       {replyingTo && (
 
-        <div className="mx-4 mb-2 px-5 py-3 rounded-2xl bg-blue-100 dark:bg-[#383a40] flex justify-between items-center shadow-sm">
+        <div className="mx-4 mb-2 px-5 py-3 rounded-2xl bg-blue-100 dark:bg-[#383a40] flex justify-between items-center shadow-sm text-black dark:text-white">
 
           <span className="text-sm">
             Replying to{" "}
             <strong>
-              {replyingTo.username}
+              {
+                replyingTo.username
+              }
             </strong>
           </span>
 
@@ -172,27 +225,35 @@ export default function ChatArea({
       {/* INPUT */}
 
       <div className="chat-input-area">
-        <div className="chat-input flex items-center gap-3 bg-gray-100 dark:bg-[#383a40] rounded-2xl px-4 py-3">
+
+        <div className="chat-input flex items-center gap-3">
 
           <input
             type="text"
             placeholder="Message..."
-            className="flex-1 bg-transparent outline-none"
+            className="flex-1 bg-transparent outline-none text-black dark:text-white"
             value={message}
             onChange={(e) =>
-              setMessage(e.target.value)
+              setMessage(
+                e.target.value
+              )
             }
             onKeyDown={(e) => {
 
-              if (e.key === "Enter") {
+              if (
+                e.key === "Enter"
+              ) {
                 sendMessage();
               }
 
               if (
-                e.key === "Backspace" &&
+                e.key ===
+                  "Backspace" &&
                 message === ""
               ) {
-                setReplyingTo(null);
+                setReplyingTo(
+                  null
+                );
               }
 
             }}
@@ -201,7 +262,7 @@ export default function ChatArea({
           <button
             onClick={sendMessage}
             className="send-btn"
-            >
+          >
             Send
           </button>
 
