@@ -125,10 +125,8 @@ export default function Home() {
   // MAIN APP
   return (
 
-    <div className="h-screen w-screen overflow-hidden bg-gradient-to-br from-[#dbeafe] via-[#eef4ff] to-[#ffffff] dark:from-[#1e1f22] dark:via-[#232428] dark:to-[#313338] p-2 md:p-4">
-
-      <div className="h-full w-full rounded-[35px] overflow-hidden border border-white/20 shadow-2xl backdrop-blur-2xl flex bg-white/60 dark:bg-[#1e1f22]/80">
-
+    <div className="app-shell">
+      <div className="app-container">
         {/* SIDEBAR */}
 
         <Sidebar
@@ -144,7 +142,7 @@ export default function Home() {
 
         {/* CHAT */}
 
-        <div className="flex-1 flex flex-col min-w-0">
+        <div className="chat-wrapper">
 
           <Header
             username={username}
