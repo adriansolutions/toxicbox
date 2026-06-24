@@ -5,130 +5,92 @@ import { useState } from "react";
 import {
   FiMenu,
   FiSettings,
-  FiHash,
+  FiX,
 } from "react-icons/fi";
 
 import SettingsModal from "./SettingsModal";
 
 export default function Sidebar(props) {
 
-  const [openSettings,
-    setOpenSettings] =
+  const [openSettings, setOpenSettings] =
     useState(false);
 
-  const [openMenu,
-    setOpenMenu] =
+  const [mobileOpen, setMobileOpen] =
     useState(false);
 
   return (
-
     <>
+      {/* MOBILE MENU BUTTON */}
 
-      {/* MOBILE OVERLAY */}
-
-      {openMenu && (
-
-        <div
-          onClick={() =>
-            setOpenMenu(false)
-          }
-          className="fixed inset-0 bg-black/50 z-40 md:hidden"
-        />
-
-      )}
+      <button
+        onClick={() =>
+          setMobileOpen(!mobileOpen)
+        }
+        className="fixed top-4 left-4 z-[9999] w-[48px] h-[48px] rounded-2xl bg-black/70 text-white flex items-center justify-center md:hidden backdrop-blur-xl"
+      >
+        {mobileOpen ? (
+          <FiX size={24} />
+        ) : (
+          <FiMenu size={24} />
+        )}
+      </button>
 
       {/* SIDEBAR */}
 
-      <div className={`
-
-        sidebar-glass
-
-        fixed md:relative z-50
-
-        h-full
-
-        transition-all duration-300
-
-        ${openMenu
-          ? "left-0"
-          : "-left-full md:left-0"}
-
-        w-[85px] md:w-[280px]
-
-        flex flex-col
-        justify-between
-
-        p-4
-
-      `}>
-
-        {/* TOP */}
+      <div
+        className={`
+          sidebar-glass
+          fixed md:relative
+          top-0 left-0
+          z-[9998]
+          h-screen
+          transition-all duration-300
+          ${mobileOpen
+            ? "translate-x-0"
+            : "-translate-x-full md:translate-x-0"}
+        `}
+      >
 
         <div>
 
-          {/* MENU */}
+          {/* TOP */}
 
-          <button
-            onClick={() =>
-              setOpenMenu(
-                !openMenu
-              )
-            }
-            className="w-12 h-12 rounded-2xl bg-white dark:bg-[#313338] flex items-center justify-center shadow-lg"
-          >
+          <div className="flex items-center gap-3 mt-20 md:mt-0">
 
-            <FiMenu size={24} />
+            <div className="logo-circle">
+              B
+            </div>
 
-          </button>
+            <div className="channel-name text-xl font-bold">
+              BlueChat
+            </div>
+
+          </div>
 
           {/* CHANNELS */}
 
-          <div className="mt-8 space-y-3">
+          <div className="channels">
 
-            {/* GENERAL */}
+            <button className="channel active">
 
-            <button className="w-full flex items-center gap-4 rounded-2xl bg-blue-600 text-white p-3 shadow-lg">
-
-              <div className="w-12 h-12 rounded-full bg-white text-blue-600 flex items-center justify-center font-black text-lg">
-
+              <div className="channel-icon">
                 G
-
               </div>
 
-              <div className="hidden md:block text-left">
-
-                <div className="font-bold">
-                  General
-                </div>
-
-                <div className="text-xs opacity-70">
-                  Main channel
-                </div>
-
+              <div className="channel-name">
+                General
               </div>
 
             </button>
 
-            {/* RANDOM */}
+            <button className="channel">
 
-            <button className="w-full flex items-center gap-4 rounded-2xl hover:bg-white/50 dark:hover:bg-[#313338] p-3 transition">
-
-              <div className="w-12 h-12 rounded-full bg-blue-600 text-white flex items-center justify-center font-black text-lg">
-
+              <div className="channel-icon">
                 R
-
               </div>
 
-              <div className="hidden md:block text-left">
-
-                <div className="font-bold">
-                  Random
-                </div>
-
-                <div className="text-xs opacity-60">
-                  Fun chat
-                </div>
-
+              <div className="channel-name">
+                Random
               </div>
 
             </button>
@@ -143,30 +105,36 @@ export default function Sidebar(props) {
           onClick={() =>
             setOpenSettings(true)
           }
-          className="w-12 h-12 rounded-2xl bg-white dark:bg-[#313338] flex items-center justify-center shadow-lg"
+          className="sidebar-btn"
         >
-
-          <FiSettings size={22} />
-
+          <FiSettings size={24} />
         </button>
 
       </div>
 
+      {/* DARK BACKGROUND */}
+
+      {mobileOpen && (
+        <div
+          onClick={() =>
+            setMobileOpen(false)
+          }
+          className="fixed inset-0 bg-black/50 z-[9997] md:hidden"
+        />
+      )}
+
       {/* SETTINGS MODAL */}
 
       {openSettings && (
-
         <SettingsModal
           {...props}
           close={() =>
             setOpenSettings(false)
           }
         />
-
       )}
 
     </>
-
   );
 
 }
