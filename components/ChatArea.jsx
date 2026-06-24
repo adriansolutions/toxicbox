@@ -11,16 +11,14 @@ export default function ChatArea({
   userId,
 }) {
 
-  const [messages, setMessages] =
-    useState([]);
+  const [messages, setMessages] = useState([]);
 
-  const [message, setMessage] =
-    useState("");
+  const [message, setMessage] = useState("");
 
   const [replyingTo, setReplyingTo] =
     useState(null);
 
-  const bottomRef = useRef(null);
+  const bottomRef = useRef();
 
   // RECEIVE MESSAGE
   useEffect(() => {
@@ -37,6 +35,7 @@ export default function ChatArea({
       }
     );
 
+    // RECEIVE REACTION
     socket.on(
       "reaction-updated",
       ({ messageId, emoji }) => {
@@ -44,27 +43,15 @@ export default function ChatArea({
         setMessages((prev) =>
           prev.map((msg) => {
 
-            if (
-              msg.id === messageId
-            ) {
+            if (msg.id === messageId) {
 
               return {
-
                 ...msg,
-
                 reactions: {
-
                   ...msg.reactions,
-
                   [emoji]:
-                    (
-                      msg.reactions?.[
-                        emoji
-                      ] || 0
-                    ) + 1,
-
-                },
-
+                    (msg.reactions?.[emoji] || 0) + 1
+                }
               };
 
             }
@@ -78,15 +65,8 @@ export default function ChatArea({
     );
 
     return () => {
-
-      socket.off(
-        "receive-message"
-      );
-
-      socket.off(
-        "reaction-updated"
-      );
-
+      socket.off("receive-message");
+      socket.off("reaction-updated");
     };
 
   }, []);
@@ -100,11 +80,10 @@ export default function ChatArea({
 
   }, [messages]);
 
-  // SEND
+  // SEND MESSAGE
   const sendMessage = () => {
 
-    if (!message.trim())
-      return;
+    if (!message.trim()) return;
 
     const data = {
 
@@ -116,14 +95,13 @@ export default function ChatArea({
 
       text: message,
 
-      time:
-        new Date().toLocaleTimeString(
-          [],
-          {
-            hour: "2-digit",
-            minute: "2-digit",
-          }
-        ),
+      time: new Date().toLocaleTimeString(
+        [],
+        {
+          hour: "2-digit",
+          minute: "2-digit",
+        }
+      ),
 
       reactions: {},
 
@@ -131,10 +109,7 @@ export default function ChatArea({
 
     };
 
-    socket.emit(
-      "send-message",
-      data
-    );
+    socket.emit("send-message", data);
 
     setMessage("");
 
@@ -144,7 +119,7 @@ export default function ChatArea({
 
   return (
 
-    <div className="chat-wrapper">
+    <div className="flex-1 flex flex-col bg-[#f5f7fb] dark:bg-[#313338]">
 
       {/* MESSAGES */}
 
@@ -156,18 +131,15 @@ export default function ChatArea({
             key={msg.id}
             msg={msg}
             messages={messages}
-            setMessages={
-              setMessages
-            }
+            setMessages={setMessages}
             setReplyingTo={
-              setReplyingTo
-            }
-            currentUserId={userId}
+              setReplyingTo}
+            userId={userId}
           />
 
         ))}
 
-        <div ref={bottomRef} />
+        <div ref={bottomRef}></div>
 
       </div>
 
@@ -175,25 +147,20 @@ export default function ChatArea({
 
       {replyingTo && (
 
-        <div className="px-4 py-3 border-t border-white/10 bg-black/10 backdrop-blur-xl flex items-center justify-between">
+        <div className="mx-4 mb-2 px-5 py-3 rounded-2xl bg-blue-100 dark:bg-[#383a40] flex justify-between items-center shadow-sm">
 
-          <div className="text-sm truncate">
-
+          <span className="text-sm">
             Replying to{" "}
-
             <strong>
-              {
-                replyingTo.username
-              }
+              {replyingTo.username}
             </strong>
-
-          </div>
+          </span>
 
           <button
             onClick={() =>
               setReplyingTo(null)
             }
-            className="action-btn"
+            className="text-lg"
           >
             ✕
           </button>
@@ -205,38 +172,27 @@ export default function ChatArea({
       {/* INPUT */}
 
       <div className="chat-input-area">
-
-        <div className="chat-input">
+        <div className="chat-input flex items-center gap-3 bg-gray-100 dark:bg-[#383a40] rounded-2xl px-4 py-3">
 
           <input
             type="text"
             placeholder="Message..."
+            className="flex-1 bg-transparent outline-none"
             value={message}
             onChange={(e) =>
-              setMessage(
-                e.target.value
-              )
+              setMessage(e.target.value)
             }
             onKeyDown={(e) => {
 
-              if (
-                e.key === "Enter"
-              ) {
-
+              if (e.key === "Enter") {
                 sendMessage();
-
               }
 
               if (
-                e.key ===
-                  "Backspace" &&
+                e.key === "Backspace" &&
                 message === ""
               ) {
-
-                setReplyingTo(
-                  null
-                );
-
+                setReplyingTo(null);
               }
 
             }}
@@ -245,7 +201,7 @@ export default function ChatArea({
           <button
             onClick={sendMessage}
             className="send-btn"
-          >
+            >
             Send
           </button>
 
@@ -256,4 +212,5 @@ export default function ChatArea({
     </div>
 
   );
+
 }
