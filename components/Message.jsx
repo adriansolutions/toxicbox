@@ -7,6 +7,7 @@ export default function Message({
   messages,
   setMessages,
   setReplyingTo,
+  userId,
 }) {
 
   // REALTIME REACTION
