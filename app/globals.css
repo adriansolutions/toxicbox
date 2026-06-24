@@ -61,7 +61,7 @@ body{
 
     width:100%;
 
-    min-height:100dvh;
+    min-height:100vh;
 
     overflow:hidden;
 
@@ -101,7 +101,7 @@ APP
 
     width:100vw;
 
-    min-height:100dvh;
+    min-height:100vh;
 
     padding:12px;
 
@@ -112,7 +112,7 @@ APP
 .app-container{
 
     width:100%;
-    min-height:100dvh
+    min-height:100vh
 
     display:flex;
 
