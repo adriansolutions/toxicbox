@@ -263,8 +263,11 @@ HEADER
 ======================================== */
 
 .chat-header{
+  
+    flex-shrink:0;
 
     width:100%;
+    z-index:20;
 
     min-height:82px;
 
@@ -369,6 +372,8 @@ CHAT
     display:flex;
 
     flex-direction:column;
+    
+    scroll-behavior:smooth;
 
     gap:16px;
 
@@ -561,6 +566,8 @@ INPUT
 ======================================== */
 
 .chat-input-area{
+  
+    flex-shrink:0;
 
     padding:16px;
 
@@ -923,6 +930,9 @@ MOBILE
         white-space:nowrap;
 
     }
-
+    
+    .chat-wrapper{
+      height: 100%;
+    }
 
 }
