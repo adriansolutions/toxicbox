@@ -173,7 +173,7 @@ export default function ChatArea({
 
       <div className="p-4 border-t dark:border-gray-700 bg-white dark:bg-[#2b2d31]">
 
-        <div className="flex items-center gap-3 bg-gray-100 dark:bg-[#383a40] rounded-2xl px-4 py-3">
+        <div className="chat-input flex items-center gap-3 bg-gray-100 dark:bg-[#383a40] rounded-2xl px-4 py-3">
 
           <input
             type="text"
