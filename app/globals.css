@@ -829,14 +829,6 @@ MOBILE
 
     }
 
-    .chat-header{
-
-        min-height:72px;
-
-        padding:12px;
-
-    }
-
     .logo-circle{
 
         width:42px;
@@ -851,14 +843,6 @@ MOBILE
     .logo-title{
 
         font-size:18px;
-
-    }
-
-    .user-tag{
-
-        padding:10px 12px;
-
-        font-size:12px;
 
     }
 
@@ -909,5 +893,34 @@ MOBILE
         font-size:14px;
 
     }
+
+    .sidebar-glass{
+
+        width:260px !important;
+
+    }
+
+    .chat-header{
+
+        padding-top:
+            max(
+                16px,
+                env(safe-area-inset-top)
+            );
+
+    }
+
+    .user-tag{
+
+        max-width:120px;
+
+        overflow:hidden;
+
+        text-overflow:ellipsis;
+
+        white-space:nowrap;
+
+    }
+
 
 }
