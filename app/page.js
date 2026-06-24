@@ -81,16 +81,14 @@ export default function Home() {
 
             <div className="w-28 h-28 rounded-[32px] bg-blue-600 flex items-center justify-center mx-auto text-white text-5xl font-black shadow-2xl shadow-blue-500/30 mb-6">
 
-              B
-
             </div>
 
             <h1 className="text-5xl font-black text-blue-600">
-              BlueChat
+              toxicbox
             </h1>
 
             <p className="mt-3 opacity-70">
-              Modern realtime messaging
+              Prototype Version
             </p>
 
           </div>
