@@ -21,7 +21,7 @@ export default function Header({
         <div>
 
           <div className="logo-title">
-            BlueChat
+            toxicbox
           </div>
 
           <div className="text-xs opacity-60">
