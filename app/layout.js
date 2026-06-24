@@ -1,6 +1,8 @@
+import "./globals.css";
+
 export const metadata = {
-  title: "Toxic Box",
-  description: "Toxic Box Chat"
+  title: "BlueChat",
+  description: "Live Chat App",
 };
 
 export default function RootLayout({ children }) {
