@@ -44,23 +44,29 @@ export default function Message({
 
   return (
 
-    <div className="chat-bubble bg-white dark:bg-[#1e1f22] p-4 rounded-2xl shadow-sm hover:shadow-md max-w-[85%]">
+  <div
+    className={`message-row ${
+      msg.userId === userId
+        ? "own"
+        : "other"
+    }`}
+  >
 
-      {/* REPLY */}
+    <div className="chat-bubble">
 
       {msg.replyTo && (
 
-        <div className="mb-3 p-3 rounded-xl bg-gray-100 dark:bg-[#383a40] border-l-4 border-blue-500">
+        <div className="mb-3 p-3 rounded-2xl bg-black/10">
 
-          <div className="text-xs text-gray-500 mb-1">
+          <div className="text-xs opacity-70">
             Replying to
           </div>
 
-          <div className="font-semibold text-sm">
+          <div className="font-bold text-sm">
             {msg.replyTo.username}
           </div>
 
-          <div className="text-sm opacity-80 truncate">
+          <div className="text-sm opacity-80">
             {msg.replyTo.text}
           </div>
 
@@ -68,57 +74,56 @@ export default function Message({
 
       )}
 
-      {/* TOP */}
+      <div className="message-top">
 
-      <div className="flex items-center gap-2 flex-wrap mb-2">
-
-        <div className="font-semibold text-[15px] text-blue-600">
-          {msg.username}
+        <div className="avatar">
+          {msg.username.charAt(0)}
         </div>
 
-        <div className="text-xs text-gray-400">
-          {msg.userId}
+        <div>
+
+          <div className="message-name">
+            {msg.username}
+          </div>
+
+          <div className="message-id">
+            {msg.userId}
+          </div>
+
         </div>
 
-        <div className="text-xs text-gray-500">
+        <div className="message-time ml-auto">
           {msg.time}
         </div>
 
       </div>
 
-      {/* MESSAGE */}
-
-      <div className="text-[15px] break-words leading-relaxed">
+      <div className="message-text">
         {msg.text}
       </div>
 
-      {/* BUTTONS */}
-
-      <div className="flex gap-2 mt-4 flex-wrap">
-
-        {/* REPLY */}
+      <div className="message-actions">
 
         <button
           onClick={() =>
             setReplyingTo(msg)
           }
-          className="reaction-btn px-3 py-1 rounded-full bg-gray-100 dark:bg-[#383a40] text-sm"
+          className="action-btn"
         >
           Reply
         </button>
 
-        {/* REACTIONS */}
-
-        {["👍", "🔥", "😂", "❤️"].map((emoji) => (
+        {["👍","🔥","😂","❤️"].map((emoji) => (
 
           <button
             key={emoji}
             onClick={() =>
               react(emoji)
             }
-            className="px-3 py-1 rounded-full bg-gray-100 dark:bg-[#383a40] hover:scale-110 transition text-sm"
+            className="action-btn"
           >
-            {emoji} {msg.reactions?.[emoji] || 0}
+            {emoji}{" "}
+            {msg.reactions?.[emoji] || 0}
           </button>
 
         ))}
@@ -127,6 +132,8 @@ export default function Message({
 
     </div>
 
-  );
+  </div>
+
+);
 
 }
