@@ -102,7 +102,7 @@ export default function Message({
           onClick={() =>
             setReplyingTo(msg)
           }
-          className="px-3 py-1 rounded-full bg-gray-100 dark:bg-[#383a40] hover:scale-105 transition text-sm"
+          className="reaction-btn px-3 py-1 rounded-full bg-gray-100 dark:bg-[#383a40] text-sm"
         >
           Reply
         </button>
