@@ -67,35 +67,63 @@ export default function ChatArea({
             const emojiUsers =
               reactedUsers[emoji] || [];
 
-            // already reacted
-            if (
-              emojiUsers.includes(
-                reactedUserId
-              )
-            ) {
-              return msg;
-            }
+            const alreadyReacted =
+  emojiUsers.includes(
+    reactedUserId
+  );
 
-            return {
-              ...msg,
+// UNREACT
+if (alreadyReacted) {
 
-              reactions: {
-                ...msg.reactions,
-                [emoji]:
-                  (msg.reactions?.[
-                    emoji
-                  ] || 0) + 1,
-              },
+  return {
+    ...msg,
 
-              reactedUsers: {
-                ...reactedUsers,
+    reactions: {
+      ...msg.reactions,
 
-                [emoji]: [
-                  ...emojiUsers,
-                  reactedUserId,
-                ],
-              },
-            };
+      [emoji]: Math.max(
+        (msg.reactions?.[
+          emoji
+        ] || 1) - 1,
+        0
+      ),
+    },
+
+    reactedUsers: {
+      ...reactedUsers,
+
+      [emoji]:
+        emojiUsers.filter(
+          (id) =>
+            id !== reactedUserId
+        ),
+    },
+  };
+
+}
+
+// REACT
+return {
+  ...msg,
+
+  reactions: {
+    ...msg.reactions,
+
+    [emoji]:
+      (msg.reactions?.[
+        emoji
+      ] || 0) + 1,
+  },
+
+  reactedUsers: {
+    ...reactedUsers,
+
+    [emoji]: [
+      ...emojiUsers,
+      reactedUserId,
+    ],
+  },
+};
 
           })
         );
