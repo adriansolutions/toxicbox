@@ -12,121 +12,147 @@ import SettingsModal from "./SettingsModal";
 
 export default function Sidebar(props) {
 
-  const [openSettings, setOpenSettings] =
+  const [openSettings,
+    setOpenSettings] =
     useState(false);
 
-  const channels = [
-    {
-      name: "General",
-      letter: "G",
-      active: true,
-    },
-    {
-      name: "Random",
-      letter: "R",
-      active: false,
-    },
-    {
-      name: "Gaming",
-      letter: "M",
-      active: false,
-    },
-  ];
+  const [openMenu,
+    setOpenMenu] =
+    useState(false);
 
   return (
 
     <>
 
-      <div className="sidebar-glass w-[280px] border-r border-white/10 flex flex-col justify-between p-4 max-md:w-[90px]">
+      {/* MOBILE OVERLAY */}
+
+      {openMenu && (
+
+        <div
+          onClick={() =>
+            setOpenMenu(false)
+          }
+          className="fixed inset-0 bg-black/50 z-40 md:hidden"
+        />
+
+      )}
+
+      {/* SIDEBAR */}
+
+      <div className={`
+
+        sidebar-glass
+
+        fixed md:relative z-50
+
+        h-full
+
+        transition-all duration-300
+
+        ${openMenu
+          ? "left-0"
+          : "-left-full md:left-0"}
+
+        w-[85px] md:w-[280px]
+
+        flex flex-col
+        justify-between
+
+        p-4
+
+      `}>
+
+        {/* TOP */}
 
         <div>
 
-          <div className="flex items-center gap-3 mb-8">
+          {/* MENU */}
 
-            <div className="w-12 h-12 rounded-2xl bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/30">
+          <button
+            onClick={() =>
+              setOpenMenu(
+                !openMenu
+              )
+            }
+            className="w-12 h-12 rounded-2xl bg-white dark:bg-[#313338] flex items-center justify-center shadow-lg"
+          >
 
-              <FiMenu
-                size={24}
-                className="text-white"
-              />
+            <FiMenu size={24} />
 
-            </div>
+          </button>
 
-            <div className="max-md:hidden">
+          {/* CHANNELS */}
 
-              <div className="font-black text-xl">
-                BlueChat
+          <div className="mt-8 space-y-3">
+
+            {/* GENERAL */}
+
+            <button className="w-full flex items-center gap-4 rounded-2xl bg-blue-600 text-white p-3 shadow-lg">
+
+              <div className="w-12 h-12 rounded-full bg-white text-blue-600 flex items-center justify-center font-black text-lg">
+
+                G
+
               </div>
 
-              <div className="text-xs opacity-60">
-                Channels
-              </div>
+              <div className="hidden md:block text-left">
 
-            </div>
-
-          </div>
-
-          <div className="space-y-3">
-
-            {channels.map((channel) => (
-
-              <div
-                key={channel.name}
-                className={`group p-3 rounded-2xl flex items-center gap-3 cursor-pointer transition-all duration-200
-                ${
-                  channel.active
-                    ? "bg-blue-600 text-white shadow-lg shadow-blue-500/20"
-                    : "hover:bg-white/20 dark:hover:bg-white/5"
-                }`}
-              >
-
-                <div className={`w-11 h-11 rounded-full flex items-center justify-center font-bold
-                ${
-                  channel.active
-                    ? "bg-white text-blue-600"
-                    : "bg-blue-600 text-white"
-                }`}>
-
-                  {channel.letter}
-
+                <div className="font-bold">
+                  General
                 </div>
 
-                <div className="max-md:hidden flex-1">
-
-                  <div className="font-semibold">
-                    {channel.name}
-                  </div>
-
-                  <div className="text-xs opacity-70 flex items-center gap-1">
-
-                    <FiHash size={12} />
-
-                    chat room
-
-                  </div>
-
+                <div className="text-xs opacity-70">
+                  Main channel
                 </div>
 
               </div>
 
-            ))}
+            </button>
+
+            {/* RANDOM */}
+
+            <button className="w-full flex items-center gap-4 rounded-2xl hover:bg-white/50 dark:hover:bg-[#313338] p-3 transition">
+
+              <div className="w-12 h-12 rounded-full bg-blue-600 text-white flex items-center justify-center font-black text-lg">
+
+                R
+
+              </div>
+
+              <div className="hidden md:block text-left">
+
+                <div className="font-bold">
+                  Random
+                </div>
+
+                <div className="text-xs opacity-60">
+                  Fun chat
+                </div>
+
+              </div>
+
+            </button>
 
           </div>
 
         </div>
 
+        {/* SETTINGS */}
+
         <button
           onClick={() =>
             setOpenSettings(true)
           }
-          className="w-14 h-14 rounded-2xl bg-white/20 dark:bg-white/5 hover:scale-105 transition flex items-center justify-center"
+          className="w-12 h-12 rounded-2xl bg-white dark:bg-[#313338] flex items-center justify-center shadow-lg"
         >
 
-          <FiSettings size={26} />
+          <FiSettings size={22} />
 
         </button>
 
       </div>
+
+      {/* SETTINGS MODAL */}
 
       {openSettings && (
 
