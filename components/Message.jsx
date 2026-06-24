@@ -11,86 +11,18 @@ export default function Message({
 }) {
 
   // REALTIME REACTION
-const react = (emoji) => {
+  const react = (emoji) => {
 
-  const updated = messages.map((m) => {
+    socket.emit(
+      "add-reaction",
+      {
+        messageId: msg.id,
+        emoji,
+        userId,
+      }
+    );
 
-    if (m.id !== msg.id) {
-      return m;
-    }
-
-    const reactedUsers =
-      m.reactedUsers || {};
-
-    const emojiUsers =
-      reactedUsers[emoji] || [];
-
-    const alreadyReacted =
-      emojiUsers.includes(userId);
-
-    // UNREACT
-    if (alreadyReacted) {
-
-      return {
-        ...m,
-
-        reactions: {
-          ...m.reactions,
-
-          [emoji]: Math.max(
-            (m.reactions?.[emoji] || 1) - 1,
-            0
-          ),
-        },
-
-        reactedUsers: {
-          ...reactedUsers,
-
-          [emoji]:
-            emojiUsers.filter(
-              (id) => id !== userId
-            ),
-        },
-      };
-
-    }
-
-    // REACT
-    return {
-      ...m,
-
-      reactions: {
-        ...m.reactions,
-
-        [emoji]:
-          (m.reactions?.[emoji] || 0) + 1,
-      },
-
-      reactedUsers: {
-        ...reactedUsers,
-
-        [emoji]: [
-          ...emojiUsers,
-          userId,
-        ],
-      },
-    };
-
-  });
-
-  setMessages(updated);
-
-  // realtime socket
-  socket.emit(
-    "add-reaction",
-    {
-      messageId: msg.id,
-      emoji,
-      userId,
-    }
-  );
-
-};
+  };
 
   return (
 
