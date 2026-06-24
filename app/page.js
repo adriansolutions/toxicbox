@@ -14,10 +14,6 @@ export default function Home() {
   const [themeColor, setThemeColor] = useState("#2563eb");
 
   useEffect(() => {
-    fetch("/lib/socket");
-  }, []);
-
-  useEffect(() => {
     document.documentElement.style.setProperty(
       "--theme-color",
       themeColor
@@ -91,4 +87,4 @@ export default function Home() {
       </div>
     </div>
   );
-            }
+    }
