@@ -14,7 +14,7 @@ export default function Home() {
   const [themeColor, setThemeColor] = useState("#2563eb");
 
   useEffect(() => {
-    fetch("/api/socket");
+    fetch("/lib/socket");
   }, []);
 
   useEffect(() => {
