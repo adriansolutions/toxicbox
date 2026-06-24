@@ -133,8 +133,8 @@ export default function ChatArea({
             messages={messages}
             setMessages={setMessages}
             setReplyingTo={
-              setReplyingTo
-            }
+              setReplyingTo}
+            userId={userId}
           />
 
         ))}
