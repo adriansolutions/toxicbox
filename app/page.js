@@ -5,7 +5,8 @@ import { useEffect, useState } from "react";
 import Header from "../components/Header";
 import Sidebar from "../components/Sidebar";
 import ChatArea from "../components/ChatArea";
-
+import Message from "../components/Message";
+import SettingsModal from "../components/SettingsModal";
 export default function Home() {
 
   const [username, setUsername] =
