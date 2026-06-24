@@ -1,3 +1,125 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+
+import socket from "../lib/socket";
+
+import Message from "./Message";
+
+export default function ChatArea({
+  username,
+  userId,
+}) {
+
+  const [messages, setMessages] =
+    useState([]);
+
+  const [message, setMessage] =
+    useState("");
+
+  const [replyingTo, setReplyingTo] =
+    useState(null);
+
+  const bottomRef = useRef();
+
+  // RECEIVE MESSAGE
+  useEffect(() => {
+
+    socket.on(
+      "receive-message",
+      (data) => {
+
+        setMessages((prev) => {
+
+          // prevent duplicate message
+          const exists = prev.some(
+            (msg) => msg.id === data.id
+          );
+
+          if (exists) return prev;
+
+          return [...prev, data];
+
+        });
+
+      }
+    );
+
+    // RECEIVE REACTION
+    socket.on(
+      "reaction-updated",
+      ({
+        messageId,
+        emoji,
+        userId: reactedUserId,
+      }) => {
+
+        setMessages((prev) =>
+          prev.map((msg) => {
+
+            if (msg.id !== messageId)
+              return msg;
+
+            // users who reacted
+            const reactedUsers =
+              msg.reactedUsers || {};
+
+            const emojiUsers =
+              reactedUsers[emoji] || [];
+
+            const alreadyReacted =
+  emojiUsers.includes(
+    reactedUserId
+  );
+
+// UNREACT
+if (alreadyReacted) {
+
+  return {
+    ...msg,
+
+    reactions: {
+      ...msg.reactions,
+
+      [emoji]: Math.max(
+        (msg.reactions?.[
+          emoji
+        ] || 1) - 1,
+        0
+      ),
+    },
+
+    reactedUsers: {
+      ...reactedUsers,
+
+      [emoji]:
+        emojiUsers.filter(
+          (id) =>
+            id !== reactedUserId
+        ),
+    },
+  };
+
+}
+
+// REACT
+return {
+  ...msg,
+
+  reactions: {
+    ...msg.reactions,
+
+    [emoji]:
+      (msg.reactions?.[
+        emoji
+      ] || 0) + 1,
+  },
+
+  reactedUsers: {
+    ...reactedUsers,
+
+    [emoji]: [
+      ...emojiUsers,
       reactedUserId,
     ],
   },
