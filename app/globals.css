@@ -409,6 +409,26 @@ MESSAGE
 
 }
 
+.message-row.own .action-btn{
+
+    background:
+        rgba(255,255,255,0.28);
+
+    color:#ffffff;
+
+    border:
+        1px solid rgba(255,255,255,0.25);
+
+}
+
+.message-row.own .action-btn span{
+
+    color:white !important;
+
+    opacity:1 !important;
+
+}
+
 .chat-bubble{
 
     max-width:75%;
@@ -544,20 +564,23 @@ REACTIONS
 
     border-radius:999px;
 
-    background:var(--card2);
+    background:
+        rgba(0,0,0,0.05);
 
-    color:inherit;
+    color:var(--text);
 
     cursor:pointer;
 
     font-size:13px;
-    font-weight:600;
+    font-weight:700;
 
     display:flex;
     align-items:center;
     justify-content:center;
 
     gap:6px;
+
+    backdrop-filter:blur(10px);
 
 }
 
