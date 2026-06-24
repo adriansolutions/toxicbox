@@ -15,7 +15,7 @@ export default function Sidebar(props) {
 
   return (
     <>
-      <div className="w-[260px] bg-white dark:bg-gray-800 border-r flex flex-col justify-between p-4 max-md:w-[80px]">
+      <div className="sidebar-glass w-[260px] bg-white dark:bg-gray-800 border-r flex flex-col justify-between p-4 max-md:w-[80px]">
         <div>
           <FiMenu size={28} />
 
