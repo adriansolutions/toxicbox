@@ -44,7 +44,7 @@ export default function Message({
 
   return (
 
-    <div className="bg-white dark:bg-[#1e1f22] p-4 rounded-2xl shadow-sm hover:shadow-md transition max-w-[85%]">
+    <div className="chat-bubble bg-white dark:bg-[#1e1f22] p-4 rounded-2xl shadow-sm hover:shadow-md max-w-[85%]">
 
       {/* REPLY */}
 
