@@ -2,7 +2,7 @@
 
 import socket from "../lib/socket";
 
-export default function Message(
+export default function Message({
   msg,
   messages,
   setMessages,
