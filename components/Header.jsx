@@ -3,7 +3,7 @@ export default function Header({
   userId,
 }) {
   return (
-    <div className="h-[70px] bg-white dark:bg-gray-800 border-b flex items-center justify-between px-6">
+    <div className="chat-header h-[70px] bg-white dark:bg-gray-800 border-b flex items-center justify-between px-6">
       <h1 className="text-2xl font-bold">
         BlueChat
       </h1>
