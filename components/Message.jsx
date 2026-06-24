@@ -11,71 +11,86 @@ export default function Message({
 }) {
 
   // REALTIME REACTION
-  const react = (emoji) => {
+const react = (emoji) => {
 
-    // prevent multiple same reactions
+  const updated = messages.map((m) => {
+
+    if (m.id !== msg.id) {
+      return m;
+    }
+
     const reactedUsers =
-      msg.reactedUsers || {};
+      m.reactedUsers || {};
 
     const emojiUsers =
       reactedUsers[emoji] || [];
 
-    // already reacted
-    if (
-      emojiUsers.includes(userId)
-    ) {
-      return;
+    const alreadyReacted =
+      emojiUsers.includes(userId);
+
+    // UNREACT
+    if (alreadyReacted) {
+
+      return {
+        ...m,
+
+        reactions: {
+          ...m.reactions,
+
+          [emoji]: Math.max(
+            (m.reactions?.[emoji] || 1) - 1,
+            0
+          ),
+        },
+
+        reactedUsers: {
+          ...reactedUsers,
+
+          [emoji]:
+            emojiUsers.filter(
+              (id) => id !== userId
+            ),
+        },
+      };
+
     }
 
-    // update local instantly
-    const updated = messages.map((m) => {
+    // REACT
+    return {
+      ...m,
 
-      if (m.id === msg.id) {
+      reactions: {
+        ...m.reactions,
 
-        return {
-          ...m,
+        [emoji]:
+          (m.reactions?.[emoji] || 0) + 1,
+      },
 
-          reactions: {
-            ...m.reactions,
+      reactedUsers: {
+        ...reactedUsers,
 
-            [emoji]:
-              (m.reactions?.[
-                emoji
-              ] || 0) + 1,
-          },
+        [emoji]: [
+          ...emojiUsers,
+          userId,
+        ],
+      },
+    };
 
-          reactedUsers: {
-            ...m.reactedUsers,
+  });
 
-            [emoji]: [
-              ...(m.reactedUsers?.[
-                emoji
-              ] || []),
+  setMessages(updated);
 
-              userId,
-            ],
-          },
-        };
+  // realtime socket
+  socket.emit(
+    "add-reaction",
+    {
+      messageId: msg.id,
+      emoji,
+      userId,
+    }
+  );
 
-      }
-
-      return m;
-
-    });
-
-    setMessages(updated);
-
-    // send realtime update
-    socket.emit(
-      "add-reaction",
-      {
-        messageId: msg.id,
-        emoji,
-        userId,
-      }
-    );
-
-  };
+};
 
   return (
 
