@@ -594,6 +594,11 @@ REACTIONS
 /* ========================================
 INPUT
 ======================================== */
+textarea{
+    border:none;
+    resize:none;
+    overflow-y:auto;
+}
 
 .chat-input-area {
     
