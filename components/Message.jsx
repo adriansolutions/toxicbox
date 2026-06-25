@@ -99,6 +99,15 @@ export default function Message({
 </div>
 )}
 
+{msg.text?.match(/\.(gif|webp)$/i) && (
+
+  <img
+    src={msg.text}
+    className="rounded-2xl mt-2 max-w-full"
+  />
+
+)}
+
 {msg.image && (
 
 <img
