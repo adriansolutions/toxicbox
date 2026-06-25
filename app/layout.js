@@ -3,10 +3,16 @@ import "./globals.css";
 export const metadata = {
   title: "BlueChat",
   description: "Live Chat App",
-  <meta
-  name="mobile-web-app-capable"
-  content="yes"
-/>
+
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "BlueChat",
+  },
+
+  other: {
+    "mobile-web-app-capable": "yes",
+  },
 };
 
 export default function RootLayout({ children }) {
