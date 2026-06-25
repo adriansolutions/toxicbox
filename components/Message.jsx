@@ -91,41 +91,43 @@ export default function Message({
 
         </div>
 
-        {/* MESSAGE */}
 
-<div className="message-text">{msg.text && (
-<div className="break-words">
-{msg.text}
-</div>
-)}
+{/* MESSAGE */}
 
-{msg.text?.match(/\.(gif|webp)$/i) && (
+<div className="message-text">
 
-  <img
-    src={msg.text}
-    className="rounded-2xl mt-2 max-w-full"
-  />
+  {/* TEXT */}
 
-)}
+  {msg.text && !msg.image && (
 
-{msg.image && (
+    <div className="break-words whitespace-pre-wrap">
 
-<img
-  src={msg.image}
-  alt="upload"
-  className="
-    mt-3
-    rounded-2xl
-    w-full
-    max-w-[320px]
-    max-h-[420px]
-    object-cover
-    border
-    border-white/10
-  "
-/>
+      {msg.text}
 
-)}
+    </div>
+
+  )}
+
+  {/* IMAGE / GIF */}
+
+  {msg.image && (
+
+    <img
+      src={msg.image}
+      alt="upload"
+      className="
+        mt-3
+        rounded-2xl
+        w-full
+        max-w-[320px]
+        max-h-[420px]
+        object-cover
+        border
+        border-white/10
+      "
+    />
+
+  )}
 
 </div>
 
