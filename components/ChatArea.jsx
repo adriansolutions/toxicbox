@@ -401,7 +401,7 @@ return (
 
       <input
         type="file"
-        accept="image/*"
+        accept="image/*,image/gif"
         hidden
         id="imageUpload"
         onChange={
@@ -419,50 +419,113 @@ return (
       {/* INPUT */}
 
       <textarea
-        type="text"
-        placeholder="Message..."
-        className="flex-1 bg-transparent outline-none text-black dark:text-white"
-        value={message}
-        onChange={(e) => {
+  placeholder="Message..."
+  rows={1}
+  className="
+    flex-1
+    bg-transparent
+    outline-none
+    text-black
+    dark:text-white
+    resize-none
+    max-h-[120px]
+  "
+  value={message}
+  onChange={(e) => {
 
-          setMessage(
-            e.target.value
-          );
+    setMessage(e.target.value);
 
-          socket.emit(
-            "typing",
-            username
-          );
+    socket.emit(
+      "typing",
+      username
+    );
 
-        }}
-        onKeyDown={(
-          e
-        ) => {
+  }}
 
-          if (
-            e.key ===
-            "Enter"
-          ) {
+  onPaste={(e) => {
 
-            sendMessage();
+    const items =
+      e.clipboardData.items;
 
-          }
+    for (let item of items) {
 
-          if (
-            e.key ===
-              "Backspace" &&
-            message ===
-              ""
-          ) {
+      // IMAGE / GIF FROM KEYBOARD
+      if (
+        item.type.includes("image")
+      ) {
 
-            setReplyingTo(
-              null
+        const file =
+          item.getAsFile();
+
+        const reader =
+          new FileReader();
+
+        reader.onload =
+          () => {
+
+            const data = {
+
+              id: Date.now(),
+
+              username,
+
+              userId,
+
+              image:
+                reader.result,
+
+              text: "",
+
+              time:
+                new Date().toLocaleTimeString(),
+
+              reactions: {},
+
+              reactedUsers: {},
+
+            };
+
+            socket.emit(
+              "send-message",
+              data
             );
 
-          }
+          };
 
-        }}
-      />
+        reader.readAsDataURL(
+          file
+        );
+
+      }
+
+    }
+
+  }}
+
+  onKeyDown={(e) => {
+
+    if (
+      e.key === "Enter" &&
+      !e.shiftKey
+    ) {
+
+      e.preventDefault();
+
+      sendMessage();
+
+    }
+
+    if (
+      e.key === "Backspace" &&
+      message === ""
+    ) {
+
+      setReplyingTo(null);
+
+    }
+
+  }}
+/>
 
       {/* SEND */}
 
