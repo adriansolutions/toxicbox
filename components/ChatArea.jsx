@@ -282,8 +282,8 @@ reader.onload =
 
       userId,
 
-      image:
-        reader.result,
+      text: "",
+image: reader.result,
 
       time:
         new Date().toLocaleTimeString(),
