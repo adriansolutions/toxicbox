@@ -418,7 +418,7 @@ return (
 
       {/* INPUT */}
 
-      <input
+      <textarea
         type="text"
         placeholder="Message..."
         className="flex-1 bg-transparent outline-none text-black dark:text-white"
