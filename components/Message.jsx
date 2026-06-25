@@ -8,6 +8,7 @@ export default function Message({
   setMessages,
   setReplyingTo,
   userId,
+  setPreviewImage,
 }) {
 
   // REALTIME REACTION
@@ -91,45 +92,90 @@ export default function Message({
 
         </div>
 
+        {/* MESSAGE */}
 
-{/* MESSAGE */}
+        <div className="message-text">
 
-<div className="message-text">
+          {/* TEXT */}
 
-  {/* TEXT */}
+          {msg.text && (
 
-  {msg.text && !msg.image && (
+            <div className="break-words whitespace-pre-wrap">
 
-    <div className="break-words whitespace-pre-wrap">
+              {msg.text}
 
-      {msg.text}
+            </div>
 
-    </div>
+          )}
 
-  )}
+          {/* SINGLE IMAGE */}
 
-  {/* IMAGE / GIF */}
+          {msg.image && (
 
-  {msg.image && (
+            <img
+              src={msg.image}
+              alt="upload"
+              onClick={() =>
+                setPreviewImage?.(
+                  msg.image
+                )
+              }
+              className="
+                mt-3
+                rounded-2xl
+                w-full
+                max-w-[320px]
+                max-h-[420px]
+                object-cover
+                border
+                border-white/10
+                cursor-pointer
+              "
+            />
 
-    <img
-      src={msg.image}
-      alt="upload"
-      className="
-        mt-3
-        rounded-2xl
-        w-full
-        max-w-[320px]
-        max-h-[420px]
-        object-cover
-        border
-        border-white/10
-      "
-    />
+          )}
 
-  )}
+          {/* MULTIPLE IMAGES */}
 
-</div>
+          {msg.images &&
+            msg.images.length > 0 && (
+
+            <div className="mt-3 grid grid-cols-2 gap-2">
+
+              {msg.images.map(
+                (
+                  img,
+                  index
+                ) => (
+
+                  <img
+                    key={index}
+                    src={img}
+                    alt="upload"
+                    onClick={() =>
+                      setPreviewImage?.(
+                        img
+                      )
+                    }
+                    className="
+                      w-full
+                      h-[150px]
+                      object-cover
+                      rounded-2xl
+                      border
+                      border-white/10
+                      cursor-pointer
+                    "
+                  />
+
+                )
+              )}
+
+            </div>
+
+          )}
+
+        </div>
 
         {/* ACTIONS */}
 
