@@ -93,9 +93,32 @@ export default function Message({
 
         {/* MESSAGE */}
 
-        <div className="message-text">
-          {msg.text}
-        </div>
+<div className="message-text">{msg.text && (
+<div className="break-words">
+{msg.text}
+</div>
+)}
+
+{msg.image && (
+
+<img
+  src={msg.image}
+  alt="upload"
+  className="
+    mt-3
+    rounded-2xl
+    w-full
+    max-w-[320px]
+    max-h-[420px]
+    object-cover
+    border
+    border-white/10
+  "
+/>
+
+)}
+
+</div>
 
         {/* ACTIONS */}
 
