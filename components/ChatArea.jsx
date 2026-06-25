@@ -1,278 +1,230 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 
 import socket from "../lib/socket";
 
 import Message from "./Message";
 
 export default function ChatArea({
-username,
-userId,
+  username,
+  userId,
 }) {
 
-const [messages, setMessages] =
-useState([]);
+  const [messages, setMessages] =
+    useState([]);
 
-const [message, setMessage] =
-useState("");
+  const [message, setMessage] =
+    useState("");
 
-const [replyingTo, setReplyingTo] =
-useState(null);
+  const [replyingTo, setReplyingTo] =
+    useState(null);
 
-const [typing, setTyping] =
-useState("");
+  const [typing, setTyping] =
+    useState("");
 
-const bottomRef = useRef();
+  // NEW
+  const [selectedImages, setSelectedImages] =
+    useState([]);
 
-// RECEIVE EVENTS
-useEffect(() => {
+  const [previewImage, setPreviewImage] =
+    useState("");
 
-// MESSAGE
-socket.on(
-  "receive-message",
-  (data) => {
+  const bottomRef = useRef();
 
-    setMessages((prev) => {
+  // RECEIVE EVENTS
+  useEffect(() => {
 
-      const exists =
-        prev.some(
-          (msg) =>
-            msg.id === data.id
-        );
+    socket.on(
+      "receive-message",
+      (data) => {
 
-      if (exists) return prev;
+        setMessages((prev) => {
 
-      return [
-        ...prev,
-        data,
-      ];
+          const exists =
+            prev.some(
+              (msg) =>
+                msg.id === data.id
+            );
 
-    });
+          if (exists) return prev;
 
-  }
-);
+          return [
+            ...prev,
+            data,
+          ];
 
-// REACTION
-socket.on(
-  "reaction-updated",
-  ({
-    messageId,
-    emoji,
-    userId:
-      reactedUserId,
-  }) => {
+        });
 
-    setMessages((prev) =>
-      prev.map((msg) => {
+      }
+    );
 
-        if (
-          msg.id !==
-          messageId
-        ) {
-          return msg;
-        }
+    // REACTION
+    socket.on(
+      "reaction-updated",
+      ({
+        messageId,
+        emoji,
+        userId:
+          reactedUserId,
+      }) => {
 
-        const reactedUsers =
-          msg.reactedUsers ||
-          {};
+        setMessages((prev) =>
+          prev.map((msg) => {
 
-        const emojiUsers =
-          reactedUsers[
-            emoji
-          ] || [];
+            if (
+              msg.id !==
+              messageId
+            ) {
+              return msg;
+            }
 
-        const alreadyReacted =
-          emojiUsers.includes(
-            reactedUserId
-          );
+            const reactedUsers =
+              msg.reactedUsers ||
+              {};
 
-        // UNREACT
-        if (
-          alreadyReacted
-        ) {
+            const emojiUsers =
+              reactedUsers[
+                emoji
+              ] || [];
 
-          return {
-            ...msg,
+            const alreadyReacted =
+              emojiUsers.includes(
+                reactedUserId
+              );
 
-            reactions: {
-              ...msg.reactions,
+            // UNREACT
+            if (
+              alreadyReacted
+            ) {
 
-              [emoji]:
-                Math.max(
+              return {
+                ...msg,
+
+                reactions: {
+                  ...msg.reactions,
+
+                  [emoji]:
+                    Math.max(
+                      (
+                        msg
+                          .reactions?.[
+                          emoji
+                        ] || 1
+                      ) - 1,
+                      0
+                    ),
+                },
+
+                reactedUsers:
+                  {
+                    ...reactedUsers,
+
+                    [emoji]:
+                      emojiUsers.filter(
+                        (
+                          id
+                        ) =>
+                          id !==
+                          reactedUserId
+                      ),
+                  },
+              };
+
+            }
+
+            // REACT
+            return {
+              ...msg,
+
+              reactions: {
+                ...msg.reactions,
+
+                [emoji]:
                   (
                     msg
                       .reactions?.[
                       emoji
-                    ] || 1
-                  ) - 1,
-                  0
-                ),
-            },
+                    ] || 0
+                  ) + 1,
+              },
 
-            reactedUsers:
-              {
+              reactedUsers: {
                 ...reactedUsers,
 
-                [emoji]:
-                  emojiUsers.filter(
-                    (
-                      id
-                    ) =>
-                      id !==
-                      reactedUserId
-                  ),
+                [emoji]: [
+                  ...emojiUsers,
+                  reactedUserId,
+                ],
               },
-          };
+            };
 
-        }
+          })
+        );
 
-        // REACT
-        return {
-          ...msg,
-
-          reactions: {
-            ...msg.reactions,
-
-            [emoji]:
-              (
-                msg
-                  .reactions?.[
-                  emoji
-                ] || 0
-              ) + 1,
-          },
-
-          reactedUsers: {
-            ...reactedUsers,
-
-            [emoji]: [
-              ...emojiUsers,
-              reactedUserId,
-            ],
-          },
-        };
-
-      })
+      }
     );
 
-  }
-);
+    // TYPING
+    socket.on(
+      "typing",
+      (name) => {
 
-// TYPING
-socket.on(
-  "typing",
-  (name) => {
+        if (
+          name === username
+        )
+          return;
+
+        setTyping(name);
+
+        setTimeout(() => {
+
+          setTyping("");
+
+        }, 1500);
+
+      }
+    );
+
+    return () => {
+
+      socket.off(
+        "receive-message"
+      );
+
+      socket.off(
+        "reaction-updated"
+      );
+
+      socket.off(
+        "typing"
+      );
+
+    };
+
+  }, [username]);
+
+  // AUTO SCROLL
+  useEffect(() => {
+
+    bottomRef.current?.scrollIntoView({
+      behavior: "smooth",
+    });
+
+  }, [messages]);
+
+  // SEND MESSAGE
+  const sendMessage = () => {
 
     if (
-      name === username
+      !message.trim() &&
+      selectedImages.length === 0
     )
       return;
-
-    setTyping(name);
-
-    setTimeout(() => {
-
-      setTyping("");
-
-    }, 1500);
-
-  }
-);
-
-// CLEANUP
-return () => {
-
-  socket.off(
-    "receive-message"
-  );
-
-  socket.off(
-    "reaction-updated"
-  );
-
-  socket.off(
-    "typing"
-  );
-
-};
-
-}, [username]);
-
-// AUTO SCROLL
-useEffect(() => {
-
-bottomRef.current?.scrollIntoView({
-  behavior: "smooth",
-});
-
-}, [messages]);
-
-// SEND MESSAGE
-const sendMessage = () => {
-
-if (!message.trim())
-  return;
-
-const data = {
-
-  id: Date.now(),
-
-  username,
-
-  userId,
-
-  text: message,
-
-  time:
-    new Date().toLocaleTimeString(
-      [],
-      {
-        hour:
-          "2-digit",
-
-        minute:
-          "2-digit",
-      }
-    ),
-
-  reactions: {},
-
-  reactedUsers: {},
-
-  replyTo:
-    replyingTo,
-
-};
-
-socket.emit(
-  "send-message",
-  data
-);
-
-setMessage("");
-
-setReplyingTo(
-  null
-);
-
-};
-
-// IMAGE UPLOAD
-const uploadImage = (
-e
-) => {
-
-const file =
-  e.target.files[0];
-
-if (!file) return;
-
-const reader =
-  new FileReader();
-
-reader.onload =
-  () => {
 
     const data = {
 
@@ -282,17 +234,28 @@ reader.onload =
 
       userId,
 
-      text: "",
-image: reader.result,
+      text: message,
+
+      images: selectedImages,
 
       time:
-        new Date().toLocaleTimeString(),
+        new Date().toLocaleTimeString(
+          [],
+          {
+            hour:
+              "2-digit",
 
-      reactions:
-        {},
+            minute:
+              "2-digit",
+          }
+        ),
 
-      reactedUsers:
-        {},
+      reactions: {},
+
+      reactedUsers: {},
+
+      replyTo:
+        replyingTo,
 
     };
 
@@ -301,249 +264,334 @@ image: reader.result,
       data
     );
 
+    setMessage("");
+
+    setSelectedImages([]);
+
+    setReplyingTo(null);
+
   };
 
-reader.readAsDataURL(
-  file
-);
+  // MULTIPLE IMAGE UPLOAD
+  const uploadImage = (
+    e
+  ) => {
 
-};
+    const files =
+      Array.from(
+        e.target.files
+      );
 
-return (
+    if (!files.length)
+      return;
 
-<div className="chat-wrapper flex-1 flex flex-col overflow-hidden">
+    files.forEach((file) => {
 
-  {/* MESSAGES */}
+      const reader =
+        new FileReader();
 
-  <div className="chat-messages flex-1 overflow-y-auto">
+      reader.onload =
+        () => {
 
-    {messages.map(
-      (msg) => (
+          setSelectedImages(
+            (prev) => [
+              ...prev,
+              reader.result,
+            ]
+          );
 
-        <Message
-          key={msg.id}
-          msg={msg}
-          messages={
-            messages
-          }
-          setMessages={
-            setMessages
-          }
-          setReplyingTo={
-            setReplyingTo
-          }
-          userId={
-            userId
-          }
-        />
+        };
 
-      )
-    )}
+      reader.readAsDataURL(
+        file
+      );
 
-    <div
-      ref={bottomRef}
-    ></div>
+    });
 
-  </div>
+  };
 
-  {/* TYPING */}
+  return (
 
-  {typing && (
+    <div className="chat-wrapper flex-1 flex flex-col overflow-hidden relative">
 
-    <div className="px-5 pb-2 text-sm opacity-70">
+      {/* IMAGE VIEWER */}
 
-      {typing} is typing...
+      {previewImage && (
 
-    </div>
+        <div className="fixed inset-0 z-[999] bg-black/90 flex items-center justify-center p-4">
 
-  )}
+          <button
+            onClick={() =>
+              setPreviewImage("")
+            }
+            className="absolute top-5 right-5 text-white text-3xl"
+          >
+            ✕
+          </button>
 
-  {/* REPLY BAR */}
+          <a
+            href={previewImage}
+            download
+            className="absolute top-5 left-5 bg-white text-black px-4 py-2 rounded-xl text-sm font-semibold"
+          >
+            Save
+          </a>
 
-  {replyingTo && (
+          <img
+            src={previewImage}
+            className="max-w-full max-h-full rounded-2xl"
+          />
 
-    <div className="mx-4 mb-2 px-5 py-3 rounded-2xl bg-blue-100 dark:bg-[#383a40] flex justify-between items-center shadow-sm text-black dark:text-white">
+        </div>
 
-      <span className="text-sm">
+      )}
 
-        Replying to{" "}
+      {/* MESSAGES */}
 
-        <strong>
-          {
-            replyingTo.username
-          }
-        </strong>
+      <div className="chat-messages flex-1 overflow-y-auto">
 
-      </span>
+        {messages.map(
+          (msg) => (
 
-      <button
-        onClick={() =>
-          setReplyingTo(
-            null
+            <Message
+              key={msg.id}
+              msg={msg}
+              messages={
+                messages
+              }
+              setMessages={
+                setMessages
+              }
+              setReplyingTo={
+                setReplyingTo
+              }
+              userId={
+                userId
+              }
+              setPreviewImage={
+                setPreviewImage
+              }
+            />
+
           )
-        }
-        className="text-lg"
-      >
-        ✕
-      </button>
+        )}
 
-    </div>
+        <div
+          ref={bottomRef}
+        ></div>
 
-  )}
+      </div>
 
-  {/* INPUT */}
+      {/* TYPING */}
 
-  <div className="chat-input-area">
+      {typing && (
 
-    <div className="chat-input flex items-center gap-3">
+        <div className="px-5 pb-2 text-sm opacity-70">
 
-      {/* IMAGE */}
+          {typing} is typing...
 
-      <input
-        type="file"
-        accept="image/*,image/gif"
-        hidden
-        id="imageUpload"
-        onChange={
-          uploadImage
-        }
-      />
+        </div>
 
-      <label
-        htmlFor="imageUpload"
-        className="action-btn cursor-pointer"
-      >
-        📷
-      </label>
+      )}
+
+      {/* REPLY BAR */}
+
+      {replyingTo && (
+
+        <div className="mx-4 mb-2 px-5 py-3 rounded-2xl bg-blue-100 dark:bg-[#383a40] flex justify-between items-center shadow-sm text-black dark:text-white">
+
+          <span className="text-sm">
+
+            Replying to{" "}
+
+            <strong>
+              {
+                replyingTo.username
+              }
+            </strong>
+
+          </span>
+
+          <button
+            onClick={() =>
+              setReplyingTo(
+                null
+              )
+            }
+            className="text-lg"
+          >
+            ✕
+          </button>
+
+        </div>
+
+      )}
+
+      {/* SELECTED IMAGES */}
+
+      {selectedImages.length >
+        0 && (
+
+        <div className="px-4 pb-2 flex gap-2 overflow-x-auto">
+
+          {selectedImages.map(
+            (
+              img,
+              index
+            ) => (
+
+              <div
+                key={index}
+                className="relative"
+              >
+
+                <img
+                  src={img}
+                  onClick={() =>
+                    setPreviewImage(
+                      img
+                    )
+                  }
+                  className="w-20 h-20 rounded-2xl object-cover border border-white/10 cursor-pointer"
+                />
+
+                <button
+                  onClick={() => {
+
+                    setSelectedImages(
+                      (
+                        prev
+                      ) =>
+                        prev.filter(
+                          (
+                            _,
+                            i
+                          ) =>
+                            i !==
+                            index
+                        )
+                    );
+
+                  }}
+                  className="absolute -top-2 -right-2 bg-red-500 text-white w-6 h-6 rounded-full text-xs"
+                >
+                  ✕
+                </button>
+
+              </div>
+
+            )
+          )}
+
+        </div>
+
+      )}
 
       {/* INPUT */}
 
-      <textarea
-  placeholder="Message..."
-  rows={1}
-  className="
-    flex-1
-    bg-transparent
-    outline-none
-    text-black
-    dark:text-white
-    resize-none
-    max-h-[120px]
-  "
-  value={message}
-  onChange={(e) => {
+      <div className="chat-input-area">
 
-    setMessage(e.target.value);
+        <div className="chat-input flex items-center gap-3">
 
-    socket.emit(
-      "typing",
-      username
-    );
+          {/* IMAGE */}
 
-  }}
+          <input
+            type="file"
+            accept="image/*,image/gif"
+            multiple
+            hidden
+            id="imageUpload"
+            onChange={
+              uploadImage
+            }
+          />
 
-  onPaste={(e) => {
+          <label
+            htmlFor="imageUpload"
+            className="action-btn cursor-pointer"
+          >
+            📷
+          </label>
 
-    const items =
-      e.clipboardData.items;
+          {/* INPUT */}
 
-    for (let item of items) {
+          <textarea
+            placeholder="Message..."
+            rows={1}
+            className="
+              flex-1
+              bg-transparent
+              outline-none
+              text-black
+              dark:text-white
+              resize-none
+              max-h-[120px]
+            "
+            value={message}
+            onChange={(
+              e
+            ) => {
 
-      // IMAGE / GIF FROM KEYBOARD
-      if (
-        item.type.includes("image")
-      ) {
+              setMessage(
+                e.target.value
+              );
 
-        const file =
-          item.getAsFile();
+              socket.emit(
+                "typing",
+                username
+              );
 
-        const reader =
-          new FileReader();
+            }}
 
-        reader.onload =
-          () => {
+            onKeyDown={(
+              e
+            ) => {
 
-            const data = {
+              if (
+                e.key ===
+                  "Enter" &&
+                !e.shiftKey
+              ) {
 
-              id: Date.now(),
+                e.preventDefault();
 
-              username,
+                sendMessage();
 
-              userId,
+              }
 
-              image:
-                reader.result,
+              if (
+                e.key ===
+                  "Backspace" &&
+                message ===
+                  ""
+              ) {
 
-              text: "",
+                setReplyingTo(
+                  null
+                );
 
-              time:
-                new Date().toLocaleTimeString(),
+              }
 
-              reactions: {},
+            }}
+          />
 
-              reactedUsers: {},
+          {/* SEND */}
 
-            };
+          <button
+            onClick={
+              sendMessage
+            }
+            className="send-btn"
+          >
+            Send
+          </button>
 
-            socket.emit(
-              "send-message",
-              data
-            );
+        </div>
 
-          };
-
-        reader.readAsDataURL(
-          file
-        );
-
-      }
-
-    }
-
-  }}
-
-  onKeyDown={(e) => {
-
-    if (
-      e.key === "Enter" &&
-      !e.shiftKey
-    ) {
-
-      e.preventDefault();
-
-      sendMessage();
-
-    }
-
-    if (
-      e.key === "Backspace" &&
-      message === ""
-    ) {
-
-      setReplyingTo(null);
-
-    }
-
-  }}
-/>
-
-      {/* SEND */}
-
-      <button
-        onClick={
-          sendMessage
-        }
-        className="send-btn"
-      >
-        Send
-      </button>
+      </div>
 
     </div>
 
-  </div>
-
-</div>
-
-);
+  );
 
 }
