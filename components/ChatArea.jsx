@@ -488,7 +488,6 @@ export default function ChatArea({
       )}
 
       {/* INPUT */}
-<div contenteditable="true" class="rich-input" placeholder="Type or paste your GIF here...">
 
       <div className="chat-input-area">
 
@@ -621,10 +620,9 @@ export default function ChatArea({
         </div>
 
       </div>
-      </div>
 
     </div>
 
   );
 
-      }
+}
