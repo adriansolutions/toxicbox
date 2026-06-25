@@ -441,6 +441,17 @@ MESSAGE
     animation: pop .18s ease;
     
 }
+.chat-bubble img{
+
+display:block;
+
+width:100%;
+
+height:auto;
+
+object-fit:cover;
+
+}
 
 .message-row.own .chat-bubble {
     
