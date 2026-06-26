@@ -11,184 +11,254 @@ import Register from "../components/Register";
 
 export default function Home() {
 
-  const [user, setUser] =
-    useState(null);
+const [user, setUser] =
+useState(null);
 
-  const [page, setPage] =
-    useState("login");
+const [page, setPage] =
+useState("login");
 
-  const [darkMode, setDarkMode] =
-    useState(false);
+const [darkMode, setDarkMode] =
+useState(false);
 
-  const [themeColor, setThemeColor] =
-    useState("#2563eb");
+const [themeColor, setThemeColor] =
+useState("#2563eb");
 
-  // LOAD SAVED USER
-  useEffect(() => {
+const [loaded, setLoaded] =
+useState(false);
 
-    const savedUser =
-      localStorage.getItem(
-        "bluechat-user"
-      );
+// LOAD USER + SETTINGS
+useEffect(() => {
 
-    if (savedUser) {
+const savedUser =
+  localStorage.getItem(
+    "bluechat-user"
+  );
 
-      setUser(
-        JSON.parse(savedUser)
-      );
+const savedDark =
+  localStorage.getItem(
+    "bluechat-darkmode"
+  );
 
-    }
+const savedTheme =
+  localStorage.getItem(
+    "bluechat-theme"
+  );
 
-  }, []);
+if (savedUser) {
 
-  // THEME
-  useEffect(() => {
+  setUser(
+    JSON.parse(savedUser)
+  );
 
-    document.documentElement.style.setProperty(
-      "--theme-color",
-      themeColor
-    );
+}
 
-    if (darkMode) {
+if (savedDark) {
 
-      document.body.classList.add(
-        "dark"
-      );
+  setDarkMode(
+    JSON.parse(savedDark)
+  );
 
-    } else {
+}
 
-      document.body.classList.remove(
-        "dark"
-      );
+if (savedTheme) {
 
-    }
+  setThemeColor(
+    savedTheme
+  );
 
-  }, [darkMode, themeColor]);
+}
 
-  // LOGIN / REGISTER
-  if (!user) {
+setLoaded(true);
 
-    if (page === "login") {
+}, []);
 
-      return (
+// SAVE THEME
+useEffect(() => {
 
-        <div className="min-h-screen overflow-x-hidden bg-gradient-to-br from-[#dbeafe] via-[#eef4ff] to-[#ffffff] dark:from-[#1e1f22] dark:via-[#232428] dark:to-[#313338]">
+localStorage.setItem(
+  "bluechat-darkmode",
+  JSON.stringify(darkMode)
+);
 
-          <Login
-            setUser={setUser}
-            openRegister={() =>
-              setPage(
-                "register"
-              )
-            }
-          />
+localStorage.setItem(
+  "bluechat-theme",
+  themeColor
+);
 
-        </div>
+document.documentElement.style.setProperty(
+  "--theme-color",
+  themeColor
+);
 
-      );
+if (darkMode) {
 
-    }
+  document.body.classList.add(
+    "dark"
+  );
 
-    return (
+} else {
 
-      <div className="min-h-screen overflow-x-hidden bg-gradient-to-br from-[#dbeafe] via-[#eef4ff] to-[#ffffff] dark:from-[#1e1f22] dark:via-[#232428] dark:to-[#313338]">
+  document.body.classList.remove(
+    "dark"
+  );
 
-        <Register
-          setUser={setUser}
-          openLogin={() =>
-            setPage(
-              "login"
-            )
-          }
-        />
+}
 
-      </div>
+}, [darkMode, themeColor]);
 
-    );
+// LOADING
+if (!loaded) {
 
-  }
+return null;
 
-  // LOGOUT
-  const logout = () => {
+}
 
-    localStorage.removeItem(
-      "bluechat-user"
-    );
+// LOGIN / REGISTER
+if (!user) {
 
-    localStorage.removeItem(
-      "bluechat-token"
-    );
+if (page === "login") {
 
-    setUser(null);
-
-  };
-
-  // MAIN APP
   return (
 
-    <main className="h-[100dvh] w-full overflow-hidden bg-gradient-to-br from-[#dbeafe] via-[#eef4ff] to-[#ffffff] dark:from-[#1e1f22] dark:via-[#232428] dark:to-[#313338] p-2 md:p-4">
+    <div className="min-h-screen overflow-hidden bg-gradient-to-br from-[#dbeafe] via-[#eef4ff] to-[#ffffff] dark:from-[#1e1f22] dark:via-[#232428] dark:to-[#313338]">
 
-      <div className="h-full w-full rounded-[28px] md:rounded-[35px] overflow-hidden border border-white/20 shadow-2xl backdrop-blur-2xl flex bg-white/60 dark:bg-[#1e1f22]/80">
+      <Login
+        setUser={setUser}
+        openRegister={() =>
+          setPage(
+            "register"
+          )
+        }
+      />
 
-        {/* SIDEBAR */}
+    </div>
 
-        <Sidebar
-          darkMode={darkMode}
-          setDarkMode={
-            setDarkMode
-          }
-          themeColor={
-            themeColor
-          }
-          setThemeColor={
-            setThemeColor
-          }
-          logout={logout}
+  );
+
+}
+
+return (
+
+  <div className="min-h-screen overflow-hidden bg-gradient-to-br from-[#dbeafe] via-[#eef4ff] to-[#ffffff] dark:from-[#1e1f22] dark:via-[#232428] dark:to-[#313338]">
+
+    <Register
+      setUser={setUser}
+      openLogin={() =>
+        setPage(
+          "login"
+        )
+      }
+    />
+
+  </div>
+
+);
+
+}
+
+// LOGOUT
+const logout = () => {
+
+localStorage.removeItem(
+  "bluechat-user"
+);
+
+localStorage.removeItem(
+  "bluechat-token"
+);
+
+setUser(null);
+
+};
+
+// MAIN APP
+return (
+
+<main className="fixed inset-0 overflow-hidden bg-gradient-to-br from-[#dbeafe] via-[#eef4ff] to-[#ffffff] dark:from-[#1e1f22] dark:via-[#232428] dark:to-[#313338] p-2 md:p-4">
+
+  <div className="h-full w-full rounded-[24px] md:rounded-[35px] overflow-hidden border border-white/20 shadow-2xl backdrop-blur-2xl flex bg-white/60 dark:bg-[#1e1f22]/80">
+
+    {/* SIDEBAR */}
+
+    <Sidebar
+      darkMode={darkMode}
+      setDarkMode={
+        setDarkMode
+      }
+
+      themeColor={
+        themeColor
+      }
+
+      setThemeColor={
+        setThemeColor
+      }
+
+      logout={logout}
+
+      username={
+        user.username
+      }
+
+      userId={
+        user.userId
+      }
+
+      avatar={
+        user.avatar
+      }
+
+      currentUser={
+        user
+      }
+
+      setCurrentUser={
+        setUser
+      }
+    />
+
+    {/* CHAT */}
+
+    <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
+
+      <Header
+        username={
+          user.username
+        }
+
+        userId={
+          user.userId
+        }
+
+        avatar={
+          user.avatar
+        }
+      />
+
+      <div className="flex-1 overflow-hidden">
+
+        <ChatArea
           username={
             user.username
           }
+
           userId={
             user.userId
           }
+
           avatar={
             user.avatar
           }
         />
 
-        {/* CHAT */}
-
-        <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-
-          <Header
-            username={
-              user.username
-            }
-            userId={
-              user.userId
-            }
-            avatar={
-              user.avatar
-            }
-          />
-
-          <ChatArea
-            username={
-              user.username
-            }
-            userId={
-              user.userId
-            }
-            avatar={
-              user.avatar
-            }
-          />
-
-        </div>
-
       </div>
 
-    </main>
+    </div>
 
-  );
+  </div>
+
+</main>
+
+);
 
 }
