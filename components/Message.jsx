@@ -66,7 +66,7 @@ return (
 
     {/* TOP */}
 
-    <div className="message-top">
+    <div className="message-top flex items-center gap-3">
 
       {/* AVATAR */}
 
@@ -76,10 +76,12 @@ return (
           src={msg.avatar}
           alt="avatar"
           className="
-            w-[38px]
-            h-[38px]
+            w-[40px]
+            h-[40px]
             rounded-full
             object-cover
+            border
+            border-white/10
             flex-shrink-0
           "
         />
@@ -96,19 +98,23 @@ return (
 
       )}
 
-      <div>
+      {/* USER */}
 
-        <div className="message-name">
+      <div className="min-w-0">
+
+        <div className="message-name truncate">
           {msg.username}
         </div>
 
-        <div className="message-id">
+        <div className="message-id truncate">
           {msg.userId}
         </div>
 
       </div>
 
-      <div className="message-time ml-auto">
+      {/* TIME */}
+
+      <div className="message-time ml-auto whitespace-nowrap">
         {msg.time}
       </div>
 
@@ -136,6 +142,7 @@ return (
 
         <img
           src={msg.image}
+
           alt="upload"
 
           onClick={() =>
@@ -244,9 +251,11 @@ return (
 
         <button
           key={emoji}
+
           onClick={() =>
             react(emoji)
           }
+
           className="action-btn"
         >
 
