@@ -70,23 +70,13 @@ return (
 
       {/* AVATAR */}
 
-      {msg.avatar ? (
+      {msg.avatar && (
 
   <img
     src={msg.avatar}
     alt="avatar"
     className="avatar object-cover"
   />
-
-) : (
-
-  <div className="avatar">
-
-    {msg.username
-      ?.charAt(0)
-      ?.toUpperCase()}
-
-  </div>
 
 )}
 
