@@ -8,10 +8,9 @@ import jwt
 from "jsonwebtoken";
 
 import dbConnect
-from "@/lib/mongodb";
+from "../../../lib/mongodb";
 
-import User
-from "@/models/User";
+import User from "../../../models/User";
 
 export async function POST(
 req
