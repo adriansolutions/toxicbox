@@ -72,31 +72,23 @@ return (
 
       {msg.avatar ? (
 
-<img
-  src={msg.avatar}
-  alt="avatar"
-  className="
-    w-8
-    h-8
-    min-w-8
-    min-h-8
-    rounded-full
-    object-cover
-    flex-shrink-0
-  "
-/>
+  <img
+    src={msg.avatar}
+    alt="avatar"
+    className="avatar object-cover"
+  />
 
-      ) : (
+) : (
 
-        <div className="avatar">
+  <div className="avatar">
 
-          {msg.username
-            ?.charAt(0)
-            ?.toUpperCase()}
+    {msg.username
+      ?.charAt(0)
+      ?.toUpperCase()}
 
-        </div>
+  </div>
 
-      )}
+)}
 
       {/* USER */}
 
