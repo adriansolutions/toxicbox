@@ -120,7 +120,7 @@ if (page === "login") {
 
   return (
 
-    <div className="min-h-screen overflow-hidden bg-gradient-to-br from-[#dbeafe] via-[#eef4ff] to-[#ffffff] dark:from-[#1e1f22] dark:via-[#232428] dark:to-[#313338]">
+    <div className="min-h-screen overflow-x-hidden bg-gradient-to-br from-[#dbeafe] via-[#eef4ff] to-[#ffffff] dark:from-[#1e1f22] dark:via-[#232428] dark:to-[#313338]">
 
       <Login
         setUser={setUser}
@@ -139,7 +139,7 @@ if (page === "login") {
 
 return (
 
-  <div className="min-h-screen overflow-hidden bg-gradient-to-br from-[#dbeafe] via-[#eef4ff] to-[#ffffff] dark:from-[#1e1f22] dark:via-[#232428] dark:to-[#313338]">
+  <div className="min-h-screen overflow-x-hidden bg-gradient-to-br from-[#dbeafe] via-[#eef4ff] to-[#ffffff] dark:from-[#1e1f22] dark:via-[#232428] dark:to-[#313338]">
 
     <Register
       setUser={setUser}
@@ -174,14 +174,15 @@ setUser(null);
 // MAIN APP
 return (
 
-<main className="fixed inset-0 overflow-hidden bg-gradient-to-br from-[#dbeafe] via-[#eef4ff] to-[#ffffff] dark:from-[#1e1f22] dark:via-[#232428] dark:to-[#313338] p-2 md:p-4">
+<main className="h-[100dvh] w-full overflow-hidden bg-gradient-to-br from-[#dbeafe] via-[#eef4ff] to-[#ffffff] dark:from-[#1e1f22] dark:via-[#232428] dark:to-[#313338] p-2 md:p-4">
 
-  <div className="h-full w-full rounded-[24px] md:rounded-[35px] overflow-hidden border border-white/20 shadow-2xl backdrop-blur-2xl flex bg-white/60 dark:bg-[#1e1f22]/80">
+  <div className="h-full w-full rounded-[28px] md:rounded-[35px] overflow-hidden border border-white/20 shadow-2xl backdrop-blur-2xl flex bg-white/60 dark:bg-[#1e1f22]/80">
 
     {/* SIDEBAR */}
 
     <Sidebar
       darkMode={darkMode}
+
       setDarkMode={
         setDarkMode
       }
@@ -219,7 +220,7 @@ return (
 
     {/* CHAT */}
 
-    <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
+    <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
 
       <Header
         username={
@@ -235,23 +236,19 @@ return (
         }
       />
 
-      <div className="flex-1 overflow-hidden">
+      <ChatArea
+        username={
+          user.username
+        }
 
-        <ChatArea
-          username={
-            user.username
-          }
+        userId={
+          user.userId
+        }
 
-          userId={
-            user.userId
-          }
-
-          avatar={
-            user.avatar
-          }
-        />
-
-      </div>
+        avatar={
+          user.avatar
+        }
+      />
 
     </div>
 
