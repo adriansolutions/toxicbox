@@ -136,17 +136,17 @@ if (lastChanged) {
     ) /
     (1000 * 60 * 60 * 24);
 
-  if (days < 7) {
+  //if (days < 7) {
 
-    alert(
-      `You can change avatar again in ${Math.ceil(
-        7 - days
-      )} day(s)`
-    );
+  //  alert(
+     // `You can change avatar again in ${Math.ceil(
+       // 7 - days
+     // )} day(s)`
+   // );
 
-    return;
+   // return;
 
-  }
+  //}
 
 }
 
@@ -570,4 +570,4 @@ return (
 
 );
 
-        }
+}
