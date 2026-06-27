@@ -24,6 +24,28 @@ export default function SettingsModal({
   const [previewAvatar, setPreviewAvatar] =
     useState("");
 
+  const [toast, setToast] =
+    useState(null);
+
+  // TOAST
+  const showToast = (
+    text,
+    type = "success"
+  ) => {
+
+    setToast({
+      text,
+      type,
+    });
+
+    setTimeout(() => {
+
+      setToast(null);
+
+    }, 2500);
+
+  };
+
   // PASSWORD
   const changePassword = () => {
 
@@ -33,8 +55,9 @@ export default function SettingsModal({
       !confirmPassword
     ) {
 
-      alert(
-        "Fill all password fields"
+      showToast(
+        "Fill all password fields",
+        "error"
       );
 
       return;
@@ -46,8 +69,9 @@ export default function SettingsModal({
       currentUser.password
     ) {
 
-      alert(
-        "Old password is incorrect"
+      showToast(
+        "Old password is incorrect",
+        "error"
       );
 
       return;
@@ -58,8 +82,9 @@ export default function SettingsModal({
       newPassword.length < 6
     ) {
 
-      alert(
-        "Password must be atleast 6 characters"
+      showToast(
+        "Password must be atleast 6 characters",
+        "error"
       );
 
       return;
@@ -71,8 +96,9 @@ export default function SettingsModal({
       confirmPassword
     ) {
 
-      alert(
-        "Passwords do not match"
+      showToast(
+        "Passwords do not match",
+        "error"
       );
 
       return;
@@ -103,7 +129,7 @@ export default function SettingsModal({
     setNewPassword("");
     setConfirmPassword("");
 
-    alert(
+    showToast(
       "Password changed successfully"
     );
 
@@ -126,8 +152,9 @@ export default function SettingsModal({
       2 * 1024 * 1024
     ) {
 
-      alert(
-        "Avatar must be below 2MB"
+      showToast(
+        "Avatar must be below 2MB",
+        "error"
       );
 
       return;
@@ -137,7 +164,6 @@ export default function SettingsModal({
     const lastChanged =
       currentUser.avatarChangedAt;
 
-    // 7 DAYS
     if (lastChanged) {
 
       const days =
@@ -155,10 +181,11 @@ export default function SettingsModal({
       /*
       if (days < 7) {
 
-        alert(
+        showToast(
           `You can change avatar again in ${Math.ceil(
             7 - days
-          )} day(s)`
+          )} day(s)`,
+          "error"
         );
 
         return;
@@ -213,7 +240,7 @@ export default function SettingsModal({
   };
 
   // SAVE AVATAR
-  const saveAvatar = () => {
+  const saveAvatar = async () => {
 
     const updatedUser = {
 
@@ -240,9 +267,71 @@ export default function SettingsModal({
       updatedUser
     );
 
+    // UPDATE FRIENDS LIST
+    Object.keys(
+      localStorage
+    ).forEach((key) => {
+
+      if (
+        key.startsWith(
+          "bluechat-friends-"
+        )
+      ) {
+
+        try {
+
+          const list =
+            JSON.parse(
+              localStorage.getItem(
+                key
+              ) || "[]"
+            );
+
+          const updated =
+            list.map(
+              (friend) => {
+
+                if (
+                  friend.userId ===
+                  currentUser.userId
+                ) {
+
+                  return {
+                    ...friend,
+                    avatar:
+                      previewAvatar,
+                  };
+
+                }
+
+                return friend;
+
+              }
+            );
+
+          localStorage.setItem(
+            key,
+            JSON.stringify(
+              updated
+            )
+          );
+
+        } catch {}
+
+      }
+
+    });
+
+    // STORAGE REFRESH
+    window.dispatchEvent(
+      new StorageEvent(
+        "storage"
+      )
+    );
+
     setPreviewAvatar("");
 
-    alert(
+    showToast(
       "Avatar updated"
     );
 
@@ -273,6 +362,60 @@ export default function SettingsModal({
         updatedUser
       );
 
+      // UPDATE FRIENDS
+      Object.keys(
+        localStorage
+      ).forEach((key) => {
+
+        if (
+          key.startsWith(
+            "bluechat-friends-"
+          )
+        ) {
+
+          try {
+
+            const list =
+              JSON.parse(
+                localStorage.getItem(
+                  key
+                ) || "[]"
+              );
+
+            const updated =
+              list.map(
+                (friend) => {
+
+                  if (
+                    friend.userId ===
+                    currentUser.userId
+                  ) {
+
+                    return {
+                      ...friend,
+                      avatar: "",
+                    };
+
+                  }
+
+                  return friend;
+
+                }
+              );
+
+            localStorage.setItem(
+              key,
+              JSON.stringify(
+                updated
+              )
+            );
+
+          } catch {}
+
+        }
+
+      });
+
       // UPDATE DATABASE
       await fetch(
         "/api/update-avatar",
@@ -295,7 +438,14 @@ export default function SettingsModal({
         }
       );
 
-      alert(
+      // STORAGE REFRESH
+      window.dispatchEvent(
+        new StorageEvent(
+          "storage"
+        )
+      );
+
+      showToast(
         "Avatar removed"
       );
 
@@ -315,6 +465,39 @@ export default function SettingsModal({
   return (
 
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+
+      {/* TOAST */}
+
+      {toast && (
+
+        <div
+          className={`
+            fixed
+            top-5
+            left-1/2
+            -translate-x-1/2
+            z-[10000]
+            px-5
+            py-3
+            rounded-2xl
+            text-white
+            font-bold
+            shadow-2xl
+
+            ${
+              toast.type ===
+              "error"
+                ? "bg-red-600"
+                : "bg-green-600"
+            }
+          `}
+        >
+
+          {toast.text}
+
+        </div>
+
+      )}
 
       <div className="w-full max-w-md rounded-3xl bg-white dark:bg-[#1e1f22] shadow-2xl border border-white/10 overflow-hidden max-h-[90vh] overflow-y-auto">
 
