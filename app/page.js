@@ -237,18 +237,22 @@ return (
       />
 
       <ChatArea
-        username={
-          user.username
-        }
+  username={
+    user.username
+  }
 
-        userId={
-          user.userId
-        }
+  userId={
+    user.userId
+  }
 
-        avatar={
-          user.avatar
-        }
-      />
+  avatar={
+    user.avatar
+  }
+
+  activeChat={
+    activeChat
+  }
+/>
 
     </div>
 
