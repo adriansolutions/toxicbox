@@ -111,16 +111,47 @@ export default function Home() {
                 savedUser
               );
 
-            setUser(
-              parsedUser
-            );
+            // GET LATEST USER FROM DB
+            const res =
+              await fetch(
+                `/api/get-user?userId=${parsedUser.userId}`
+              );
 
-            // LOAD FRIENDS
-            await loadFriends(
-              parsedUser.userId
-            );
+            const userData =
+              await res.json();
 
-          } catch {
+            if (
+              userData.success
+            ) {
+
+              setUser(
+                userData.user
+              );
+
+              // UPDATE LOCAL CACHE
+              localStorage.setItem(
+                "bluechat-user",
+                JSON.stringify(
+                  userData.user
+                )
+              );
+
+              // LOAD FRIENDS
+              await loadFriends(
+                userData.user.userId
+              );
+
+            } else {
+
+              setUser(null);
+
+              setFriends([]);
+
+            }
+
+          } catch (err) {
+
+            console.log(err);
 
             setUser(null);
 
@@ -160,7 +191,7 @@ export default function Home() {
     // LIVE REFRESH
     const interval =
       setInterval(
-        () => {
+        async () => {
 
           const savedUser =
             localStorage.getItem(
@@ -178,11 +209,41 @@ export default function Home() {
                   savedUser
                 );
 
-              loadFriends(
-                parsedUser.userId
-              );
+              // REFRESH USER
+              const res =
+                await fetch(
+                  `/api/get-user?userId=${parsedUser.userId}`
+                );
 
-            } catch {}
+              const userData =
+                await res.json();
+
+              if (
+                userData.success
+              ) {
+
+                setUser(
+                  userData.user
+                );
+
+                localStorage.setItem(
+                  "bluechat-user",
+                  JSON.stringify(
+                    userData.user
+                  )
+                );
+
+                await loadFriends(
+                  userData.user.userId
+                );
+
+              }
+
+            } catch (err) {
+
+              console.log(err);
+
+            }
 
           }
 
