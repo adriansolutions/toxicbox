@@ -19,6 +19,7 @@ type: Boolean,
 default: false,
 },
 
+// ADD THIS
 friends: [
 {
 username: String,
