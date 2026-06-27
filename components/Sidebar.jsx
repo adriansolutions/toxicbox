@@ -1,16 +1,16 @@
 "use client";
 
 import {
-useEffect,
-useRef,
-useState,
+  useEffect,
+  useRef,
+  useState,
 } from "react";
 
 import {
-FiMenu,
-FiSettings,
-FiX,
-FiUserPlus,
+  FiMenu,
+  FiSettings,
+  FiX,
+  FiUserPlus,
 } from "react-icons/fi";
 
 import SettingsModal from "./SettingsModal";
@@ -18,659 +18,782 @@ import FriendsModal from "./FriendsModal";
 
 export default function Sidebar(props) {
 
-const [openSettings, setOpenSettings] =
-useState(false);
+  const [openSettings, setOpenSettings] =
+    useState(false);
 
-const [mobileOpen, setMobileOpen] =
-useState(false);
+  const [mobileOpen, setMobileOpen] =
+    useState(false);
 
-const [openFriends, setOpenFriends] =
-useState(false);
+  const [openFriends, setOpenFriends] =
+    useState(false);
 
-const [friends, setFriends] =
-useState([]);
+  const [friends, setFriends] =
+    useState([]);
 
-// RIGHT CLICK MENU
-const [friendMenu, setFriendMenu] =
-useState(null);
+  // RIGHT CLICK MENU
+  const [friendMenu, setFriendMenu] =
+    useState(null);
 
-// REMOVE CONFIRM
-const [confirmRemove, setConfirmRemove] =
-useState(null);
+  // REMOVE CONFIRM
+  const [confirmRemove, setConfirmRemove] =
+    useState(null);
 
-// HOLD TIMER
-const holdTimeout =
-useRef(null);
+  // HOLD TIMER
+  const holdTimeout =
+    useRef(null);
 
-// LOAD FRIENDS
-useEffect(() => {
+  // LOAD FRIENDS FROM DATABASE
+  useEffect(() => {
 
-if (!props.userId)
-  return;
+    if (!props.userId)
+      return;
 
-const loadFriends = () => {
+    const loadFriends =
+      async () => {
 
-  const saved =
-    localStorage.getItem(
-      `bluechat-friends-${props.userId}`
+        try {
+
+          const res =
+            await fetch(
+              `/api/friends?userId=${props.userId}`
+            );
+
+          const data =
+            await res.json();
+
+          if (
+            data.success
+          ) {
+
+            setFriends(
+              data.friends || []
+            );
+
+          }
+
+        } catch (err) {
+
+          console.log(err);
+
+        }
+
+      };
+
+    loadFriends();
+
+    // AUTO REFRESH
+    const interval =
+      setInterval(
+        loadFriends,
+        2000
+      );
+
+    return () =>
+      clearInterval(
+        interval
+      );
+
+  }, [props.userId]);
+
+  // CHANGE CHAT
+  const changeChat = (
+    chat
+  ) => {
+
+    props.setActiveChat(
+      chat
     );
 
-  if (saved) {
-
-    setFriends(
-      JSON.parse(saved)
+    setMobileOpen(
+      false
     );
 
-  } else {
+  };
 
-    setFriends([]);
+  // REMOVE FRIEND
+  const removeFriend =
+    async (
+      friend
+    ) => {
 
-  }
+      try {
 
-};
+        await fetch(
+          "/api/remove-friend",
+          {
+            method:
+              "POST",
 
-loadFriends();
+            headers: {
+              "Content-Type":
+                "application/json",
+            },
 
-// AUTO REFRESH
-window.addEventListener(
-  "storage",
-  loadFriends
-);
+            body: JSON.stringify({
+              userId:
+                props.userId,
 
-return () => {
+              friendId:
+                friend.userId,
+            }),
+          }
+        );
 
-  window.removeEventListener(
-    "storage",
-    loadFriends
-  );
+        setFriends(
+          (
+            prev
+          ) =>
+            prev.filter(
+              (
+                f
+              ) =>
+                f.userId !==
+                friend.userId
+            )
+        );
 
-};
+        if (
+          props.activeChat
+            ?.id ===
+          friend.userId
+        ) {
 
-}, [props.userId]);
+          props.setActiveChat(
+            {
+              type:
+                "channel",
 
-// CHANGE CHAT
-const changeChat = (
-chat
-) => {
-
-props.setActiveChat(chat);
-
-// CLOSE MOBILE SIDEBAR
-setMobileOpen(false);
-
-};
-
-return (
-
-<>
-
-  {/* MOBILE MENU */}
-
-  <button
-    onClick={() =>
-      setMobileOpen(!mobileOpen)
-    }
-    className="
-      fixed
-      top-4
-      left-4
-      z-[9999]
-      w-[48px]
-      h-[48px]
-      rounded-2xl
-      bg-black/70
-      text-white
-      flex
-      items-center
-      justify-center
-      md:hidden
-      backdrop-blur-xl
-    "
-  >
-
-    {mobileOpen ? (
-
-      <FiX size={24} />
-
-    ) : (
-
-      <FiMenu size={24} />
-
-    )}
-
-  </button>
-
-  {/* SIDEBAR */}
-
-  <div
-    className={`
-      sidebar-glass
-      fixed
-      md:relative
-      top-0
-      left-0
-      z-[9998]
-      h-screen
-      transition-all
-      duration-300
-      flex
-      flex-col
-      justify-between
-
-      ${
-        mobileOpen
-          ? "translate-x-0"
-          : "-translate-x-full md:translate-x-0"
-      }
-    `}
-  >
-
-    {/* TOP */}
-
-    <div>
-
-      {/* LOGO */}
-
-      <div className="flex items-center gap-3 mt-20 md:mt-0 px-4">
-
-        <div className="logo-circle">
-
-          B
-
-        </div>
-
-        <div className="channel-name text-xl font-bold">
-
-          BlueChat
-
-        </div>
-
-      </div>
-
-      {/* CHANNELS */}
-
-      <div className="channels">
-
-        {/* GENERAL */}
-
-        <button
-          onClick={() =>
-            changeChat({
-              type: "channel",
               id: "general",
-              name: "General",
-            })
-          }
-          className={`
-            channel
-            ${
-              props.activeChat?.id ===
-              "general"
-                ? "active"
-                : ""
+
+              name:
+                "General",
             }
-          `}
-        >
+          );
 
-          <div className="channel-icon">
+        }
 
-            G
+        setConfirmRemove(
+          null
+        );
 
-          </div>
+      } catch (err) {
 
-          <div className="channel-name">
+        console.log(
+          err
+        );
 
-            General
+      }
 
-          </div>
+    };
 
-        </button>
+  return (
 
-        {/* RANDOM */}
+    <>
 
-        <button
-          onClick={() =>
-            changeChat({
-              type: "channel",
-              id: "random",
-              name: "Random",
-            })
+      {/* MOBILE MENU */}
+
+      <button
+        onClick={() =>
+          setMobileOpen(
+            !mobileOpen
+          )
+        }
+        className="
+          fixed
+          top-4
+          left-4
+          z-[9999]
+          w-[48px]
+          h-[48px]
+          rounded-2xl
+          bg-black/70
+          text-white
+          flex
+          items-center
+          justify-center
+          md:hidden
+          backdrop-blur-xl
+        "
+      >
+
+        {mobileOpen ? (
+
+          <FiX size={24} />
+
+        ) : (
+
+          <FiMenu size={24} />
+
+        )}
+
+      </button>
+
+      {/* SIDEBAR */}
+
+      <div
+        className={`
+          sidebar-glass
+          fixed
+          md:relative
+          top-0
+          left-0
+          z-[9998]
+          h-screen
+          transition-all
+          duration-300
+          flex
+          flex-col
+          justify-between
+
+          ${
+            mobileOpen
+              ? "translate-x-0"
+              : "-translate-x-full md:translate-x-0"
           }
-          className={`
-            channel
-            ${
-              props.activeChat?.id ===
-              "random"
-                ? "active"
-                : ""
-            }
-          `}
-        >
+        `}
+      >
 
-          <div className="channel-icon">
+        {/* TOP */}
 
-            R
+        <div>
 
-          </div>
+          {/* LOGO */}
 
-          <div className="channel-name">
+          <div className="flex items-center gap-3 mt-20 md:mt-0 px-4">
 
-            Random
+            <div className="logo-circle">
 
-          </div>
-
-        </button>
-
-      </div>
-
-      {/* FRIENDS */}
-
-      <div className="mt-5 px-3">
-
-        <div className="h-[1px] bg-white/10 mb-3 rounded-full" />
-
-        <div className="space-y-2">
-
-          {friends.length ===
-            0 && (
-
-            <div className="text-xs opacity-50 px-2 py-2">
-
-              No friends yet
+              B
 
             </div>
 
-          )}
+            <div className="channel-name text-xl font-bold">
 
-          {friends.map((friend) => (
+              BlueChat
 
-            <div
-              key={friend.userId}
-              className="relative"
+            </div>
 
-              onContextMenu={(e) => {
+          </div>
 
-                e.preventDefault();
+          {/* CHANNELS */}
 
-                setFriendMenu({
-                  x: e.clientX,
-                  y: e.clientY,
-                  friend,
-                });
+          <div className="channels">
 
-              }}
+            {/* GENERAL */}
 
-              onTouchStart={(e) => {
+            <button
+              onClick={() =>
+                changeChat({
+                  type:
+                    "channel",
 
-                const touch =
-                  e.touches[0];
+                  id: "general",
 
-                holdTimeout.current =
-                  setTimeout(() => {
-
-                    setFriendMenu({
-                      x: touch.clientX,
-                      y: touch.clientY,
-                      friend,
-                    });
-
-                  }, 500);
-
-              }}
-
-              onTouchEnd={() => {
-
-                clearTimeout(
-                  holdTimeout.current
-                );
-
-              }}
+                  name:
+                    "General",
+                })
+              }
+              className={`
+                channel
+                ${
+                  props.activeChat
+                    ?.id ===
+                  "general"
+                    ? "active"
+                    : ""
+                }
+              `}
             >
 
-              <button
-                onClick={() =>
-                  changeChat({
-                    type: "dm",
-                    id: friend.userId,
-                    user: friend,
-                  })
+              <div className="channel-icon">
+
+                G
+
+              </div>
+
+              <div className="channel-name">
+
+                General
+
+              </div>
+
+            </button>
+
+            {/* RANDOM */}
+
+            <button
+              onClick={() =>
+                changeChat({
+                  type:
+                    "channel",
+
+                  id: "random",
+
+                  name:
+                    "Random",
+                })
+              }
+              className={`
+                channel
+                ${
+                  props.activeChat
+                    ?.id ===
+                  "random"
+                    ? "active"
+                    : ""
                 }
+              `}
+            >
 
-                className={`
-                  channel
+              <div className="channel-icon">
 
-                  ${
-                    props.activeChat?.id ===
-                    friend.userId
-                      ? "active"
-                      : ""
-                  }
-                `}
-              >
+                R
 
-                {/* AVATAR */}
+              </div>
 
-                {friend.avatar ? (
+              <div className="channel-name">
 
-                  <img
-                    src={friend.avatar}
-                    alt="avatar"
-                    className="
-                      avatar
-                      object-cover
-                    "
-                  />
+                Random
 
-                ) : (
+              </div>
 
-                  <div className="avatar">
+            </button>
 
-                    {friend.username
-                      ?.charAt(0)
-                      ?.toUpperCase()}
+          </div>
+
+          {/* FRIENDS */}
+
+          <div className="mt-5 px-3">
+
+            <div className="h-[1px] bg-white/10 mb-3 rounded-full" />
+
+            <div className="space-y-2">
+
+              {friends.length ===
+                0 && (
+
+                <div className="text-xs opacity-50 px-2 py-2">
+
+                  No friends yet
+
+                </div>
+
+              )}
+
+              {friends.map(
+                (
+                  friend
+                ) => (
+
+                  <div
+                    key={
+                      friend.userId
+                    }
+                    className="relative"
+
+                    onContextMenu={(
+                      e
+                    ) => {
+
+                      e.preventDefault();
+
+                      setFriendMenu(
+                        {
+                          x: e.clientX,
+                          y: e.clientY,
+                          friend,
+                        }
+                      );
+
+                    }}
+
+                    onTouchStart={(
+                      e
+                    ) => {
+
+                      const touch =
+                        e
+                          .touches[0];
+
+                      holdTimeout.current =
+                        setTimeout(
+                          () => {
+
+                            setFriendMenu(
+                              {
+                                x: touch.clientX,
+                                y: touch.clientY,
+                                friend,
+                              }
+                            );
+
+                          },
+                          500
+                        );
+
+                    }}
+
+                    onTouchEnd={() => {
+
+                      clearTimeout(
+                        holdTimeout.current
+                      );
+
+                    }}
+                  >
+
+                    <button
+                      onClick={() =>
+                        changeChat(
+                          {
+                            type:
+                              "dm",
+
+                            id:
+                              friend.userId,
+
+                            user:
+                              friend,
+                          }
+                        )
+                      }
+
+                      className={`
+                        channel
+
+                        ${
+                          props.activeChat
+                            ?.id ===
+                          friend.userId
+                            ? "active"
+                            : ""
+                        }
+                      `}
+                    >
+
+                      {/* AVATAR */}
+
+                      {friend.avatar ? (
+
+                        <img
+                          src={
+                            friend.avatar
+                          }
+                          alt="avatar"
+                          className="
+                            avatar
+                            object-cover
+                          "
+                        />
+
+                      ) : (
+
+                        <div className="avatar">
+
+                          {friend.username
+                            ?.charAt(
+                              0
+                            )
+                            ?.toUpperCase()}
+
+                        </div>
+
+                      )}
+
+                      {/* USERNAME */}
+
+                      <div className="channel-name truncate">
+
+                        {
+                          friend.username
+                        }
+
+                      </div>
+
+                    </button>
 
                   </div>
 
-                )}
+                )
+              )}
 
-                {/* USERNAME */}
+            </div>
 
-                <div className="channel-name truncate">
+          </div>
 
-                  {friend.username}
+        </div>
 
-                </div>
+        {/* BOTTOM */}
+
+        <div className="flex flex-col items-center gap-3 p-4">
+
+          {/* ADD FRIEND */}
+
+          <button
+            onClick={() =>
+              setOpenFriends(
+                true
+              )
+            }
+            className="sidebar-btn"
+          >
+
+            <FiUserPlus size={22} />
+
+          </button>
+
+          {/* SETTINGS */}
+
+          <button
+            onClick={() =>
+              setOpenSettings(
+                true
+              )
+            }
+            className="sidebar-btn"
+          >
+
+            <FiSettings size={22} />
+
+          </button>
+
+        </div>
+
+      </div>
+
+      {/* FRIEND MENU */}
+
+      {friendMenu && (
+
+        <>
+
+          <div
+            onClick={() =>
+              setFriendMenu(
+                null
+              )
+            }
+            className="fixed inset-0 z-[9998]"
+          />
+
+          <div
+            className="
+              fixed
+              z-[9999]
+              w-[180px]
+              rounded-2xl
+              bg-[#1e1f22]
+              border
+              border-white/10
+              shadow-2xl
+              overflow-hidden
+            "
+
+            style={{
+              left:
+                friendMenu.x,
+              top:
+                friendMenu.y,
+            }}
+          >
+
+            <button
+              onClick={() => {
+
+                setConfirmRemove(
+                  friendMenu.friend
+                );
+
+                setFriendMenu(
+                  null
+                );
+
+              }}
+
+              className="
+                w-full
+                px-4
+                py-3
+                text-left
+                hover:bg-red-500/20
+                text-red-400
+                transition
+              "
+            >
+
+              Remove Friend
+
+            </button>
+
+          </div>
+
+        </>
+
+      )}
+
+      {/* REMOVE CONFIRM */}
+
+      {confirmRemove && (
+
+        <div className="fixed inset-0 z-[99999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+
+          <div
+            className="
+              w-full
+              max-w-sm
+              rounded-3xl
+              bg-white
+              dark:bg-[#1e1f22]
+              border
+              border-white/10
+              p-6
+            "
+          >
+
+            <div className="text-xl font-black mb-2">
+
+              Remove Friend
+
+            </div>
+
+            <div className="opacity-70 text-sm mb-6">
+
+              Remove{" "}
+              <strong>
+
+                {
+                  confirmRemove.username
+                }
+
+              </strong>{" "}
+              from your friends list?
+
+            </div>
+
+            <div className="flex gap-3">
+
+              <button
+                onClick={() =>
+                  setConfirmRemove(
+                    null
+                  )
+                }
+                className="
+                  flex-1
+                  h-12
+                  rounded-2xl
+                  bg-white/10
+                "
+              >
+
+                Cancel
+
+              </button>
+
+              <button
+                onClick={() =>
+                  removeFriend(
+                    confirmRemove
+                  )
+                }
+                className="
+                  flex-1
+                  h-12
+                  rounded-2xl
+                  bg-red-500
+                  text-white
+                  font-bold
+                "
+              >
+
+                Remove
 
               </button>
 
             </div>
 
-          ))}
+          </div>
 
         </div>
 
-      </div>
+      )}
 
-    </div>
+      {/* MOBILE BG */}
 
-    {/* BOTTOM */}
+      {mobileOpen && (
 
-    <div className="flex flex-col items-center gap-3 p-4">
+        <div
+          onClick={() =>
+            setMobileOpen(
+              false
+            )
+          }
+          className="
+            fixed
+            inset-0
+            bg-black/50
+            z-[9997]
+            md:hidden
+          "
+        />
 
-      {/* ADD FRIEND */}
-
-      <button
-        onClick={() =>
-          setOpenFriends(true)
-        }
-        className="sidebar-btn"
-      >
-
-        <FiUserPlus size={22} />
-
-      </button>
+      )}
 
       {/* SETTINGS */}
 
-      <button
-        onClick={() =>
-          setOpenSettings(true)
-        }
-        className="sidebar-btn"
-      >
+      {openSettings && (
 
-        <FiSettings size={22} />
+        <SettingsModal
+          {...props}
+          close={() =>
+            setOpenSettings(
+              false
+            )
+          }
+        />
 
-      </button>
+      )}
 
-    </div>
+      {/* FRIENDS */}
 
-  </div>
+      {openFriends && (
 
-  {/* FRIEND MENU */}
+        <FriendsModal
+          close={() =>
+            setOpenFriends(
+              false
+            )
+          }
 
-  {friendMenu && (
+          currentUser={{
+            username:
+              props.username,
 
-    <>
+            userId:
+              props.userId,
 
-      <div
-        onClick={() =>
-          setFriendMenu(null)
-        }
-        className="fixed inset-0 z-[9998]"
-      />
-
-      <div
-        className="
-          fixed
-          z-[9999]
-          w-[180px]
-          rounded-2xl
-          bg-[#1e1f22]
-          border
-          border-white/10
-          shadow-2xl
-          overflow-hidden
-        "
-
-        style={{
-          left: friendMenu.x,
-          top: friendMenu.y,
-        }}
-      >
-
-        <button
-          onClick={() => {
-
-            setConfirmRemove(
-              friendMenu.friend
-            );
-
-            setFriendMenu(null);
-
+            avatar:
+              props.avatar,
           }}
 
-          className="
-            w-full
-            px-4
-            py-3
-            text-left
-            hover:bg-red-500/20
-            text-red-400
-            transition
-          "
-        >
+          friends={
+            friends
+          }
 
-          Remove Friend
+          setFriends={
+            setFriends
+          }
 
-        </button>
+          setActiveChat={
+            props.setActiveChat
+          }
 
-      </div>
+        />
+
+      )}
 
     </>
 
-  )}
-
-  {/* REMOVE CONFIRM */}
-
-  {confirmRemove && (
-
-    <div className="fixed inset-0 z-[99999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-
-      <div
-        className="
-          w-full
-          max-w-sm
-          rounded-3xl
-          bg-white
-          dark:bg-[#1e1f22]
-          border
-          border-white/10
-          p-6
-        "
-      >
-
-        <div className="text-xl font-black mb-2">
-
-          Remove Friend
-
-        </div>
-
-        <div className="opacity-70 text-sm mb-6">
-
-          Remove
-          {" "}
-          <strong>
-            {confirmRemove.username}
-          </strong>
-          {" "}
-          from your friends list?
-
-        </div>
-
-        <div className="flex gap-3">
-
-          <button
-            onClick={() =>
-              setConfirmRemove(null)
-            }
-            className="
-              flex-1
-              h-12
-              rounded-2xl
-              bg-white/10
-            "
-          >
-
-            Cancel
-
-          </button>
-
-          <button
-            onClick={() => {
-
-              const updated =
-                friends.filter(
-                  (f) =>
-                    f.userId !==
-                    confirmRemove.userId
-                );
-
-              setFriends(updated);
-
-              localStorage.setItem(
-                `bluechat-friends-${props.userId}`,
-                JSON.stringify(updated)
-              );
-
-              // RETURN TO GENERAL
-
-              if (
-                props.activeChat?.id ===
-                confirmRemove.userId
-              ) {
-
-                props.setActiveChat({
-                  type: "channel",
-                  id: "general",
-                  name: "General",
-                });
-
-              }
-
-              setConfirmRemove(null);
-
-            }}
-
-            className="
-              flex-1
-              h-12
-              rounded-2xl
-              bg-red-500
-              text-white
-              font-bold
-            "
-          >
-
-            Remove
-
-          </button>
-
-        </div>
-
-      </div>
-
-    </div>
-
-  )}
-
-  {/* MOBILE BG */}
-
-  {mobileOpen && (
-
-    <div
-      onClick={() =>
-        setMobileOpen(false)
-      }
-      className="
-        fixed
-        inset-0
-        bg-black/50
-        z-[9997]
-        md:hidden
-      "
-    />
-
-  )}
-
-  {/* SETTINGS */}
-
-  {openSettings && (
-
-    <SettingsModal
-      {...props}
-      close={() =>
-        setOpenSettings(false)
-      }
-    />
-
-  )}
-
-  {/* FRIENDS */}
-
-  {openFriends && (
-
-    <FriendsModal
-
-      close={() =>
-        setOpenFriends(false)
-      }
-
-      currentUser={{
-        username:
-          props.username,
-
-        userId:
-          props.userId,
-
-        avatar:
-          props.avatar,
-      }}
-
-      friends={friends}
-
-      setFriends={setFriends}
-
-      setActiveChat={
-        props.setActiveChat
-      }
-
-    />
-
-  )}
-
-</>
-
-);
+  );
 
 }
