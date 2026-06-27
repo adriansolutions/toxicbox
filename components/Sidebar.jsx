@@ -27,22 +27,28 @@ export default function Sidebar(props) {
   const [openFriends, setOpenFriends] =
     useState(false);
 
-  const [friends, setFriends] =
-    useState([]);
+  // REMOVE THIS:
+  // const [friends, setFriends] = useState([]);
 
-  // RIGHT CLICK MENU
+  // USE PARENT FRIENDS
+  const friends =
+    props.friends || [];
+
+  const setFriends =
+    props.setFriends;
+
   const [friendMenu, setFriendMenu] =
     useState(null);
 
-  // REMOVE CONFIRM
   const [confirmRemove, setConfirmRemove] =
     useState(null);
 
-  // HOLD TIMER
   const holdTimeout =
     useRef(null);
 
-  // LOAD FRIENDS FROM DATABASE
+  // =========================
+  // LOAD FRIENDS
+  // =========================
   useEffect(() => {
 
     if (!props.userId)
@@ -55,7 +61,11 @@ export default function Sidebar(props) {
 
           const res =
             await fetch(
-              `/api/friends?userId=${props.userId}`
+              `/api/get-friends?userId=${props.userId}`,
+              {
+                cache:
+                  "no-store",
+              }
             );
 
           const data =
@@ -81,7 +91,6 @@ export default function Sidebar(props) {
 
     loadFriends();
 
-    // AUTO REFRESH
     const interval =
       setInterval(
         loadFriends,
@@ -93,24 +102,30 @@ export default function Sidebar(props) {
         interval
       );
 
-  }, [props.userId]);
+  }, [
+    props.userId,
+    setFriends,
+  ]);
 
+  // =========================
   // CHANGE CHAT
-  const changeChat = (
-    chat
-  ) => {
+  // =========================
+  const changeChat =
+    (chat) => {
 
-    props.setActiveChat(
-      chat
-    );
+      props.setActiveChat(
+        chat
+      );
 
-    setMobileOpen(
-      false
-    );
+      setMobileOpen(
+        false
+      );
 
-  };
+    };
 
+  // =========================
   // REMOVE FRIEND
+  // =========================
   const removeFriend =
     async (
       friend
@@ -129,13 +144,14 @@ export default function Sidebar(props) {
                 "application/json",
             },
 
-            body: JSON.stringify({
-              userId:
-                props.userId,
+            body:
+              JSON.stringify({
+                userId:
+                  props.userId,
 
-              friendId:
-                friend.userId,
-            }),
+                friendId:
+                  friend.userId,
+              }),
           }
         );
 
@@ -257,8 +273,6 @@ export default function Sidebar(props) {
 
         <div>
 
-          {/* LOGO */}
-
           <div className="flex items-center gap-3 mt-20 md:mt-0 px-4">
 
             <div className="logo-circle">
@@ -278,8 +292,6 @@ export default function Sidebar(props) {
           {/* CHANNELS */}
 
           <div className="channels">
-
-            {/* GENERAL */}
 
             <button
               onClick={() =>
@@ -319,46 +331,6 @@ export default function Sidebar(props) {
 
             </button>
 
-            {/* RANDOM */}
-
-            <button
-              onClick={() =>
-                changeChat({
-                  type:
-                    "channel",
-
-                  id: "random",
-
-                  name:
-                    "Random",
-                })
-              }
-              className={`
-                channel
-                ${
-                  props.activeChat
-                    ?.id ===
-                  "random"
-                    ? "active"
-                    : ""
-                }
-              `}
-            >
-
-              <div className="channel-icon">
-
-                R
-
-              </div>
-
-              <div className="channel-name">
-
-                Random
-
-              </div>
-
-            </button>
-
           </div>
 
           {/* FRIENDS */}
@@ -390,56 +362,6 @@ export default function Sidebar(props) {
                       friend.userId
                     }
                     className="relative"
-
-                    onContextMenu={(
-                      e
-                    ) => {
-
-                      e.preventDefault();
-
-                      setFriendMenu(
-                        {
-                          x: e.clientX,
-                          y: e.clientY,
-                          friend,
-                        }
-                      );
-
-                    }}
-
-                    onTouchStart={(
-                      e
-                    ) => {
-
-                      const touch =
-                        e
-                          .touches[0];
-
-                      holdTimeout.current =
-                        setTimeout(
-                          () => {
-
-                            setFriendMenu(
-                              {
-                                x: touch.clientX,
-                                y: touch.clientY,
-                                friend,
-                              }
-                            );
-
-                          },
-                          500
-                        );
-
-                    }}
-
-                    onTouchEnd={() => {
-
-                      clearTimeout(
-                        holdTimeout.current
-                      );
-
-                    }}
                   >
 
                     <button
@@ -471,8 +393,6 @@ export default function Sidebar(props) {
                       `}
                     >
 
-                      {/* AVATAR */}
-
                       {friend.avatar ? (
 
                         <img
@@ -500,8 +420,6 @@ export default function Sidebar(props) {
 
                       )}
 
-                      {/* USERNAME */}
-
                       <div className="channel-name truncate">
 
                         {
@@ -527,8 +445,6 @@ export default function Sidebar(props) {
 
         <div className="flex flex-col items-center gap-3 p-4">
 
-          {/* ADD FRIEND */}
-
           <button
             onClick={() =>
               setOpenFriends(
@@ -541,8 +457,6 @@ export default function Sidebar(props) {
             <FiUserPlus size={22} />
 
           </button>
-
-          {/* SETTINGS */}
 
           <button
             onClick={() =>
@@ -561,200 +475,7 @@ export default function Sidebar(props) {
 
       </div>
 
-      {/* FRIEND MENU */}
-
-      {friendMenu && (
-
-        <>
-
-          <div
-            onClick={() =>
-              setFriendMenu(
-                null
-              )
-            }
-            className="fixed inset-0 z-[9998]"
-          />
-
-          <div
-            className="
-              fixed
-              z-[9999]
-              w-[180px]
-              rounded-2xl
-              bg-[#1e1f22]
-              border
-              border-white/10
-              shadow-2xl
-              overflow-hidden
-            "
-
-            style={{
-              left:
-                friendMenu.x,
-              top:
-                friendMenu.y,
-            }}
-          >
-
-            <button
-              onClick={() => {
-
-                setConfirmRemove(
-                  friendMenu.friend
-                );
-
-                setFriendMenu(
-                  null
-                );
-
-              }}
-
-              className="
-                w-full
-                px-4
-                py-3
-                text-left
-                hover:bg-red-500/20
-                text-red-400
-                transition
-              "
-            >
-
-              Remove Friend
-
-            </button>
-
-          </div>
-
-        </>
-
-      )}
-
-      {/* REMOVE CONFIRM */}
-
-      {confirmRemove && (
-
-        <div className="fixed inset-0 z-[99999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-
-          <div
-            className="
-              w-full
-              max-w-sm
-              rounded-3xl
-              bg-white
-              dark:bg-[#1e1f22]
-              border
-              border-white/10
-              p-6
-            "
-          >
-
-            <div className="text-xl font-black mb-2">
-
-              Remove Friend
-
-            </div>
-
-            <div className="opacity-70 text-sm mb-6">
-
-              Remove{" "}
-              <strong>
-
-                {
-                  confirmRemove.username
-                }
-
-              </strong>{" "}
-              from your friends list?
-
-            </div>
-
-            <div className="flex gap-3">
-
-              <button
-                onClick={() =>
-                  setConfirmRemove(
-                    null
-                  )
-                }
-                className="
-                  flex-1
-                  h-12
-                  rounded-2xl
-                  bg-white/10
-                "
-              >
-
-                Cancel
-
-              </button>
-
-              <button
-                onClick={() =>
-                  removeFriend(
-                    confirmRemove
-                  )
-                }
-                className="
-                  flex-1
-                  h-12
-                  rounded-2xl
-                  bg-red-500
-                  text-white
-                  font-bold
-                "
-              >
-
-                Remove
-
-              </button>
-
-            </div>
-
-          </div>
-
-        </div>
-
-      )}
-
-      {/* MOBILE BG */}
-
-      {mobileOpen && (
-
-        <div
-          onClick={() =>
-            setMobileOpen(
-              false
-            )
-          }
-          className="
-            fixed
-            inset-0
-            bg-black/50
-            z-[9997]
-            md:hidden
-          "
-        />
-
-      )}
-
-      {/* SETTINGS */}
-
-      {openSettings && (
-
-        <SettingsModal
-          {...props}
-          close={() =>
-            setOpenSettings(
-              false
-            )
-          }
-        />
-
-      )}
-
-      {/* FRIENDS */}
+      {/* FRIENDS MODAL */}
 
       {openFriends && (
 
