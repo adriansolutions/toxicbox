@@ -16,43 +16,60 @@ export default function FriendsModal({
     useState([]);
 
   // SEARCH USER
-  const searchUser = () => {
+  const searchUser = async () => {
 
-    const users =
-      JSON.parse(
-        localStorage.getItem(
-          "bluechat-users"
-        ) || "[]"
+  if (!search.trim())
+    return;
+
+  try {
+
+    const res = await fetch(
+      "/api/search-user",
+      {
+        method: "POST",
+
+        headers: {
+          "Content-Type":
+            "application/json",
+        },
+
+        body: JSON.stringify({
+          search,
+        }),
+      }
+    );
+
+    const data =
+      await res.json();
+
+    if (!data.success) {
+
+      alert(
+        data.message ||
+        "User not found"
       );
 
-    const filtered =
-      users.filter((u) => {
+      setFoundUser(null);
 
-        if (
-          u.userId ===
-          currentUser.userId
-        )
-          return false;
+      return;
 
-        return (
-          u.username
-            ?.toLowerCase()
-            .includes(
-              search.toLowerCase()
-            ) ||
+    }
 
-          u.userId
-            ?.toLowerCase()
-            .includes(
-              search.toLowerCase()
-            )
-        );
+    setFoundUser(
+      data.user
+    );
 
-      });
+  } catch (err) {
 
-    setResults(filtered);
+    console.log(err);
 
-  };
+    alert(
+      "Search failed"
+    );
+
+  }
+
+};
 
   // ADD FRIEND
   const addFriend = (
