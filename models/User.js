@@ -2,9 +2,15 @@ import mongoose from "mongoose";
 
 const FriendSchema =
   new mongoose.Schema({
+
     username: String,
+
     userId: String,
+
     avatar: String,
+
+  }, {
+    _id: false,
   });
 
 const UserSchema =
@@ -26,6 +32,7 @@ const UserSchema =
       default: false,
     },
 
+    // IMPORTANT FIX
     friends: {
       type: [FriendSchema],
       default: [],
