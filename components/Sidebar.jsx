@@ -13,46 +13,45 @@ import {
 } from "react-icons/fi";
 
 import SettingsModal from "./SettingsModal";
-
 import FriendsModal from "./FriendsModal";
 
 export default function Sidebar(props) {
-  
+
   const [openSettings, setOpenSettings] =
-  useState(false);
-  
+    useState(false);
+
   const [mobileOpen, setMobileOpen] =
-  useState(false);
-  
+    useState(false);
+
   const [openFriends, setOpenFriends] =
-  useState(false);
-  
+    useState(false);
+
   const [friends, setFriends] =
-  useState([]);
-  
+    useState([]);
+
   // LOAD FRIENDS
   useEffect(() => {
-    
+
     if (!props.userId)
       return;
-    
+
     const saved =
       localStorage.getItem(
         `bluechat-friends-${props.userId}`
       );
-    
+
     if (saved) {
-      
+
       setFriends(
         JSON.parse(saved)
       );
-      
+
     }
-    
+
   }, [props.userId]);
-  
+
   return (
-    
+
     <>
 
       {/* MOBILE MENU BUTTON */}
@@ -120,6 +119,8 @@ export default function Sidebar(props) {
 
         <div>
 
+          {/* LOGO */}
+
           <div className="flex items-center gap-3 mt-20 md:mt-0 px-4">
 
             <div className="logo-circle">
@@ -140,7 +141,28 @@ export default function Sidebar(props) {
 
           <div className="channels">
 
-            <button className="channel active">
+            {/* GENERAL */}
+
+            <button
+              onClick={() => {
+
+                props.setActiveChat({
+                  type: "channel",
+                  id: "general",
+                  name: "General",
+                });
+
+              }}
+              className={`
+                channel
+                ${
+                  props.activeChat?.id ===
+                    "general"
+                    ? "active"
+                    : ""
+                }
+              `}
+            >
 
               <div className="channel-icon">
 
@@ -156,7 +178,28 @@ export default function Sidebar(props) {
 
             </button>
 
-            <button className="channel">
+            {/* RANDOM */}
+
+            <button
+              onClick={() => {
+
+                props.setActiveChat({
+                  type: "channel",
+                  id: "random",
+                  name: "Random",
+                });
+
+              }}
+              className={`
+                channel
+                ${
+                  props.activeChat?.id ===
+                    "random"
+                    ? "active"
+                    : ""
+                }
+              `}
+            >
 
               <div className="channel-icon">
 
@@ -176,71 +219,75 @@ export default function Sidebar(props) {
 
           {/* FRIENDS */}
 
-<div className="mt-5 px-3">
+          <div className="mt-5 px-3">
 
-  <div className="h-[1px] bg-white/10 mb-3 rounded-full" />
+            <div className="h-[1px] bg-white/10 mb-3 rounded-full" />
 
             <div className="space-y-2">
 
               {friends.map((friend) => (
 
-  <button
-    key={friend.userId}
+                <button
+                  key={friend.userId}
 
-    onClick={() => {
+                  onClick={() => {
 
-      props.setActiveChat({
-        type: "dm",
-        id: friend.userId,
-        user: friend,
-      });
+                    props.setActiveChat({
+                      type: "dm",
+                      id: friend.userId,
+                      user: friend,
+                    });
 
-    }}
+                  }}
 
-    className={`
-      channel
-      ${
-        props.activeChat?.id ===
-        friend.userId
-          ? "active"
-          : ""
-      }
-    `}
-  >
+                  className={`
+                    channel
 
-    {friend.avatar ? (
+                    ${
+                      props.activeChat?.id ===
+                      friend.userId
+                        ? "active"
+                        : ""
+                    }
+                  `}
+                >
 
-      <img
-        src={friend.avatar}
-        className="
-          avatar
-          object-cover
-        "
-      />
+                  {/* AVATAR */}
 
-    ) : (
+                  {friend.avatar ? (
 
-      <div className="avatar">
+                    <img
+                      src={friend.avatar}
+                      alt="avatar"
+                      className="
+                        avatar
+                        object-cover
+                      "
+                    />
 
-        {friend.username
-          ?.charAt(0)
-          ?.toUpperCase()}
+                  ) : (
 
-      </div>
+                    <div className="avatar">
 
-    )}
+                      {friend.username
+                        ?.charAt(0)
+                        ?.toUpperCase()}
 
-    {/* ONLY USERNAME */}
+                    </div>
 
-    <div className="channel-name truncate">
+                  )}
 
-      {friend.username}
+                  {/* USERNAME */}
 
-    </div>
+                  <div className="channel-name truncate">
 
-  </button>
+                    {friend.username}
 
-))}
+                  </div>
+
+                </button>
+
+              ))}
 
             </div>
 
@@ -250,35 +297,35 @@ export default function Sidebar(props) {
 
         {/* BOTTOM BUTTONS */}
 
-<div className="flex flex-col items-center gap-3 p-4">
+        <div className="flex flex-col items-center gap-3 p-4">
 
-  {/* ADD FRIEND */}
+          {/* ADD FRIEND */}
 
-  <button
-    onClick={() =>
-      setOpenFriends(true)
-    }
-    className="sidebar-btn"
-  >
+          <button
+            onClick={() =>
+              setOpenFriends(true)
+            }
+            className="sidebar-btn"
+          >
 
-    <FiUserPlus size={22} />
+            <FiUserPlus size={22} />
 
-  </button>
+          </button>
 
-  {/* SETTINGS */}
+          {/* SETTINGS */}
 
-  <button
-    onClick={() =>
-      setOpenSettings(true)
-    }
-    className="sidebar-btn"
-  >
+          <button
+            onClick={() =>
+              setOpenSettings(true)
+            }
+            className="sidebar-btn"
+          >
 
-    <FiSettings size={22} />
+            <FiSettings size={22} />
 
-  </button>
+          </button>
 
-</div>
+        </div>
 
       </div>
 
@@ -301,7 +348,7 @@ export default function Sidebar(props) {
 
       )}
 
-      {/* SETTINGS */}
+      {/* SETTINGS MODAL */}
 
       {openSettings && (
 
@@ -334,25 +381,25 @@ export default function Sidebar(props) {
             avatar:
               props.avatar,
           }}
-          
-          activeChat={
-  activeChat
-}
-
-setActiveChat={
-  setActiveChat
-}
 
           friends={friends}
 
           setFriends={setFriends}
+
+          activeChat={
+            props.activeChat
+          }
+
+          setActiveChat={
+            props.setActiveChat
+          }
 
         />
 
       )}
 
     </>
-    
+
   );
-  
+
 }
