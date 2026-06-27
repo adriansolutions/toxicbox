@@ -3,306 +3,508 @@
 import { useState } from "react";
 
 export default function SettingsModal({
-close,
-darkMode,
-setDarkMode,
-themeColor,
-setThemeColor,
-currentUser,
-setCurrentUser,
+  close,
+  darkMode,
+  setDarkMode,
+  themeColor,
+  setThemeColor,
+  currentUser,
+  setCurrentUser,
 }) {
 
-const [oldPassword, setOldPassword] =
-useState("");
+  const [oldPassword, setOldPassword] =
+    useState("");
 
-const [newPassword, setNewPassword] =
-useState("");
+  const [newPassword, setNewPassword] =
+    useState("");
 
-const [confirmPassword, setConfirmPassword] =
-useState("");
+  const [confirmPassword, setConfirmPassword] =
+    useState("");
 
-const [previewAvatar, setPreviewAvatar] =
-useState("");
+  const [previewAvatar, setPreviewAvatar] =
+    useState("");
 
-// PASSWORD
-const changePassword = () => {
+  // PASSWORD
+  const changePassword = () => {
 
-if (
-  !oldPassword ||
-  !newPassword ||
-  !confirmPassword
-) {
+    if (
+      !oldPassword ||
+      !newPassword ||
+      !confirmPassword
+    ) {
 
-  alert(
-    "Fill all password fields"
-  );
+      alert(
+        "Fill all password fields"
+      );
 
-  return;
+      return;
 
-}
+    }
 
-if (
-  oldPassword !==
-  currentUser.password
-) {
+    if (
+      oldPassword !==
+      currentUser.password
+    ) {
 
-  alert(
-    "Old password is incorrect"
-  );
+      alert(
+        "Old password is incorrect"
+      );
 
-  return;
+      return;
 
-}
+    }
 
-if (
-  newPassword.length < 6
-) {
+    if (
+      newPassword.length < 6
+    ) {
 
-  alert(
-    "Password must be atleast 6 characters"
-  );
+      alert(
+        "Password must be atleast 6 characters"
+      );
 
-  return;
+      return;
 
-}
+    }
 
-if (
-  newPassword !==
-  confirmPassword
-) {
+    if (
+      newPassword !==
+      confirmPassword
+    ) {
 
-  alert(
-    "Passwords do not match"
-  );
+      alert(
+        "Passwords do not match"
+      );
 
-  return;
+      return;
 
-}
+    }
 
-const updatedUser = {
-  ...currentUser,
-  password: newPassword,
-  avatar: newAvatar,
-};
+    const updatedUser = {
 
-localStorage.setItem(
-  "bluechat-user",
-  JSON.stringify(updatedUser)
-);
+      ...currentUser,
 
-setCurrentUser(updatedUser);
+      password:
+        newPassword,
 
-setOldPassword("");
-setNewPassword("");
-setConfirmPassword("");
+    };
 
-alert(
-  "Password changed successfully"
-);
+    localStorage.setItem(
+      "bluechat-user",
+      JSON.stringify(
+        updatedUser
+      )
+    );
 
-};
+    setCurrentUser(
+      updatedUser
+    );
 
-// AVATAR UPLOAD
-const uploadAvatar = (e) => {
+    setOldPassword("");
+    setNewPassword("");
+    setConfirmPassword("");
 
-const file =
-  e.target.files[0];
+    alert(
+      "Password changed successfully"
+    );
 
-if (!file) return;
+  };
 
-// 2MB LIMIT
-if (
-  file.size >
-  2 * 1024 * 1024
-) {
+  // AVATAR UPLOAD
+  const uploadAvatar = (
+    e
+  ) => {
 
-  alert(
-    "Avatar must be below 2MB"
-  );
+    const file =
+      e.target.files[0];
 
-  return;
+    if (!file)
+      return;
 
-}
+    // 2MB LIMIT
+    if (
+      file.size >
+      2 * 1024 * 1024
+    ) {
 
-const lastChanged =
-  currentUser.avatarChangedAt;
+      alert(
+        "Avatar must be below 2MB"
+      );
 
-// 7 DAYS
-if (lastChanged) {
+      return;
 
-  const days =
-    (
-      Date.now() -
-      lastChanged
-    ) /
-    (1000 * 60 * 60 * 24);
+    }
 
-  //if (days < 7) {
+    const lastChanged =
+      currentUser.avatarChangedAt;
 
-  //  alert(
-     // `You can change avatar again in ${Math.ceil(
-       // 7 - days
-     // )} day(s)`
-   // );
+    // 7 DAYS
+    if (lastChanged) {
 
-   // return;
+      const days =
+        (
+          Date.now() -
+          lastChanged
+        ) /
+        (
+          1000 *
+          60 *
+          60 *
+          24
+        );
 
-  //}
+      /*
+      if (days < 7) {
 
-}
+        alert(
+          `You can change avatar again in ${Math.ceil(
+            7 - days
+          )} day(s)`
+        );
 
-const reader =
-  new FileReader();
+        return;
 
-reader.onload = () => {
+      }
+      */
 
-  setPreviewAvatar(
-    reader.result
-  );
+    }
 
-};
+    const reader =
+      new FileReader();
 
-reader.readAsDataURL(file);
+    reader.onload =
+      async () => {
 
-};
+        const newAvatar =
+          reader.result;
 
-// SAVE AVATAR
-const saveAvatar = () => {
+        setPreviewAvatar(
+          newAvatar
+        );
 
-const updatedUser = {
+        // SAVE DATABASE
+        await fetch(
+          "/api/update-avatar",
+          {
+            method:
+              "POST",
 
-  ...currentUser,
+            headers: {
+              "Content-Type":
+                "application/json",
+            },
 
-  avatar:
-    previewAvatar,
+            body:
+              JSON.stringify({
+                userId:
+                  currentUser.userId,
 
-  avatarChangedAt:
-    Date.now(),
+                avatar:
+                  newAvatar,
+              }),
+          }
+        );
 
-};
+      };
 
-localStorage.setItem(
-  "bluechat-user",
-  JSON.stringify(updatedUser)
-);
+    reader.readAsDataURL(
+      file
+    );
 
-setCurrentUser(updatedUser);
+  };
 
-setPreviewAvatar("");
+  // SAVE AVATAR
+  const saveAvatar = () => {
 
-alert(
-  "Avatar updated"
-);
+    const updatedUser = {
 
-};
+      ...currentUser,
 
-// REMOVE AVATAR
-const removeAvatar = () => {
+      avatar:
+        previewAvatar,
 
-const updatedUser = {
+      avatarChangedAt:
+        Date.now(),
 
-  ...currentUser,
+    };
 
-  avatar: "",
+    // SAVE LOCAL
+    localStorage.setItem(
+      "bluechat-user",
+      JSON.stringify(
+        updatedUser
+      )
+    );
 
-};
+    // UPDATE STATE
+    setCurrentUser(
+      updatedUser
+    );
 
-localStorage.setItem(
-  "bluechat-user",
-  JSON.stringify(updatedUser)
-);
+    setPreviewAvatar("");
 
-setCurrentUser(updatedUser);
+    alert(
+      "Avatar updated"
+    );
 
-alert(
-  "Avatar removed"
-);
+  };
 
-};
+  // REMOVE AVATAR
+  const removeAvatar =
+    async () => {
 
-// LOGOUT
-const logout = () => {
+      const updatedUser = {
 
-localStorage.removeItem(
-  "bluechat-user"
-);
+        ...currentUser,
 
-window.location.reload();
+        avatar: "",
 
-};
+      };
 
-return (
+      // SAVE LOCAL
+      localStorage.setItem(
+        "bluechat-user",
+        JSON.stringify(
+          updatedUser
+        )
+      );
 
-<div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      // UPDATE STATE
+      setCurrentUser(
+        updatedUser
+      );
 
-  <div className="w-full max-w-md rounded-3xl bg-white dark:bg-[#1e1f22] shadow-2xl border border-white/10 overflow-hidden max-h-[90vh] overflow-y-auto">
+      // UPDATE DATABASE
+      await fetch(
+        "/api/update-avatar",
+        {
+          method:
+            "POST",
 
-    {/* HEADER */}
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
 
-    <div className="px-6 py-5 border-b border-gray-200 dark:border-white/10 flex items-center justify-between">
+          body:
+            JSON.stringify({
+              userId:
+                currentUser.userId,
 
-      <div>
+              avatar: "",
+            }),
+        }
+      );
 
-        <h2 className="text-2xl font-black">
-          Settings
-        </h2>
+      alert(
+        "Avatar removed"
+      );
 
-        <p className="text-sm opacity-60 mt-1">
-          Customize your chat
-        </p>
+    };
 
-      </div>
+  // LOGOUT
+  const logout = () => {
 
-      <button
-        onClick={close}
-        className="w-10 h-10 rounded-xl bg-gray-100 dark:bg-[#383a40] hover:scale-105 transition"
-      >
-        ✕
-      </button>
+    localStorage.removeItem(
+      "bluechat-user"
+    );
 
-    </div>
+    window.location.reload();
 
-    {/* CONTENT */}
+  };
 
-    <div className="p-6 space-y-8">
+  return (
 
-      {/* PROFILE */}
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
 
-      <div>
+      <div className="w-full max-w-md rounded-3xl bg-white dark:bg-[#1e1f22] shadow-2xl border border-white/10 overflow-hidden max-h-[90vh] overflow-y-auto">
 
-        <div className="font-semibold mb-4">
-          Profile
+        {/* HEADER */}
+
+        <div className="px-6 py-5 border-b border-gray-200 dark:border-white/10 flex items-center justify-between">
+
+          <div>
+
+            <h2 className="text-2xl font-black">
+              Settings
+            </h2>
+
+            <p className="text-sm opacity-60 mt-1">
+              Customize your chat
+            </p>
+
+          </div>
+
+          <button
+            onClick={close}
+            className="w-10 h-10 rounded-xl bg-gray-100 dark:bg-[#383a40] hover:scale-105 transition"
+          >
+            ✕
+          </button>
+
         </div>
 
-        <div className="flex items-center gap-4">
+        {/* CONTENT */}
 
-          {/* AVATAR */}
+        <div className="p-6 space-y-8">
 
-          <div className="relative">
+          {/* PROFILE */}
 
-            {currentUser?.avatar ? (
+          <div>
 
-              <img
-                src={
-                  currentUser.avatar
+            <div className="font-semibold mb-4">
+              Profile
+            </div>
+
+            <div className="flex items-center gap-4">
+
+              {/* AVATAR */}
+
+              <div className="relative">
+
+                {currentUser?.avatar ? (
+
+                  <img
+                    src={
+                      currentUser.avatar
+                    }
+                    className="
+                      w-20
+                      h-20
+                      rounded-full
+                      object-cover
+                      border-4
+                      border-blue-500
+                    "
+                  />
+
+                ) : (
+
+                  <div className="w-20 h-20 rounded-full bg-blue-600 flex items-center justify-center text-white text-3xl font-bold">
+
+                    {currentUser?.username
+                      ?.charAt(0)
+                      ?.toUpperCase()}
+
+                  </div>
+
+                )}
+
+              </div>
+
+              <div>
+
+                <div className="font-bold text-lg">
+
+                  {
+                    currentUser?.username
+                  }
+
+                </div>
+
+                <div className="opacity-60 text-sm">
+
+                  {
+                    currentUser?.userId
+                  }
+
+                </div>
+
+              </div>
+
+            </div>
+
+            {/* AVATAR BUTTONS */}
+
+            <div className="mt-5 flex gap-3">
+
+              <input
+                type="file"
+                accept="image/*"
+                hidden
+                id="avatarUpload"
+                onChange={
+                  uploadAvatar
                 }
-                className="
-                  w-20
-                  h-20
-                  rounded-full
-                  object-cover
-                  border-4
-                  border-blue-500
-                "
               />
 
-            ) : (
+              <label
+                htmlFor="avatarUpload"
+                className="
+                  px-4
+                  h-11
+                  rounded-2xl
+                  bg-blue-600
+                  hover:bg-blue-700
+                  text-white
+                  flex
+                  items-center
+                  cursor-pointer
+                  font-bold
+                "
+              >
+                Upload Avatar
+              </label>
 
-              <div className="w-20 h-20 rounded-full bg-blue-600 flex items-center justify-center text-white text-3xl font-bold">
+              <button
+                onClick={
+                  removeAvatar
+                }
+                className="
+                  px-4
+                  h-11
+                  rounded-2xl
+                  bg-red-500
+                  hover:bg-red-600
+                  text-white
+                  font-bold
+                "
+              >
+                Remove
+              </button>
 
-                {currentUser?.username
-                  ?.charAt(0)
-                  ?.toUpperCase()}
+            </div>
+
+            {/* PREVIEW */}
+
+            {previewAvatar && (
+
+              <div className="mt-5">
+
+                <div className="text-sm opacity-70 mb-3">
+
+                  Preview Avatar
+
+                </div>
+
+                <img
+                  src={previewAvatar}
+                  className="
+                    w-40
+                    h-40
+                    rounded-3xl
+                    object-cover
+                    border
+                    border-white/10
+                  "
+                />
+
+                <button
+                  onClick={
+                    saveAvatar
+                  }
+                  className="
+                    mt-4
+                    w-full
+                    h-12
+                    rounded-2xl
+                    bg-green-600
+                    hover:bg-green-700
+                    text-white
+                    font-bold
+                  "
+                >
+                  Save Avatar
+                </button>
 
               </div>
 
@@ -310,265 +512,146 @@ return (
 
           </div>
 
-          <div>
+          {/* DARK MODE */}
 
-            <div className="font-bold text-lg">
+          <div className="flex items-center justify-between">
 
-              {
-                currentUser?.username
-              }
+            <div>
 
-            </div>
+              <div className="font-semibold">
+                Dark Mode
+              </div>
 
-            <div className="opacity-60 text-sm">
-
-              {
-                currentUser?.userId
-              }
+              <div className="text-sm opacity-60">
+                Toggle dark appearance
+              </div>
 
             </div>
-
-          </div>
-
-        </div>
-
-        {/* AVATAR BUTTONS */}
-
-        <div className="mt-5 flex gap-3">
-
-          <input
-            type="file"
-            accept="image/*"
-            hidden
-            id="avatarUpload"
-            onChange={
-              uploadAvatar
-            }
-          />
-
-          <label
-            htmlFor="avatarUpload"
-            className="
-              px-4
-              h-11
-              rounded-2xl
-              bg-blue-600
-              hover:bg-blue-700
-              text-white
-              flex
-              items-center
-              cursor-pointer
-              font-bold
-            "
-          >
-            Upload Avatar
-          </label>
-
-          <button
-            onClick={
-              removeAvatar
-            }
-            className="
-              px-4
-              h-11
-              rounded-2xl
-              bg-red-500
-              hover:bg-red-600
-              text-white
-              font-bold
-            "
-          >
-            Remove
-          </button>
-
-        </div>
-
-        {/* PREVIEW */}
-
-        {previewAvatar && (
-
-          <div className="mt-5">
-
-            <div className="text-sm opacity-70 mb-3">
-
-              Preview Avatar
-
-            </div>
-
-            <img
-              src={previewAvatar}
-              className="
-                w-40
-                h-40
-                rounded-3xl
-                object-cover
-                border
-                border-white/10
-              "
-            />
 
             <button
-              onClick={
-                saveAvatar
+              onClick={() =>
+                setDarkMode(
+                  !darkMode
+                )
               }
-              className="
-                mt-4
-                w-full
-                h-12
-                rounded-2xl
-                bg-green-600
-                hover:bg-green-700
-                text-white
-                font-bold
-              "
+              className={`w-16 h-9 rounded-full transition relative ${
+                darkMode
+                  ? "bg-blue-600"
+                  : "bg-gray-300"
+              }`}
             >
-              Save Avatar
+
+              <div
+                className={`absolute top-1 w-7 h-7 rounded-full bg-white transition ${
+                  darkMode
+                    ? "left-8"
+                    : "left-1"
+                }`}
+              />
+
             </button>
 
           </div>
 
-        )}
+          {/* THEME */}
 
-      </div>
+          <div>
 
-      {/* DARK MODE */}
+            <div className="font-semibold mb-3">
+              Theme Color
+            </div>
 
-      <div className="flex items-center justify-between">
+            <input
+              type="color"
+              value={themeColor}
+              onChange={(e) =>
+                setThemeColor(
+                  e.target.value
+                )
+              }
+              className="w-full h-16 rounded-2xl border-none cursor-pointer bg-transparent"
+            />
 
-        <div>
-
-          <div className="font-semibold">
-            Dark Mode
           </div>
 
-          <div className="text-sm opacity-60">
-            Toggle dark appearance
+          {/* CHANGE PASSWORD */}
+
+          <div>
+
+            <div className="font-semibold mb-4">
+              Change Password
+            </div>
+
+            <div className="space-y-3">
+
+              <input
+                type="password"
+                placeholder="Old Password"
+                value={oldPassword}
+                onChange={(e) =>
+                  setOldPassword(
+                    e.target.value
+                  )
+                }
+                className="w-full h-12 px-4 rounded-2xl bg-gray-100 dark:bg-[#383a40] outline-none"
+              />
+
+              <input
+                type="password"
+                placeholder="New Password"
+                value={newPassword}
+                onChange={(e) =>
+                  setNewPassword(
+                    e.target.value
+                  )
+                }
+                className="w-full h-12 px-4 rounded-2xl bg-gray-100 dark:bg-[#383a40] outline-none"
+              />
+
+              <input
+                type="password"
+                placeholder="Confirm Password"
+                value={confirmPassword}
+                onChange={(e) =>
+                  setConfirmPassword(
+                    e.target.value
+                  )
+                }
+                className="w-full h-12 px-4 rounded-2xl bg-gray-100 dark:bg-[#383a40] outline-none"
+              />
+
+              <button
+                onClick={
+                  changePassword
+                }
+                className="w-full h-12 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold transition"
+              >
+                Change Password
+              </button>
+
+            </div>
+
+          </div>
+
+          {/* LOGOUT */}
+
+          <div>
+
+            <button
+              onClick={logout}
+              className="w-full h-12 rounded-2xl bg-red-500 hover:bg-red-600 text-white font-bold transition"
+            >
+              Logout Account
+            </button>
+
           </div>
 
         </div>
-
-        <button
-          onClick={() =>
-            setDarkMode(!darkMode)
-          }
-          className={`w-16 h-9 rounded-full transition relative ${
-            darkMode
-              ? "bg-blue-600"
-              : "bg-gray-300"
-          }`}
-        >
-
-          <div
-            className={`absolute top-1 w-7 h-7 rounded-full bg-white transition ${
-              darkMode
-                ? "left-8"
-                : "left-1"
-            }`}
-          />
-
-        </button>
-
-      </div>
-
-      {/* THEME */}
-
-      <div>
-
-        <div className="font-semibold mb-3">
-          Theme Color
-        </div>
-
-        <input
-          type="color"
-          value={themeColor}
-          onChange={(e) =>
-            setThemeColor(
-              e.target.value
-            )
-          }
-          className="w-full h-16 rounded-2xl border-none cursor-pointer bg-transparent"
-        />
-
-      </div>
-
-      {/* CHANGE PASSWORD */}
-
-      <div>
-
-        <div className="font-semibold mb-4">
-          Change Password
-        </div>
-
-        <div className="space-y-3">
-
-          <input
-            type="password"
-            placeholder="Old Password"
-            value={oldPassword}
-            onChange={(e) =>
-              setOldPassword(
-                e.target.value
-              )
-            }
-            className="w-full h-12 px-4 rounded-2xl bg-gray-100 dark:bg-[#383a40] outline-none"
-          />
-
-          <input
-            type="password"
-            placeholder="New Password"
-            value={newPassword}
-            onChange={(e) =>
-              setNewPassword(
-                e.target.value
-              )
-            }
-            className="w-full h-12 px-4 rounded-2xl bg-gray-100 dark:bg-[#383a40] outline-none"
-          />
-
-          <input
-            type="password"
-            placeholder="Confirm Password"
-            value={confirmPassword}
-            onChange={(e) =>
-              setConfirmPassword(
-                e.target.value
-              )
-            }
-            className="w-full h-12 px-4 rounded-2xl bg-gray-100 dark:bg-[#383a40] outline-none"
-          />
-
-          <button
-            onClick={
-              changePassword
-            }
-            className="w-full h-12 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold transition"
-          >
-            Change Password
-          </button>
-
-        </div>
-
-      </div>
-
-      {/* LOGOUT */}
-
-      <div>
-
-        <button
-          onClick={logout}
-          className="w-full h-12 rounded-2xl bg-red-500 hover:bg-red-600 text-white font-bold transition"
-        >
-          Logout Account
-        </button>
 
       </div>
 
     </div>
 
-  </div>
-
-</div>
-
-);
+  );
 
 }
