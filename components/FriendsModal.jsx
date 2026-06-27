@@ -18,58 +18,60 @@ export default function FriendsModal({
   // SEARCH USER
   const searchUser = async () => {
 
-  if (!search.trim())
-    return;
+    if (!search.trim())
+      return;
 
-  try {
+    try {
 
-    const res = await fetch(
-      "/api/search-user",
-      {
-        method: "POST",
+      const res = await fetch(
+        "/api/search-user",
+        {
+          method: "POST",
 
-        headers: {
-          "Content-Type":
-            "application/json",
-        },
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
 
-        body: JSON.stringify({
-          search,
-        }),
-      }
-    );
-
-    const data =
-      await res.json();
-
-    if (!data.success) {
-
-      alert(
-        data.message ||
-        "User not found"
+          body: JSON.stringify({
+            search,
+          }),
+        }
       );
 
-      setFoundUser(null);
+      const data =
+        await res.json();
 
-      return;
+      console.log(data);
+
+      if (!data.success) {
+
+        alert(
+          data.message ||
+          "User not found"
+        );
+
+        setResults([]);
+
+        return;
+
+      }
+
+      setResults([
+        data.user,
+      ]);
+
+    } catch (err) {
+
+      console.log(err);
+
+      alert(
+        "Search failed"
+      );
 
     }
 
-    setFoundUser(
-      data.user
-    );
-
-  } catch (err) {
-
-    console.log(err);
-
-    alert(
-      "Search failed"
-    );
-
-  }
-
-};
+  };
 
   // ADD FRIEND
   const addFriend = (
@@ -146,7 +148,7 @@ export default function FriendsModal({
 
         <div className="p-5">
 
-<div className="flex gap-2 items-center w-full">
+          <div className="flex gap-2 items-center w-full">
 
             <input
               type="text"
@@ -157,6 +159,18 @@ export default function FriendsModal({
                   e.target.value
                 )
               }
+              onKeyDown={(e) => {
+
+                if (
+                  e.key ===
+                  "Enter"
+                ) {
+
+                  searchUser();
+
+                }
+
+              }}
               className="
                 flex-1
                 min-w-0
@@ -169,30 +183,41 @@ export default function FriendsModal({
               "
             />
 
-<button
-  onClick={
-    searchUser
-  }
-  className="
-    h-12
-    px-4
-    shrink-0
-    rounded-2xl
-    bg-blue-600
-    hover:bg-blue-700
-    text-white
-    font-bold
-    transition
-  "
->
-  Search
-</button>
+            <button
+              onClick={
+                searchUser
+              }
+              className="
+                h-12
+                px-4
+                shrink-0
+                rounded-2xl
+                bg-blue-600
+                hover:bg-blue-700
+                text-white
+                font-bold
+                transition
+              "
+            >
+              Search
+            </button>
 
           </div>
 
           {/* RESULTS */}
 
           <div className="mt-5 space-y-3 max-h-[350px] overflow-y-auto">
+
+            {results.length ===
+              0 && (
+
+              <div className="text-center text-sm opacity-60 py-6">
+
+                No results
+
+              </div>
+
+            )}
 
             {results.map(
               (user) => (
