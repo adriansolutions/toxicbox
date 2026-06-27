@@ -1,50 +1,97 @@
 import connectDB from "../../../lib/mongodb";
 
+import User from "../../../models/User";
 import FriendRequest from "../../../models/FriendRequest";
 
-import Friend from "../../../models/Friend";
-
-export const dynamic =
-  "force-dynamic";
+export const dynamic = "force-dynamic";
 
 export async function POST(req) {
 
-  try {
+try {
 
-    await connectDB();
+await connectDB();
 
-    const {
-      currentUserId,
-      fromUserId,
-    } = await req.json();
+const {
+  currentUserId,
+  fromUserId,
+} = await req.json();
 
-    // CREATE FRIEND
-    await Friend.create({
-      users: [
-        currentUserId,
-        fromUserId,
-      ],
-    });
+// USERS
+const currentUser =
+  await User.findOne({
+    userId: currentUserId,
+  });
 
-    // REMOVE REQUEST
-    await FriendRequest.deleteOne({
-      fromUserId,
-      toUserId:
-        currentUserId,
-    });
+const sender =
+  await User.findOne({
+    userId: fromUserId,
+  });
 
-    return Response.json({
-      success: true,
-    });
+if (!currentUser || !sender) {
 
-  } catch (err) {
+  return Response.json({
+    success: false,
+    message: "User not found",
+  });
 
-    console.log(err);
+}
 
-    return Response.json({
-      success: false,
-    });
+// ADD SENDER TO CURRENT USER
+const alreadyFriend1 =
+  currentUser.friends?.find(
+    (f) =>
+      f.userId === sender.userId
+  );
 
-  }
+if (!alreadyFriend1) {
+
+  currentUser.friends.push({
+    username: sender.username,
+    userId: sender.userId,
+    avatar: sender.avatar || "",
+  });
+
+}
+
+// ADD CURRENT USER TO SENDER
+const alreadyFriend2 =
+  sender.friends?.find(
+    (f) =>
+      f.userId === currentUser.userId
+  );
+
+if (!alreadyFriend2) {
+
+  sender.friends.push({
+    username: currentUser.username,
+    userId: currentUser.userId,
+    avatar: currentUser.avatar || "",
+  });
+
+}
+
+await currentUser.save();
+await sender.save();
+
+// REMOVE REQUEST
+await FriendRequest.deleteOne({
+  fromUserId,
+  toUserId: currentUserId,
+});
+
+return Response.json({
+  success: true,
+});
+
+} catch (err) {
+
+console.log(err);
+
+return Response.json({
+  success: false,
+  message: "Server error",
+});
+
+}
 
 }
