@@ -27,18 +27,56 @@ setIncomingRequests,
 // LOAD REQUESTS
 useEffect(() => {
 
-const saved =
-  localStorage.getItem(
-    `bluechat-requests-${currentUser.userId}`
+if (!currentUser?.userId)
+  return;
+
+const loadRequests = () => {
+
+  const saved =
+    localStorage.getItem(
+      `bluechat-requests-${currentUser.userId}`
+    );
+
+  if (saved) {
+
+    setIncomingRequests(
+      JSON.parse(saved)
+    );
+
+  } else {
+
+    setIncomingRequests([]);
+
+  }
+
+};
+
+loadRequests();
+
+// AUTO REFRESH
+const interval =
+  setInterval(
+    loadRequests,
+    1000
   );
 
-if (saved) {
+window.addEventListener(
+  "storage",
+  loadRequests
+);
 
-  setIncomingRequests(
-    JSON.parse(saved)
+return () => {
+
+  clearInterval(
+    interval
   );
 
-}
+  window.removeEventListener(
+    "storage",
+    loadRequests
+  );
+
+};
 
 }, [currentUser.userId]);
 
@@ -125,14 +163,14 @@ const addFriend = (
 user
 ) => {
 
-const already =
+const alreadyFriend =
   friends.find(
     (f) =>
       f.userId ===
       user.userId
   );
 
-if (already) {
+if (alreadyFriend) {
 
   alert(
     "Already friends"
@@ -142,7 +180,6 @@ if (already) {
 
 }
 
-// SAVE REQUEST TO TARGET USER
 const existing =
   JSON.parse(
     localStorage.getItem(
@@ -162,7 +199,7 @@ if (
 ) {
 
   alert(
-    "Friend request already sent"
+    "Request already sent"
   );
 
   return;
@@ -189,6 +226,11 @@ localStorage.setItem(
   JSON.stringify(updatedRequests)
 );
 
+// FORCE STORAGE EVENT
+window.dispatchEvent(
+  new Event("storage")
+);
+
 alert(
   "Friend request sent"
 );
@@ -200,7 +242,7 @@ const acceptRequest = (
 user
 ) => {
 
-// ADD TO MY FRIENDS
+// MY FRIENDS
 const updatedFriends = [
   ...friends,
   user,
@@ -232,7 +274,7 @@ localStorage.setItem(
   JSON.stringify(updatedRequests)
 );
 
-// ALSO ADD YOU TO THEIR FRIENDS
+// THEIR FRIENDS
 const theirFriends =
   JSON.parse(
     localStorage.getItem(
@@ -267,16 +309,17 @@ if (!already) {
 
 }
 
+// REFRESH SIDEBAR
+window.dispatchEvent(
+  new Event("storage")
+);
+
 // OPEN DM
 setActiveChat({
   type: "dm",
   id: user.userId,
   user,
 });
-
-alert(
-  "Friend request accepted"
-);
 
 close();
 
@@ -321,7 +364,7 @@ return (
 
       {/* SEARCH */}
 
-      <div className="flex gap-2 items-center w-full">
+      <div className="flex gap-2">
 
         <input
           type="text"
@@ -346,7 +389,6 @@ return (
           }}
           className="
             flex-1
-            min-w-0
             h-12
             px-4
             rounded-2xl
@@ -363,7 +405,7 @@ return (
           disabled={loading}
           className="
             h-12
-            px-4
+            px-5
             rounded-2xl
             bg-blue-600
             text-white
@@ -379,7 +421,7 @@ return (
 
       </div>
 
-      {/* SEARCH RESULTS */}
+      {/* RESULTS */}
 
       <div className="mt-5 space-y-3">
 
@@ -425,9 +467,9 @@ return (
 
               )}
 
-              <div className="flex-1 min-w-0">
+              <div className="flex-1">
 
-                <div className="font-bold truncate">
+                <div className="font-bold">
 
                   {
                     user.username
@@ -435,7 +477,7 @@ return (
 
                 </div>
 
-                <div className="text-sm opacity-60 truncate">
+                <div className="text-sm opacity-60">
 
                   {
                     user.userId
