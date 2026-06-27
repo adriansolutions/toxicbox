@@ -14,37 +14,42 @@ export default function FriendsModal({
   const [loading, setLoading] = useState(false);
   const [incomingRequests, setIncomingRequests] = useState([]);
 
-  // LOAD REQUESTS (SAFE VERSION)
+  // =========================
+  // LOAD REQUESTS FROM MONGO
+  // =========================
+  const loadRequests = async () => {
+    try {
+      const res = await fetch(
+        `/api/get-friend-requests?userId=${currentUser.userId}`
+      );
+
+      const data = await res.json();
+
+      if (data.success) {
+        setIncomingRequests(data.requests || []);
+      } else {
+        setIncomingRequests([]);
+      }
+    } catch (err) {
+      console.log(err);
+      setIncomingRequests([]);
+    }
+  };
+
   useEffect(() => {
     if (!currentUser?.userId) return;
 
-    const loadRequests = () => {
-      try {
-        const saved = localStorage.getItem(
-          `bluechat-requests-${currentUser.userId}`
-        );
-
-        setIncomingRequests(saved ? JSON.parse(saved) : []);
-      } catch (err) {
-        setIncomingRequests([]);
-      }
-    };
-
     loadRequests();
 
-    const interval = setInterval(loadRequests, 1000);
+    // simple refresh (replace with websocket later)
+    const interval = setInterval(loadRequests, 3000);
 
-    const handleStorage = () => loadRequests();
-
-    window.addEventListener("storage", handleStorage);
-
-    return () => {
-      clearInterval(interval);
-      window.removeEventListener("storage", handleStorage);
-    };
+    return () => clearInterval(interval);
   }, [currentUser?.userId]);
 
+  // =========================
   // SEARCH USER
+  // =========================
   const searchUser = async () => {
     if (!search.trim()) return;
 
@@ -67,7 +72,6 @@ export default function FriendsModal({
 
       if (data.user.userId === currentUser.userId) {
         alert("You cannot add yourself");
-        setResults([]);
         return;
       }
 
@@ -80,90 +84,77 @@ export default function FriendsModal({
     }
   };
 
-  // SEND FRIEND REQUEST (FIXED REFRESH)
-  const addFriend = (user) => {
-    const existing = JSON.parse(
-      localStorage.getItem(`bluechat-requests-${user.userId}`) || "[]"
-    );
-
-    const alreadyRequested = existing.find(
-      (r) => r.userId === currentUser.userId
-    );
-
-    if (alreadyRequested) {
-      alert("Request already sent");
-      return;
-    }
-
-    const updated = [
-      ...existing,
-      {
-        username: currentUser.username,
-        userId: currentUser.userId,
-        avatar: currentUser.avatar || "",
-      },
-    ];
-
-    localStorage.setItem(
-      `bluechat-requests-${user.userId}`,
-      JSON.stringify(updated)
-    );
-
-    // FORCE UPDATE BOTH SIDES
-    window.dispatchEvent(new Event("storage"));
-
-    alert("Friend request sent");
-  };
-
-  // ACCEPT REQUEST
-  const acceptRequest = (user) => {
-    const updatedFriends = [...friends, user];
-
-    setFriends(updatedFriends);
-
-    localStorage.setItem(
-      `bluechat-friends-${currentUser.userId}`,
-      JSON.stringify(updatedFriends)
-    );
-
-    const updatedRequests = incomingRequests.filter(
-      (r) => r.userId !== user.userId
-    );
-
-    setIncomingRequests(updatedRequests);
-
-    localStorage.setItem(
-      `bluechat-requests-${currentUser.userId}`,
-      JSON.stringify(updatedRequests)
-    );
-
-    // ADD BACK FRIEND
-    const theirFriends = JSON.parse(
-      localStorage.getItem(`bluechat-friends-${user.userId}`) || "[]"
-    );
-
-    if (!theirFriends.find((f) => f.userId === currentUser.userId)) {
-      theirFriends.push({
-        username: currentUser.username,
-        userId: currentUser.userId,
-        avatar: currentUser.avatar || "",
+  // =========================
+  // SEND FRIEND REQUEST (API)
+  // =========================
+  const addFriend = async (user) => {
+    try {
+      const res = await fetch("/api/send-friend-request", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fromUserId: currentUser.userId,
+          toUserId: user.userId,
+          username: currentUser.username,
+          avatar: currentUser.avatar || "",
+        }),
       });
 
-      localStorage.setItem(
-        `bluechat-friends-${user.userId}`,
-        JSON.stringify(theirFriends)
-      );
+      const data = await res.json();
+
+      if (!data.success) {
+        alert(data.message || "Failed to send request");
+        return;
+      }
+
+      alert("Friend request sent");
+      setResults([]);
+      setSearch("");
+    } catch (err) {
+      console.log(err);
+      alert("Server error");
     }
+  };
 
-    window.dispatchEvent(new Event("storage"));
+  // =========================
+  // ACCEPT FRIEND REQUEST (API)
+  // =========================
+  const acceptRequest = async (user) => {
+    try {
+      const res = await fetch("/api/accept-friend-requests", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          currentUserId: currentUser.userId,
+          fromUserId: user.userId,
+        }),
+      });
 
-    setActiveChat({
-      type: "dm",
-      id: user.userId,
-      user,
-    });
+      const data = await res.json();
 
-    close();
+      if (!data.success) {
+        alert(data.message || "Failed to accept");
+        return;
+      }
+
+      // update UI
+      setFriends((prev) => [...prev, user]);
+
+      setIncomingRequests((prev) =>
+        prev.filter((r) => r.userId !== user.userId)
+      );
+
+      setActiveChat({
+        type: "dm",
+        id: user.userId,
+        user,
+      });
+
+      close();
+    } catch (err) {
+      console.log(err);
+      alert("Server error");
+    }
   };
 
   return (
@@ -188,11 +179,11 @@ export default function FriendsModal({
           {/* SEARCH */}
           <div className="flex gap-2">
             <input
-              className="flex-1 h-12 px-4 rounded-2xl bg-gray-100 dark:bg-[#383a40]"
-              placeholder="Search username or ID..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && searchUser()}
+              placeholder="Search username or ID..."
+              className="flex-1 h-12 px-4 rounded-2xl bg-gray-100 dark:bg-[#383a40]"
             />
 
             <button
@@ -204,13 +195,11 @@ export default function FriendsModal({
             </button>
           </div>
 
-          {/* SEARCH RESULTS */}
+          {/* RESULTS */}
           <div className="mt-5 space-y-3">
             {results.map((user) => (
-              <div
-                key={user.userId}
-                className="flex items-center gap-3 p-3 rounded-2xl bg-black/5 dark:bg-white/5"
-              >
+              <div key={user.userId} className="flex items-center gap-3 p-3 rounded-2xl bg-black/5 dark:bg-white/5">
+
                 <div className="avatar">
                   {user.username?.charAt(0).toUpperCase()}
                 </div>
@@ -240,10 +229,8 @@ export default function FriendsModal({
               )}
 
               {incomingRequests.map((user) => (
-                <div
-                  key={user.userId}
-                  className="flex items-center gap-3 p-3 rounded-2xl bg-black/5 dark:bg-white/5"
-                >
+                <div key={user.userId} className="flex items-center gap-3 p-3 rounded-2xl bg-black/5 dark:bg-white/5">
+
                   <div className="avatar">
                     {user.username?.charAt(0).toUpperCase()}
                   </div>
@@ -259,6 +246,7 @@ export default function FriendsModal({
                   >
                     Accept
                   </button>
+
                 </div>
               ))}
             </div>
@@ -266,6 +254,7 @@ export default function FriendsModal({
           </div>
 
         </div>
+
       </div>
     </div>
   );
