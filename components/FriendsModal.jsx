@@ -34,7 +34,7 @@ export default function FriendsModal({
 
         const res =
           await fetch(
-            `/app/api/get-friend-requests?userId=${currentUser.userId}`
+            `/api/get-friend-requests?userId=${currentUser.userId}`
           );
 
         const data =
@@ -107,7 +107,7 @@ export default function FriendsModal({
 
         const res =
           await fetch(
-            "/app/api/search-user",
+            "/api/search-user",
             {
               method:
                 "POST",
@@ -187,7 +187,7 @@ export default function FriendsModal({
 
         const res =
           await fetch(
-            "/app/api/send-friend-request",
+            "/api/send-friend-request",
             {
               method:
                 "POST",
@@ -262,7 +262,7 @@ export default function FriendsModal({
 
         const res =
           await fetch(
-            "/app/api/accept-friend-requests",
+            "/api/accept-friend-requests",
             {
               method:
                 "POST",
@@ -718,7 +718,7 @@ export default function FriendsModal({
                           try {
 
                             await fetch(
-                              "/app/api/remove-friend-request",
+                              "/api/remove-friend-request",
                               {
                                 method:
                                   "POST",
