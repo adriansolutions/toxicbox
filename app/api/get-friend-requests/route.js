@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import connectDB from "../../../lib/mongodb";
 import FriendRequest from "../../../models/FriendRequest";
 
@@ -6,18 +8,23 @@ export async function GET(req) {
     await connectDB();
 
     const { searchParams } = new URL(req.url);
-    const userId = searchParams.get("userId");
+
+    const userId =
+      searchParams.get("userId");
 
     if (!userId) {
+
       return Response.json({
         success: false,
         message: "Missing userId",
       });
+
     }
 
-    const requests = await FriendRequest.find({
-      toUserId: userId,
-    });
+    const requests =
+      await FriendRequest.find({
+        toUserId: userId,
+      });
 
     return Response.json({
       success: true,
@@ -25,11 +32,13 @@ export async function GET(req) {
     });
 
   } catch (err) {
+
     console.log(err);
 
     return Response.json({
       success: false,
       message: "Server error",
     });
+
   }
 }
