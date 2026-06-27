@@ -1,9 +1,11 @@
 import connectDB from "../../../lib/mongodb";
 
 import User from "../../../models/User";
+
 import FriendRequest from "../../../models/FriendRequest";
 
-export const dynamic = "force-dynamic";
+export const dynamic =
+"force-dynamic";
 
 export async function POST(req) {
 
@@ -16,7 +18,7 @@ const {
   fromUserId,
 } = await req.json();
 
-// USERS
+// FIND USERS
 const currentUser =
   await User.findOne({
     userId: currentUserId,
@@ -27,56 +29,95 @@ const sender =
     userId: fromUserId,
   });
 
-if (!currentUser || !sender) {
+if (
+  !currentUser ||
+  !sender
+) {
 
   return Response.json({
     success: false,
-    message: "User not found",
+    message:
+      "User not found",
   });
 
 }
 
-// ADD SENDER TO CURRENT USER
+// IMPORTANT FIX
+if (
+  !currentUser.friends
+) {
+
+  currentUser.friends = [];
+
+}
+
+if (
+  !sender.friends
+) {
+
+  sender.friends = [];
+
+}
+
+// ADD SENDER
 const alreadyFriend1 =
-  currentUser.friends?.find(
+  currentUser.friends.find(
     (f) =>
-      f.userId === sender.userId
+      f.userId ===
+      sender.userId
   );
 
-if (!alreadyFriend1) {
+if (
+  !alreadyFriend1
+) {
 
   currentUser.friends.push({
-    username: sender.username,
-    userId: sender.userId,
-    avatar: sender.avatar || "",
+    username:
+      sender.username,
+
+    userId:
+      sender.userId,
+
+    avatar:
+      sender.avatar || "",
   });
 
 }
 
-// ADD CURRENT USER TO SENDER
+// ADD CURRENT USER
 const alreadyFriend2 =
-  sender.friends?.find(
+  sender.friends.find(
     (f) =>
-      f.userId === currentUser.userId
+      f.userId ===
+      currentUser.userId
   );
 
-if (!alreadyFriend2) {
+if (
+  !alreadyFriend2
+) {
 
   sender.friends.push({
-    username: currentUser.username,
-    userId: currentUser.userId,
-    avatar: currentUser.avatar || "",
+    username:
+      currentUser.username,
+
+    userId:
+      currentUser.userId,
+
+    avatar:
+      currentUser.avatar || "",
   });
 
 }
 
 await currentUser.save();
+
 await sender.save();
 
 // REMOVE REQUEST
 await FriendRequest.deleteOne({
   fromUserId,
-  toUserId: currentUserId,
+  toUserId:
+    currentUserId,
 });
 
 return Response.json({
@@ -85,11 +126,15 @@ return Response.json({
 
 } catch (err) {
 
-console.log(err);
+console.log(
+  "ACCEPT ERROR:",
+  err
+);
 
 return Response.json({
   success: false,
-  message: "Server error",
+  message:
+    "Server error",
 });
 
 }
