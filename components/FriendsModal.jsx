@@ -301,18 +301,7 @@ export default function FriendsModal({
 
         }
 
-        const newFriend = {
-
-          username:
-            user.username,
-
-          userId:
-            user.userId,
-
-          avatar:
-            user.avatar || "",
-
-        };
+        const newFriend = data.friend;
 
         // ADD FRIEND
         setFriends(
