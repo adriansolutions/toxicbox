@@ -1,9 +1,9 @@
 "use client";
 
 import {
-useEffect,
-useRef,
-useState,
+  useEffect,
+  useRef,
+  useState,
 } from "react";
 
 import socket from "../lib/socket";
@@ -11,646 +11,703 @@ import socket from "../lib/socket";
 import Message from "./Message";
 
 export default function ChatArea({
-username,
-userId,
-avatar,
+  username,
+  userId,
+  avatar,
+  activeChat,
 }) {
 
-const [messages, setMessages] =
-useState([]);
+  const [messages, setMessages] =
+    useState([]);
 
-const [message, setMessage] =
-useState("");
+  const [message, setMessage] =
+    useState("");
 
-const [replyingTo, setReplyingTo] =
-useState(null);
+  const [replyingTo, setReplyingTo] =
+    useState(null);
 
-const [typing, setTyping] =
-useState("");
+  const [typing, setTyping] =
+    useState("");
 
-const [selectedImages, setSelectedImages] =
-useState([]);
+  const [selectedImages, setSelectedImages] =
+    useState([]);
 
-const [previewImage, setPreviewImage] =
-useState("");
+  const [previewImage, setPreviewImage] =
+    useState("");
 
-const bottomRef = useRef();
+  const bottomRef = useRef();
 
-// RECEIVE EVENTS
-useEffect(() => {
+  // RECEIVE EVENTS
+  useEffect(() => {
 
-// MESSAGE
-socket.on(
-  "receive-message",
-  (data) => {
+    // MESSAGE
+    socket.on(
+      "receive-message",
+      (data) => {
 
-    setMessages((prev) => {
+        setMessages((prev) => {
 
-      const exists =
-        prev.some(
-          (msg) =>
-            msg.id === data.id
-        );
+          const exists =
+            prev.some(
+              (msg) =>
+                msg.id === data.id
+            );
 
-      if (exists)
-        return prev;
+          if (exists)
+            return prev;
 
-      return [
-        ...prev,
-        data,
-      ];
+          return [
+            ...prev,
+            data,
+          ];
 
-    });
+        });
 
-  }
-);
+      }
+    );
 
-// REACTION
-socket.on(
-  "reaction-updated",
-  ({
-    messageId,
-    emoji,
-    userId:
-      reactedUserId,
-  }) => {
+    // REACTION
+    socket.on(
+      "reaction-updated",
+      ({
+        messageId,
+        emoji,
+        userId:
+          reactedUserId,
+      }) => {
 
-    setMessages((prev) =>
-      prev.map((msg) => {
+        setMessages((prev) =>
+          prev.map((msg) => {
 
-        if (
-          msg.id !==
-          messageId
-        ) {
-          return msg;
-        }
+            if (
+              msg.id !==
+              messageId
+            ) {
+              return msg;
+            }
 
-        const reactedUsers =
-          msg.reactedUsers ||
-          {};
+            const reactedUsers =
+              msg.reactedUsers ||
+              {};
 
-        const emojiUsers =
-          reactedUsers[
-            emoji
-          ] || [];
+            const emojiUsers =
+              reactedUsers[
+                emoji
+              ] || [];
 
-        const alreadyReacted =
-          emojiUsers.includes(
-            reactedUserId
-          );
+            const alreadyReacted =
+              emojiUsers.includes(
+                reactedUserId
+              );
 
-        // UNREACT
-        if (
-          alreadyReacted
-        ) {
+            // UNREACT
+            if (
+              alreadyReacted
+            ) {
 
-          return {
-            ...msg,
+              return {
+                ...msg,
 
-            reactions: {
-              ...msg.reactions,
+                reactions: {
+                  ...msg.reactions,
 
-              [emoji]:
-                Math.max(
+                  [emoji]:
+                    Math.max(
+                      (
+                        msg
+                          .reactions?.[
+                          emoji
+                        ] || 1
+                      ) - 1,
+                      0
+                    ),
+                },
+
+                reactedUsers:
+                  {
+                    ...reactedUsers,
+
+                    [emoji]:
+                      emojiUsers.filter(
+                        (
+                          id
+                        ) =>
+                          id !==
+                          reactedUserId
+                      ),
+                  },
+              };
+
+            }
+
+            // REACT
+            return {
+              ...msg,
+
+              reactions: {
+                ...msg.reactions,
+
+                [emoji]:
                   (
                     msg
                       .reactions?.[
                       emoji
-                    ] || 1
-                  ) - 1,
-                  0
-                ),
-            },
+                    ] || 0
+                  ) + 1,
+              },
 
-            reactedUsers:
-              {
+              reactedUsers: {
                 ...reactedUsers,
 
-                [emoji]:
-                  emojiUsers.filter(
-                    (
-                      id
-                    ) =>
-                      id !==
-                      reactedUserId
-                  ),
+                [emoji]: [
+                  ...emojiUsers,
+                  reactedUserId,
+                ],
               },
-          };
+            };
 
-        }
+          })
+        );
 
-        // REACT
-        return {
-          ...msg,
-
-          reactions: {
-            ...msg.reactions,
-
-            [emoji]:
-              (
-                msg
-                  .reactions?.[
-                  emoji
-                ] || 0
-              ) + 1,
-          },
-
-          reactedUsers: {
-            ...reactedUsers,
-
-            [emoji]: [
-              ...emojiUsers,
-              reactedUserId,
-            ],
-          },
-        };
-
-      })
-    );
-
-  }
-);
-
-// TYPING
-socket.on(
-  "typing",
-  ({
-    username:
-      typingName,
-
-    userId:
-      typingId,
-  }) => {
-
-    if (
-      typingId ===
-      userId
-    )
-      return;
-
-    setTyping(
-      `${typingName} (${typingId})`
-    );
-
-    setTimeout(() => {
-
-      setTyping("");
-
-    }, 1500);
-
-  }
-);
-
-// CLEANUP
-return () => {
-
-  socket.off(
-    "receive-message"
-  );
-
-  socket.off(
-    "reaction-updated"
-  );
-
-  socket.off(
-    "typing"
-  );
-
-};
-
-}, [username, userId]);
-
-// AUTO SCROLL
-useEffect(() => {
-
-bottomRef.current?.scrollIntoView({
-  behavior: "smooth",
-});
-
-}, [messages]);
-
-// SEND MESSAGE
-const sendMessage = () => {
-
-if (
-  !message.trim() &&
-  selectedImages.length === 0
-)
-  return;
-
-const data = {
-
-  id: Date.now(),
-
-  username,
-
-  userId,
-
-  avatar,
-
-  text: message,
-
-  images:
-    selectedImages,
-
-  time:
-    new Date().toLocaleTimeString(
-      [],
-      {
-        hour:
-          "2-digit",
-
-        minute:
-          "2-digit",
       }
-    ),
+    );
 
-  reactions: {},
+    // TYPING
+    socket.on(
+      "typing",
+      ({
+        username:
+          typingName,
 
-  reactedUsers: {},
+        userId:
+          typingId,
+      }) => {
 
-  replyTo:
-    replyingTo,
+        if (
+          typingId ===
+          userId
+        )
+          return;
 
-};
+        setTyping(
+          `${typingName} (${typingId})`
+        );
 
-socket.emit(
-  "send-message",
-  data
-);
+        setTimeout(() => {
 
-setMessage("");
+          setTyping("");
 
-setSelectedImages([]);
+        }, 1500);
 
-setReplyingTo(null);
+      }
+    );
 
-};
+    // CLEANUP
+    return () => {
 
-// MULTIPLE IMAGE UPLOAD
-const uploadImage = (
-e
-) => {
+      socket.off(
+        "receive-message"
+      );
 
-const files =
-  Array.from(
-    e.target.files
-  );
+      socket.off(
+        "reaction-updated"
+      );
 
-if (!files.length)
-  return;
-
-files.forEach((file) => {
-
-  const reader =
-    new FileReader();
-
-  reader.onload =
-    () => {
-
-      setSelectedImages(
-        (prev) => [
-          ...prev,
-          reader.result,
-        ]
+      socket.off(
+        "typing"
       );
 
     };
 
-  reader.readAsDataURL(
-    file
-  );
+  }, [username, userId]);
 
-});
+  // AUTO SCROLL
+  useEffect(() => {
 
-};
+    bottomRef.current?.scrollIntoView({
+      behavior: "smooth",
+    });
 
-return (
+  }, [messages]);
 
-<div className="chat-wrapper flex-1 flex flex-col overflow-hidden relative">
+  // SEND MESSAGE
+  const sendMessage = () => {
 
-  {/* IMAGE VIEWER */}
+    if (
+      !message.trim() &&
+      selectedImages.length === 0
+    )
+      return;
 
-  {previewImage && (
+    const data = {
 
-    <div className="fixed inset-0 z-[999] bg-black/90 flex items-center justify-center p-4">
+      id: Date.now(),
 
-      <button
-        onClick={() =>
-          setPreviewImage("")
-        }
-        className="absolute top-5 right-5 text-white text-3xl"
-      >
-        ✕
-      </button>
+      username,
 
-      <a
-        href={previewImage}
-        download
-        className="absolute top-5 left-5 bg-white text-black px-4 py-2 rounded-xl text-sm font-semibold"
-      >
-        Save
-      </a>
+      userId,
 
-      <img
-        src={previewImage}
-        className="max-w-full max-h-full rounded-2xl"
-      />
+      avatar,
 
-    </div>
+      // NEW
+      chatType:
+        activeChat?.type ||
+        "channel",
 
-  )}
+      chatId:
+        activeChat?.id ||
+        "general",
 
-  {/* MESSAGES */}
+      text: message,
 
-  <div className="chat-messages flex-1 overflow-y-auto px-2">
+      images:
+        selectedImages,
 
-    {messages.map(
-      (msg) => (
-
-        <Message
-          key={msg.id}
-
-          msg={msg}
-
-          messages={
-            messages
-          }
-
-          setMessages={
-            setMessages
-          }
-
-          setReplyingTo={
-            setReplyingTo
-          }
-
-          userId={
-            userId
-          }
-
-          setPreviewImage={
-            setPreviewImage
-          }
-        />
-
-      )
-    )}
-
-    <div
-      ref={bottomRef}
-    ></div>
-
-  </div>
-
-  {/* TYPING */}
-
-  {typing && (
-
-    <div className="px-5 pb-2 text-sm opacity-70">
-
-      {typing} is typing...
-
-    </div>
-
-  )}
-
-  {/* REPLY BAR */}
-
-  {replyingTo && (
-
-    <div className="mx-4 mb-2 px-5 py-3 rounded-2xl bg-blue-100 dark:bg-[#383a40] flex justify-between items-center shadow-sm text-black dark:text-white">
-
-      <span className="text-sm">
-
-        Replying to{" "}
-
-        <strong>
+      time:
+        new Date().toLocaleTimeString(
+          [],
           {
-            replyingTo.username
+            hour:
+              "2-digit",
+
+            minute:
+              "2-digit",
           }
-        </strong>
+        ),
 
-      </span>
+      reactions: {},
 
-      <button
-        onClick={() =>
-          setReplyingTo(
-            null
-          )
-        }
-        className="text-lg"
-      >
-        ✕
-      </button>
+      reactedUsers: {},
 
-    </div>
+      replyTo:
+        replyingTo,
 
-  )}
+    };
 
-  {/* SELECTED IMAGES */}
+    socket.emit(
+      "send-message",
+      data
+    );
 
-  {selectedImages.length >
-    0 && (
+    setMessage("");
 
-    <div className="px-4 pb-2 flex gap-2 overflow-x-auto">
+    setSelectedImages([]);
 
-      {selectedImages.map(
+    setReplyingTo(null);
+
+  };
+
+  // MULTIPLE IMAGE UPLOAD
+  const uploadImage = (
+    e
+  ) => {
+
+    const files =
+      Array.from(
+        e.target.files
+      );
+
+    if (!files.length)
+      return;
+
+    files.forEach((file) => {
+
+      const reader =
+        new FileReader();
+
+      reader.onload =
+        () => {
+
+          setSelectedImages(
+            (prev) => [
+              ...prev,
+              reader.result,
+            ]
+          );
+
+        };
+
+      reader.readAsDataURL(
+        file
+      );
+
+    });
+
+  };
+
+  // FILTER MESSAGES
+  const filteredMessages =
+    messages.filter((msg) => {
+
+      // GENERAL
+      if (
+        !activeChat ||
+        activeChat.type ===
+          "channel"
+      ) {
+
+        return (
+          msg.chatType !==
+          "dm"
+        );
+
+      }
+
+      // PRIVATE CHAT
+      return (
+        msg.chatType ===
+          "dm" &&
         (
-          img,
-          index
-        ) => (
-
-          <div
-            key={index}
-            className="relative"
-          >
-
-            <img
-              src={img}
-
-              onClick={() =>
-                setPreviewImage(
-                  img
-                )
-              }
-
-              className="w-20 h-20 rounded-2xl object-cover border border-white/10 cursor-pointer"
-            />
-
-            <button
-              onClick={() => {
-
-                setSelectedImages(
-                  (
-                    prev
-                  ) =>
-                    prev.filter(
-                      (
-                        _,
-                        i
-                      ) =>
-                        i !==
-                        index
-                    )
-                );
-
-              }}
-              className="absolute -top-2 -right-2 bg-red-500 text-white w-6 h-6 rounded-full text-xs"
-            >
-              ✕
-            </button>
-
-          </div>
-
+          (
+            msg.userId ===
+              userId &&
+            msg.chatId ===
+              activeChat.id
+          ) ||
+          (
+            msg.userId ===
+              activeChat.id &&
+            msg.chatId ===
+              userId
+          )
         )
-      )}
+      );
 
-    </div>
+    });
 
-  )}
+  return (
 
-  {/* INPUT */}
+    <div className="chat-wrapper flex-1 flex flex-col overflow-hidden relative">
 
-  <div className="chat-input-area border-t border-white/10">
+      {/* IMAGE VIEWER */}
 
-    <div className="chat-input flex items-center gap-3">
+      {previewImage && (
 
-      {/* IMAGE */}
+        <div className="fixed inset-0 z-[999] bg-black/90 flex items-center justify-center p-4">
 
-      <input
-        type="file"
-        accept="image/*,image/gif"
-        multiple
-        hidden
-        id="imageUpload"
-        onChange={
-          uploadImage
-        }
-      />
+          <button
+            onClick={() =>
+              setPreviewImage("")
+            }
+            className="absolute top-5 right-5 text-white text-3xl"
+          >
+            ✕
+          </button>
 
-      <label
-        htmlFor="imageUpload"
-        className="
-          action-btn
-          cursor-pointer
-          flex
-          items-center
-          justify-center
-        "
-      >
+          <a
+            href={previewImage}
+            download
+            className="absolute top-5 left-5 bg-white text-black px-4 py-2 rounded-xl text-sm font-semibold"
+          >
+            Save
+          </a>
 
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="22"
-          height="22"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-
-          <polyline points="17 8 21 12 17 16" />
-
-          <line
-            x1="21"
-            y1="12"
-            x2="9"
-            y2="12"
+          <img
+            src={previewImage}
+            className="max-w-full max-h-full rounded-2xl"
           />
 
-        </svg>
+        </div>
 
-      </label>
+      )}
+
+      {/* MESSAGES */}
+
+      <div className="chat-messages flex-1 overflow-y-auto px-2">
+
+        {filteredMessages.map(
+          (msg) => (
+
+            <Message
+              key={msg.id}
+
+              msg={msg}
+
+              messages={
+                messages
+              }
+
+              setMessages={
+                setMessages
+              }
+
+              setReplyingTo={
+                setReplyingTo
+              }
+
+              userId={
+                userId
+              }
+
+              setPreviewImage={
+                setPreviewImage
+              }
+            />
+
+          )
+        )}
+
+        <div
+          ref={bottomRef}
+        ></div>
+
+      </div>
+
+      {/* TYPING */}
+
+      {typing && (
+
+        <div className="px-5 pb-2 text-sm opacity-70">
+
+          {typing} is typing...
+
+        </div>
+
+      )}
+
+      {/* REPLY BAR */}
+
+      {replyingTo && (
+
+        <div className="mx-4 mb-2 px-5 py-3 rounded-2xl bg-blue-100 dark:bg-[#383a40] flex justify-between items-center shadow-sm text-black dark:text-white">
+
+          <span className="text-sm">
+
+            Replying to{" "}
+
+            <strong>
+              {
+                replyingTo.username
+              }
+            </strong>
+
+          </span>
+
+          <button
+            onClick={() =>
+              setReplyingTo(
+                null
+              )
+            }
+            className="text-lg"
+          >
+            ✕
+          </button>
+
+        </div>
+
+      )}
+
+      {/* SELECTED IMAGES */}
+
+      {selectedImages.length >
+        0 && (
+
+        <div className="px-4 pb-2 flex gap-2 overflow-x-auto">
+
+          {selectedImages.map(
+            (
+              img,
+              index
+            ) => (
+
+              <div
+                key={index}
+                className="relative"
+              >
+
+                <img
+                  src={img}
+
+                  onClick={() =>
+                    setPreviewImage(
+                      img
+                    )
+                  }
+
+                  className="w-20 h-20 rounded-2xl object-cover border border-white/10 cursor-pointer"
+                />
+
+                <button
+                  onClick={() => {
+
+                    setSelectedImages(
+                      (
+                        prev
+                      ) =>
+                        prev.filter(
+                          (
+                            _,
+                            i
+                          ) =>
+                            i !==
+                            index
+                        )
+                    );
+
+                  }}
+                  className="absolute -top-2 -right-2 bg-red-500 text-white w-6 h-6 rounded-full text-xs"
+                >
+                  ✕
+                </button>
+
+              </div>
+
+            )
+          )}
+
+        </div>
+
+      )}
 
       {/* INPUT */}
 
-      <textarea
-        placeholder="Message..."
-        rows={1}
-        className="
-          flex-1
-          bg-transparent
-          outline-none
-          text-black
-          dark:text-white
-          resize-none
-          max-h-[120px]
-        "
+      <div className="chat-input-area border-t border-white/10">
 
-        value={message}
+        <div className="chat-input flex items-center gap-3">
 
-        onChange={(
-          e
-        ) => {
+          {/* IMAGE */}
 
-          setMessage(
-            e.target.value
-          );
-
-          socket.emit(
-            "typing",
-            {
-              username,
-              userId,
+          <input
+            type="file"
+            accept="image/*,image/gif"
+            multiple
+            hidden
+            id="imageUpload"
+            onChange={
+              uploadImage
             }
-          );
+          />
 
-        }}
+          <label
+            htmlFor="imageUpload"
+            className="
+              action-btn
+              cursor-pointer
+              flex
+              items-center
+              justify-center
+            "
+          >
 
-        onKeyDown={(
-          e
-        ) => {
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="22"
+              height="22"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
 
-          if (
-            e.key ===
-              "Enter" &&
-            !e.shiftKey
-          ) {
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
 
-            e.preventDefault();
+              <polyline points="17 8 21 12 17 16" />
 
-            sendMessage();
+              <line
+                x1="21"
+                y1="12"
+                x2="9"
+                y2="12"
+              />
 
-          }
+            </svg>
 
-          if (
-            e.key ===
-              "Backspace" &&
-            message ===
-              ""
-          ) {
+          </label>
 
-            setReplyingTo(
-              null
-            );
+          {/* INPUT */}
 
-          }
+          <textarea
+            placeholder={
+              activeChat?.type ===
+              "dm"
+                ? `Message ${activeChat?.user?.username}...`
+                : "Message..."
+            }
 
-        }}
-      />
+            rows={1}
 
-      {/* SEND */}
+            className="
+              flex-1
+              bg-transparent
+              outline-none
+              text-black
+              dark:text-white
+              resize-none
+              max-h-[120px]
+            "
 
-      <button
-        onClick={
-          sendMessage
-        }
-        className="send-btn"
-      >
-        Send
-      </button>
+            value={message}
+
+            onChange={(
+              e
+            ) => {
+
+              setMessage(
+                e.target.value
+              );
+
+              socket.emit(
+                "typing",
+                {
+                  username,
+                  userId,
+                }
+              );
+
+            }}
+
+            onKeyDown={(
+              e
+            ) => {
+
+              if (
+                e.key ===
+                  "Enter" &&
+                !e.shiftKey
+              ) {
+
+                e.preventDefault();
+
+                sendMessage();
+
+              }
+
+              if (
+                e.key ===
+                  "Backspace" &&
+                message ===
+                  ""
+              ) {
+
+                setReplyingTo(
+                  null
+                );
+
+              }
+
+            }}
+          />
+
+          {/* SEND */}
+
+          <button
+            onClick={
+              sendMessage
+            }
+            className="send-btn"
+          >
+            Send
+          </button>
+
+        </div>
+
+      </div>
 
     </div>
 
-  </div>
-
-</div>
-
-);
+  );
 
 }
