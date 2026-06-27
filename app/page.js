@@ -38,89 +38,121 @@ export default function Home() {
       name: "General",
     });
 
-  // LOAD USER + SETTINGS + LIVE FRIENDS
-  useEffect(() => {
+  // =========================
+  // LOAD FRIENDS FROM API
+  // =========================
+  const loadFriends =
+    async (userId) => {
 
-    const loadAll = () => {
+      try {
 
-      const savedUser =
-        localStorage.getItem(
-          "bluechat-user"
-        );
-
-      const savedDark =
-        localStorage.getItem(
-          "bluechat-darkmode"
-        );
-
-      const savedTheme =
-        localStorage.getItem(
-          "bluechat-theme"
-        );
-
-      // USER
-      if (savedUser) {
-
-        try {
-
-          const parsedUser =
-            JSON.parse(savedUser);
-
-          setUser(
-            parsedUser
+        const res =
+          await fetch(
+            `/api/get-friends?userId=${userId}`
           );
 
-          // FRIENDS
-          const savedFriends =
-            localStorage.getItem(
-              `bluechat-friends-${parsedUser.userId}`
-            );
+        const data =
+          await res.json();
 
-          if (savedFriends) {
+        if (
+          data.success
+        ) {
 
-            setFriends(
-              JSON.parse(
-                savedFriends
-              )
-            );
+          setFriends(
+            data.friends || []
+          );
 
-          } else {
-
-            setFriends([]);
-
-          }
-
-        } catch {
-
-          setUser(null);
+        } else {
 
           setFriends([]);
 
         }
 
-      }
+      } catch (err) {
 
-      // DARK MODE
-      if (savedDark) {
+        console.log(err);
 
-        setDarkMode(
-          JSON.parse(savedDark)
-        );
+        setFriends([]);
 
       }
-
-      // THEME
-      if (savedTheme) {
-
-        setThemeColor(
-          savedTheme
-        );
-
-      }
-
-      setLoaded(true);
 
     };
+
+  // =========================
+  // LOAD USER + SETTINGS
+  // =========================
+  useEffect(() => {
+
+    const loadAll =
+      async () => {
+
+        const savedUser =
+          localStorage.getItem(
+            "bluechat-user"
+          );
+
+        const savedDark =
+          localStorage.getItem(
+            "bluechat-darkmode"
+          );
+
+        const savedTheme =
+          localStorage.getItem(
+            "bluechat-theme"
+          );
+
+        // USER
+        if (savedUser) {
+
+          try {
+
+            const parsedUser =
+              JSON.parse(
+                savedUser
+              );
+
+            setUser(
+              parsedUser
+            );
+
+            // LOAD FRIENDS
+            await loadFriends(
+              parsedUser.userId
+            );
+
+          } catch {
+
+            setUser(null);
+
+            setFriends([]);
+
+          }
+
+        }
+
+        // DARK MODE
+        if (savedDark) {
+
+          setDarkMode(
+            JSON.parse(
+              savedDark
+            )
+          );
+
+        }
+
+        // THEME
+        if (savedTheme) {
+
+          setThemeColor(
+            savedTheme
+          );
+
+        }
+
+        setLoaded(true);
+
+      };
 
     // FIRST LOAD
     loadAll();
@@ -128,39 +160,46 @@ export default function Home() {
     // LIVE REFRESH
     const interval =
       setInterval(
-        loadAll,
-        1000
+        () => {
+
+          const savedUser =
+            localStorage.getItem(
+              "bluechat-user"
+            );
+
+          if (
+            savedUser
+          ) {
+
+            try {
+
+              const parsedUser =
+                JSON.parse(
+                  savedUser
+                );
+
+              loadFriends(
+                parsedUser.userId
+              );
+
+            } catch {}
+
+          }
+
+        },
+        3000
       );
 
-    // STORAGE EVENT
-    const handleStorage =
-      () => {
-
-        loadAll();
-
-      };
-
-    window.addEventListener(
-      "storage",
-      handleStorage
-    );
-
-    return () => {
-
+    return () =>
       clearInterval(
         interval
       );
 
-      window.removeEventListener(
-        "storage",
-        handleStorage
-      );
-
-    };
-
   }, []);
 
+  // =========================
   // SAVE THEME
+  // =========================
   useEffect(() => {
 
     localStorage.setItem(
@@ -180,7 +219,9 @@ export default function Home() {
       themeColor
     );
 
-    if (darkMode) {
+    if (
+      darkMode
+    ) {
 
       document.body.classList.add(
         "dark"
@@ -194,26 +235,38 @@ export default function Home() {
 
     }
 
-  }, [darkMode, themeColor]);
+  }, [
+    darkMode,
+    themeColor,
+  ]);
 
+  // =========================
   // LOADING
+  // =========================
   if (!loaded) {
 
     return null;
 
   }
 
+  // =========================
   // LOGIN / REGISTER
+  // =========================
   if (!user) {
 
-    if (page === "login") {
+    if (
+      page ===
+      "login"
+    ) {
 
       return (
 
         <div className="min-h-screen overflow-x-hidden bg-gradient-to-br from-[#dbeafe] via-[#eef4ff] to-[#ffffff] dark:from-[#1e1f22] dark:via-[#232428] dark:to-[#313338]">
 
           <Login
-            setUser={setUser}
+            setUser={
+              setUser
+            }
             openRegister={() =>
               setPage(
                 "register"
@@ -232,7 +285,9 @@ export default function Home() {
       <div className="min-h-screen overflow-x-hidden bg-gradient-to-br from-[#dbeafe] via-[#eef4ff] to-[#ffffff] dark:from-[#1e1f22] dark:via-[#232428] dark:to-[#313338]">
 
         <Register
-          setUser={setUser}
+          setUser={
+            setUser
+          }
           openLogin={() =>
             setPage(
               "login"
@@ -246,7 +301,9 @@ export default function Home() {
 
   }
 
+  // =========================
   // LOGOUT
+  // =========================
   const logout = () => {
 
     localStorage.removeItem(
@@ -257,17 +314,15 @@ export default function Home() {
       "bluechat-token"
     );
 
-    window.dispatchEvent(
-      new StorageEvent(
-        "storage"
-      )
-    );
-
     setUser(null);
+
+    setFriends([]);
 
   };
 
+  // =========================
   // MAIN APP
+  // =========================
   return (
 
     <main className="h-[100dvh] w-full overflow-hidden bg-gradient-to-br from-[#dbeafe] via-[#eef4ff] to-[#ffffff] dark:from-[#1e1f22] dark:via-[#232428] dark:to-[#313338] p-2 md:p-4">
@@ -277,7 +332,9 @@ export default function Home() {
         {/* SIDEBAR */}
 
         <Sidebar
-          darkMode={darkMode}
+          darkMode={
+            darkMode
+          }
 
           setDarkMode={
             setDarkMode
@@ -291,7 +348,9 @@ export default function Home() {
             setThemeColor
           }
 
-          logout={logout}
+          logout={
+            logout
+          }
 
           username={
             user.username
@@ -340,7 +399,8 @@ export default function Home() {
               "dm"
                 ? activeChat
                     ?.user
-                    ?.username
+                    ?.username ||
+                  "Unknown User"
                 : user.username
             }
 
@@ -349,7 +409,8 @@ export default function Home() {
               "dm"
                 ? activeChat
                     ?.user
-                    ?.userId
+                    ?.userId ||
+                  ""
                 : user.userId
             }
 
@@ -358,7 +419,8 @@ export default function Home() {
               "dm"
                 ? activeChat
                     ?.user
-                    ?.avatar
+                    ?.avatar ||
+                  ""
                 : user.avatar
             }
           />
