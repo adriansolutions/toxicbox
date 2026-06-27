@@ -2,6 +2,7 @@
 
 import {
 useEffect,
+useRef,
 useState,
 } from "react";
 
@@ -28,6 +29,18 @@ useState(false);
 
 const [friends, setFriends] =
 useState([]);
+
+// RIGHT CLICK MENU
+const [friendMenu, setFriendMenu] =
+useState(null);
+
+// REMOVE CONFIRM
+const [confirmRemove, setConfirmRemove] =
+useState(null);
+
+// HOLD TIMER
+const holdTimeout =
+useRef(null);
 
 // LOAD FRIENDS
 useEffect(() => {
@@ -271,63 +284,106 @@ return (
 
           {friends.map((friend) => (
 
-            <button
+            <div
               key={friend.userId}
+              className="relative"
 
-              onClick={() =>
-                changeChat({
-                  type: "dm",
-                  id: friend.userId,
-                  user: friend,
-                })
-              }
+              onContextMenu={(e) => {
 
-              className={`
-                channel
+                e.preventDefault();
 
-                ${
-                  props.activeChat?.id ===
-                  friend.userId
-                    ? "active"
-                    : ""
-                }
-              `}
+                setFriendMenu({
+                  x: e.clientX,
+                  y: e.clientY,
+                  friend,
+                });
+
+              }}
+
+              onTouchStart={(e) => {
+
+                const touch =
+                  e.touches[0];
+
+                holdTimeout.current =
+                  setTimeout(() => {
+
+                    setFriendMenu({
+                      x: touch.clientX,
+                      y: touch.clientY,
+                      friend,
+                    });
+
+                  }, 500);
+
+              }}
+
+              onTouchEnd={() => {
+
+                clearTimeout(
+                  holdTimeout.current
+                );
+
+              }}
             >
 
-              {/* AVATAR */}
+              <button
+                onClick={() =>
+                  changeChat({
+                    type: "dm",
+                    id: friend.userId,
+                    user: friend,
+                  })
+                }
 
-              {friend.avatar ? (
+                className={`
+                  channel
 
-                <img
-                  src={friend.avatar}
-                  alt="avatar"
-                  className="
-                    avatar
-                    object-cover
-                  "
-                />
+                  ${
+                    props.activeChat?.id ===
+                    friend.userId
+                      ? "active"
+                      : ""
+                  }
+                `}
+              >
 
-              ) : (
+                {/* AVATAR */}
 
-                <div className="avatar">
+                {friend.avatar ? (
 
-                  {friend.username
-                    ?.charAt(0)
-                    ?.toUpperCase()}
+                  <img
+                    src={friend.avatar}
+                    alt="avatar"
+                    className="
+                      avatar
+                      object-cover
+                    "
+                  />
+
+                ) : (
+
+                  <div className="avatar">
+
+                    {friend.username
+                      ?.charAt(0)
+                      ?.toUpperCase()}
+
+                  </div>
+
+                )}
+
+                {/* USERNAME */}
+
+                <div className="channel-name truncate">
+
+                  {friend.username}
 
                 </div>
 
-              )}
+              </button>
 
-              {/* USERNAME */}
-
-              <div className="channel-name truncate">
-
-                {friend.username}
-
-              </div>
-
-            </button>
+            </div>
 
           ))}
 
@@ -370,6 +426,183 @@ return (
     </div>
 
   </div>
+
+  {/* FRIEND MENU */}
+
+  {friendMenu && (
+
+    <>
+
+      <div
+        onClick={() =>
+          setFriendMenu(null)
+        }
+        className="fixed inset-0 z-[9998]"
+      />
+
+      <div
+        className="
+          fixed
+          z-[9999]
+          w-[180px]
+          rounded-2xl
+          bg-[#1e1f22]
+          border
+          border-white/10
+          shadow-2xl
+          overflow-hidden
+        "
+
+        style={{
+          left: friendMenu.x,
+          top: friendMenu.y,
+        }}
+      >
+
+        <button
+          onClick={() => {
+
+            setConfirmRemove(
+              friendMenu.friend
+            );
+
+            setFriendMenu(null);
+
+          }}
+
+          className="
+            w-full
+            px-4
+            py-3
+            text-left
+            hover:bg-red-500/20
+            text-red-400
+            transition
+          "
+        >
+
+          Remove Friend
+
+        </button>
+
+      </div>
+
+    </>
+
+  )}
+
+  {/* REMOVE CONFIRM */}
+
+  {confirmRemove && (
+
+    <div className="fixed inset-0 z-[99999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+
+      <div
+        className="
+          w-full
+          max-w-sm
+          rounded-3xl
+          bg-white
+          dark:bg-[#1e1f22]
+          border
+          border-white/10
+          p-6
+        "
+      >
+
+        <div className="text-xl font-black mb-2">
+
+          Remove Friend
+
+        </div>
+
+        <div className="opacity-70 text-sm mb-6">
+
+          Remove
+          {" "}
+          <strong>
+            {confirmRemove.username}
+          </strong>
+          {" "}
+          from your friends list?
+
+        </div>
+
+        <div className="flex gap-3">
+
+          <button
+            onClick={() =>
+              setConfirmRemove(null)
+            }
+            className="
+              flex-1
+              h-12
+              rounded-2xl
+              bg-white/10
+            "
+          >
+
+            Cancel
+
+          </button>
+
+          <button
+            onClick={() => {
+
+              const updated =
+                friends.filter(
+                  (f) =>
+                    f.userId !==
+                    confirmRemove.userId
+                );
+
+              setFriends(updated);
+
+              localStorage.setItem(
+                `bluechat-friends-${props.userId}`,
+                JSON.stringify(updated)
+              );
+
+              // RETURN TO GENERAL
+
+              if (
+                props.activeChat?.id ===
+                confirmRemove.userId
+              ) {
+
+                props.setActiveChat({
+                  type: "channel",
+                  id: "general",
+                  name: "General",
+                });
+
+              }
+
+              setConfirmRemove(null);
+
+            }}
+
+            className="
+              flex-1
+              h-12
+              rounded-2xl
+              bg-red-500
+              text-white
+              font-bold
+            "
+          >
+
+            Remove
+
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  )}
 
   {/* MOBILE BG */}
 
