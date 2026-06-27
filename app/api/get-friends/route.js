@@ -1,62 +1,65 @@
 import connectDB from "../../../lib/mongodb";
-
 import User from "../../../models/User";
 
-export const dynamic = "force-dynamic";
+export const dynamic =
+  "force-dynamic";
 
 export async function GET(req) {
 
-try {
+  try {
 
-await connectDB();
+    await connectDB();
 
-const { searchParams } =
-  new URL(req.url);
+    const { searchParams } =
+      new URL(req.url);
 
-const userId =
-  searchParams.get("userId");
+    const userId =
+      searchParams.get("userId");
 
-if (!userId) {
+    if (!userId) {
 
-  return Response.json({
-    success: false,
-    friends: [],
-  });
+      return Response.json({
+        success: false,
+        friends: [],
+      });
 
-}
+    }
 
-const user =
-  await User.findOne({
-    userId,
-  });
+    const user =
+      await User.findOne({
+        userId,
+      }).lean();
 
-if (!user) {
+    if (!user) {
 
-  return Response.json({
-    success: false,
-    friends: [],
-  });
+      return Response.json({
+        success: false,
+        friends: [],
+      });
 
-}
+    }
 
-return Response.json({
-  success: true,
-  friends:
-    user.friends || [],
-});
+    return Response.json({
 
-} catch (err) {
+      success: true,
 
-console.log(
-  "GET FRIENDS ERROR:",
-  err
-);
+      friends:
+        user.friends || [],
 
-return Response.json({
-  success: false,
-  friends: [],
-});
+    });
 
-}
+  } catch (err) {
+
+    console.log(
+      "GET FRIENDS ERROR:",
+      err
+    );
+
+    return Response.json({
+      success: false,
+      friends: [],
+    });
+
+  }
 
 }
