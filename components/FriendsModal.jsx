@@ -35,16 +35,41 @@ export default function FriendsModal({
 
         setIncomingRequests(data.requests || []);
 
-      } else {
+      }
 
-        setIncomingRequests([]);
+    } catch (err) {
+
+      console.log(err);
+
+    }
+
+  };
+
+  // =========================
+  // LOAD FRIENDS
+  // =========================
+  const loadFriends = async () => {
+
+    try {
+
+      const res = await fetch(
+        `/api/get-friends?userId=${currentUser.userId}`,
+        {
+          cache: "no-store",
+        }
+      );
+
+      const data = await res.json();
+
+      if (data.success) {
+
+        setFriends(data.friends || []);
 
       }
 
     } catch (err) {
 
       console.log(err);
-      setIncomingRequests([]);
 
     }
 
@@ -55,11 +80,14 @@ export default function FriendsModal({
     if (!currentUser?.userId) return;
 
     loadRequests();
+    loadFriends();
 
-    const interval = setInterval(
-      loadRequests,
-      3000
-    );
+    const interval = setInterval(() => {
+
+      loadRequests();
+      loadFriends();
+
+    }, 3000);
 
     return () => clearInterval(interval);
 
@@ -95,11 +123,11 @@ export default function FriendsModal({
 
       if (!data.success) {
 
-        setResults([]);
-
         alert(
           data.message || "User not found"
         );
+
+        setResults([]);
 
         return;
 
@@ -123,6 +151,7 @@ export default function FriendsModal({
     } catch (err) {
 
       console.log(err);
+
       alert("Search failed");
 
     } finally {
@@ -134,7 +163,7 @@ export default function FriendsModal({
   };
 
   // =========================
-  // SEND FRIEND REQUEST
+  // SEND REQUEST
   // =========================
   const addFriend = async (user) => {
 
@@ -154,14 +183,14 @@ export default function FriendsModal({
             fromUserId:
               currentUser.userId,
 
-            toUserId:
-              user.userId,
-
-            username:
+            fromUsername:
               currentUser.username,
 
-            avatar:
+            fromAvatar:
               currentUser.avatar || "",
+
+            toUserId:
+              user.userId,
 
           }),
         }
@@ -182,12 +211,13 @@ export default function FriendsModal({
 
       alert("Friend request sent");
 
-      setResults([]);
       setSearch("");
+      setResults([]);
 
     } catch (err) {
 
       console.log(err);
+
       alert("Server error");
 
     }
@@ -224,7 +254,7 @@ export default function FriendsModal({
 
       const data = await res.json();
 
-      console.log(data);
+      console.log("ACCEPT DATA:", data);
 
       if (!data.success) {
 
@@ -250,7 +280,7 @@ export default function FriendsModal({
 
       };
 
-      // ADD FRIEND TO SIDEBAR
+      // UPDATE SIDEBAR
       setFriends((prev) => {
 
         const exists = prev.find(
@@ -268,7 +298,7 @@ export default function FriendsModal({
 
       });
 
-      // REMOVE REQUEST FROM UI
+      // REMOVE REQUEST
       setIncomingRequests((prev) =>
         prev.filter(
           (r) =>
@@ -276,7 +306,10 @@ export default function FriendsModal({
         )
       );
 
-      // OPEN DM
+      // FORCE RELOAD FRIENDS FROM DB
+      await loadFriends();
+
+      // OPEN CHAT
       setActiveChat({
 
         type: "dm",
@@ -294,6 +327,7 @@ export default function FriendsModal({
     } catch (err) {
 
       console.log(err);
+
       alert("Server error");
 
     }
@@ -376,27 +410,19 @@ export default function FriendsModal({
 
             <input
               value={search}
-
               onChange={(e) =>
-                setSearch(
-                  e.target.value
-                )
+                setSearch(e.target.value)
               }
-
               onKeyDown={(e) => {
 
-                if (
-                  e.key === "Enter"
-                ) {
+                if (e.key === "Enter") {
 
                   searchUser();
 
                 }
 
               }}
-
               placeholder="Search username or ID..."
-
               className="
                 flex-1
                 min-w-0
@@ -422,245 +448,8 @@ export default function FriendsModal({
                 font-bold
               "
             >
-
-              {loading
-                ? "..."
-                : "Search"}
-
+              {loading ? "..." : "Search"}
             </button>
-
-          </div>
-
-          {/* SEARCH RESULTS */}
-
-          <div className="mt-5 space-y-3">
-
-            {results.map((user) => (
-
-              <div
-                key={user.userId}
-                className="
-                  flex
-                  items-center
-                  gap-3
-                  p-3
-                  rounded-2xl
-                  bg-black/5
-                  dark:bg-white/5
-                "
-              >
-
-                {user.avatar ? (
-
-                  <img
-                    src={user.avatar}
-                    className="
-                      w-12
-                      h-12
-                      rounded-full
-                      object-cover
-                    "
-                  />
-
-                ) : (
-
-                  <div className="
-                    w-12
-                    h-12
-                    rounded-full
-                    bg-blue-600
-                    text-white
-                    flex
-                    items-center
-                    justify-center
-                    font-bold
-                  ">
-
-                    {user.username
-                      ?.charAt(0)
-                      ?.toUpperCase()}
-
-                  </div>
-
-                )}
-
-                <div className="flex-1 min-w-0">
-
-                  <div className="font-bold truncate">
-                    {user.username}
-                  </div>
-
-                  <div className="text-sm opacity-60 truncate">
-                    {user.userId}
-                  </div>
-
-                </div>
-
-                <button
-                  onClick={() =>
-                    addFriend(user)
-                  }
-                  className="
-                    shrink-0
-                    px-4
-                    h-10
-                    rounded-xl
-                    bg-blue-600
-                    text-white
-                    font-bold
-                  "
-                >
-
-                  Add
-
-                </button>
-
-              </div>
-
-            ))}
-
-          </div>
-
-          {/* REQUESTS */}
-
-          <div className="mt-8">
-
-            <div className="font-bold mb-3">
-              Incoming Friend Requests
-            </div>
-
-            <div className="space-y-3">
-
-              {incomingRequests.length === 0 && (
-
-                <div className="text-sm opacity-60">
-                  No requests
-                </div>
-
-              )}
-
-              {incomingRequests.map((request) => (
-
-                <div
-                  key={request._id}
-                  className="
-                    flex
-                    items-center
-                    gap-3
-                    p-3
-                    rounded-2xl
-                    bg-black/5
-                    dark:bg-white/5
-                  "
-                >
-
-                  {/* AVATAR */}
-
-                  {request.fromAvatar ? (
-
-                    <img
-                      src={request.fromAvatar}
-                      className="
-                        w-12
-                        h-12
-                        rounded-full
-                        object-cover
-                      "
-                    />
-
-                  ) : (
-
-                    <div className="
-                      w-12
-                      h-12
-                      rounded-full
-                      bg-blue-600
-                      text-white
-                      flex
-                      items-center
-                      justify-center
-                      font-bold
-                    ">
-
-                      {request.fromUsername
-                        ?.charAt(0)
-                        ?.toUpperCase()}
-
-                    </div>
-
-                  )}
-
-                  {/* INFO */}
-
-                  <div className="flex-1 min-w-0">
-
-                    <div className="font-bold truncate">
-                      {request.fromUsername}
-                    </div>
-
-                    <div className="text-sm opacity-60 truncate">
-                      {request.fromUserId}
-                    </div>
-
-                  </div>
-
-                  {/* BUTTONS */}
-
-                  <div className="flex gap-2 shrink-0">
-
-                    <button
-                      onClick={() =>
-                        acceptRequest(request)
-                      }
-                      className="
-                        w-10
-                        h-10
-                        rounded-xl
-                        bg-green-600
-                        hover:bg-green-700
-                        text-white
-                        font-bold
-                        flex
-                        items-center
-                        justify-center
-                      "
-                    >
-
-                      ✓
-
-                    </button>
-
-                    <button
-                      onClick={() =>
-                        declineRequest(
-                          request._id
-                        )
-                      }
-                      className="
-                        w-10
-                        h-10
-                        rounded-xl
-                        bg-red-600
-                        hover:bg-red-700
-                        text-white
-                        font-bold
-                        flex
-                        items-center
-                        justify-center
-                      "
-                    >
-
-                      ✕
-
-                    </button>
-
-                  </div>
-
-                </div>
-
-              ))}
-
-            </div>
 
           </div>
 
