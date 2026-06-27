@@ -129,7 +129,7 @@ export default function FriendsModal({
 
         <div className="p-5">
 
-          <div className="flex gap-2">
+<div className="flex gap-2 items-center w-full">
 
             <input
               type="text"
@@ -142,6 +142,7 @@ export default function FriendsModal({
               }
               className="
                 flex-1
+                min-w-0
                 h-12
                 px-4
                 rounded-2xl
@@ -151,20 +152,24 @@ export default function FriendsModal({
               "
             />
 
-            <button
-              onClick={
-                searchUser
-              }
-              className="
-                px-5
-                rounded-2xl
-                bg-blue-600
-                text-white
-                font-bold
-              "
-            >
-              Search
-            </button>
+<button
+  onClick={
+    searchUser
+  }
+  className="
+    h-12
+    px-4
+    shrink-0
+    rounded-2xl
+    bg-blue-600
+    hover:bg-blue-700
+    text-white
+    font-bold
+    transition
+  "
+>
+  Search
+</button>
 
           </div>
 
