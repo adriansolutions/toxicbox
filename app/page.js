@@ -26,79 +26,137 @@ export default function Home() {
   const [loaded, setLoaded] =
     useState(false);
 
-  // NEW
+  // FRIENDS
   const [friends, setFriends] =
     useState([]);
 
-  // NEW
+  // ACTIVE CHAT
   const [activeChat, setActiveChat] =
     useState({
       type: "channel",
       id: "general",
+      name: "General",
     });
 
-  // LOAD USER + SETTINGS
+  // LOAD USER + SETTINGS + LIVE FRIENDS
   useEffect(() => {
 
-    const savedUser =
-      localStorage.getItem(
-        "bluechat-user"
-      );
+    const loadAll = () => {
 
-    const savedDark =
-      localStorage.getItem(
-        "bluechat-darkmode"
-      );
-
-    const savedTheme =
-      localStorage.getItem(
-        "bluechat-theme"
-      );
-
-    if (savedUser) {
-
-      const parsedUser =
-        JSON.parse(savedUser);
-
-      setUser(
-        parsedUser
-      );
-
-      // LOAD FRIENDS
-      const savedFriends =
+      const savedUser =
         localStorage.getItem(
-          `bluechat-friends-${parsedUser.userId}`
+          "bluechat-user"
         );
 
-      if (savedFriends) {
+      const savedDark =
+        localStorage.getItem(
+          "bluechat-darkmode"
+        );
 
-        setFriends(
-          JSON.parse(
-            savedFriends
-          )
+      const savedTheme =
+        localStorage.getItem(
+          "bluechat-theme"
+        );
+
+      // USER
+      if (savedUser) {
+
+        try {
+
+          const parsedUser =
+            JSON.parse(savedUser);
+
+          setUser(
+            parsedUser
+          );
+
+          // FRIENDS
+          const savedFriends =
+            localStorage.getItem(
+              `bluechat-friends-${parsedUser.userId}`
+            );
+
+          if (savedFriends) {
+
+            setFriends(
+              JSON.parse(
+                savedFriends
+              )
+            );
+
+          } else {
+
+            setFriends([]);
+
+          }
+
+        } catch {
+
+          setUser(null);
+
+          setFriends([]);
+
+        }
+
+      }
+
+      // DARK MODE
+      if (savedDark) {
+
+        setDarkMode(
+          JSON.parse(savedDark)
         );
 
       }
 
-    }
+      // THEME
+      if (savedTheme) {
 
-    if (savedDark) {
+        setThemeColor(
+          savedTheme
+        );
 
-      setDarkMode(
-        JSON.parse(savedDark)
+      }
+
+      setLoaded(true);
+
+    };
+
+    // FIRST LOAD
+    loadAll();
+
+    // LIVE REFRESH
+    const interval =
+      setInterval(
+        loadAll,
+        1000
       );
 
-    }
+    // STORAGE EVENT
+    const handleStorage =
+      () => {
 
-    if (savedTheme) {
+        loadAll();
 
-      setThemeColor(
-        savedTheme
+      };
+
+    window.addEventListener(
+      "storage",
+      handleStorage
+    );
+
+    return () => {
+
+      clearInterval(
+        interval
       );
 
-    }
+      window.removeEventListener(
+        "storage",
+        handleStorage
+      );
 
-    setLoaded(true);
+    };
 
   }, []);
 
@@ -199,6 +257,12 @@ export default function Home() {
       "bluechat-token"
     );
 
+    window.dispatchEvent(
+      new StorageEvent(
+        "storage"
+      )
+    );
+
     setUser(null);
 
   };
@@ -249,7 +313,6 @@ export default function Home() {
             setUser
           }
 
-          // NEW
           friends={
             friends
           }
@@ -258,7 +321,6 @@ export default function Home() {
             setFriends
           }
 
-          // NEW
           activeChat={
             activeChat
           }
