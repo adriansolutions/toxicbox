@@ -19,14 +19,16 @@ type: Boolean,
 default: false,
 },
 
-// ADD THIS
-friends: [
+friends: {
+type: [
 {
 username: String,
 userId: String,
 avatar: String,
 },
 ],
+default: [],
+},
 
 });
 
