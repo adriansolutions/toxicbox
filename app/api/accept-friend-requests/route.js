@@ -1,11 +1,7 @@
 import connectDB from "../../../lib/mongodb";
 
-import User from "../../../models/User";
-
 import FriendRequest from "../../../models/FriendRequest";
-
-export const dynamic =
-  "force-dynamic";
+import User from "../../../models/User";
 
 export async function POST(req) {
 
@@ -18,87 +14,69 @@ export async function POST(req) {
       fromUserId,
     } = await req.json();
 
-    // FIND USERS
+    // GET USERS
     const currentUser =
       await User.findOne({
         userId: currentUserId,
       });
 
-    const sender =
+    const senderUser =
       await User.findOne({
         userId: fromUserId,
       });
 
-    if (
-      !currentUser ||
-      !sender
-    ) {
+    if (!currentUser || !senderUser) {
 
       return Response.json({
         success: false,
-        message:
-          "User not found",
+        message: "User not found",
       });
 
     }
 
-    // CREATE FRIENDS ARRAY
-    if (
-      !currentUser.friends
-    ) {
+    // FORCE FRIENDS ARRAY
+    currentUser.friends =
+      currentUser.friends || [];
 
-      currentUser.friends = [];
+    senderUser.friends =
+      senderUser.friends || [];
 
-    }
-
-    if (
-      !sender.friends
-    ) {
-
-      sender.friends = [];
-
-    }
-
-    // ADD SENDER TO CURRENT USER
-    const alreadyFriend1 =
-      currentUser.friends.find(
+    // CURRENT USER ADDS SENDER
+    const exists1 =
+      currentUser.friends.some(
         (f) =>
           f.userId ===
-          sender.userId
+          senderUser.userId
       );
 
-    if (
-      !alreadyFriend1
-    ) {
+    if (!exists1) {
 
       currentUser.friends.push({
 
         username:
-          sender.username,
+          senderUser.username,
 
         userId:
-          sender.userId,
+          senderUser.userId,
 
         avatar:
-          sender.avatar || "",
+          senderUser.avatar || "",
 
       });
 
     }
 
-    // ADD CURRENT USER TO SENDER
-    const alreadyFriend2 =
-      sender.friends.find(
+    // SENDER ADDS CURRENT USER
+    const exists2 =
+      senderUser.friends.some(
         (f) =>
           f.userId ===
           currentUser.userId
       );
 
-    if (
-      !alreadyFriend2
-    ) {
+    if (!exists2) {
 
-      sender.friends.push({
+      senderUser.friends.push({
 
         username:
           currentUser.username,
@@ -113,22 +91,47 @@ export async function POST(req) {
 
     }
 
-    // SAVE BOTH
+    // IMPORTANT
+    currentUser.markModified(
+      "friends"
+    );
+
+    senderUser.markModified(
+      "friends"
+    );
+
     await currentUser.save();
 
-    await sender.save();
+    await senderUser.save();
+
+    // VERIFY SAVE
+    const verify1 =
+      await User.findOne({
+        userId: currentUserId,
+      });
+
+    const verify2 =
+      await User.findOne({
+        userId: fromUserId,
+      });
+
+    console.log(
+      "CURRENT FRIENDS:",
+      verify1.friends
+    );
+
+    console.log(
+      "SENDER FRIENDS:",
+      verify2.friends
+    );
 
     // REMOVE REQUEST
     await FriendRequest.deleteOne({
-
       fromUserId,
-
       toUserId:
         currentUserId,
-
     });
 
-    // IMPORTANT
     return Response.json({
 
       success: true,
@@ -136,13 +139,13 @@ export async function POST(req) {
       friend: {
 
         username:
-          sender.username,
+          senderUser.username,
 
         userId:
-          sender.userId,
+          senderUser.userId,
 
         avatar:
-          sender.avatar || "",
+          senderUser.avatar || "",
 
       },
 
@@ -156,12 +159,8 @@ export async function POST(req) {
     );
 
     return Response.json({
-
       success: false,
-
-      message:
-        "Server error",
-
+      message: "Server error",
     });
 
   }
