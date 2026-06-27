@@ -3,757 +3,232 @@
 import { useEffect, useState } from "react";
 
 export default function FriendsModal({
-close,
-currentUser,
-friends,
-setFriends,
-setActiveChat,
+  close,
+  currentUser,
+  friends,
+  setFriends,
+  setActiveChat,
 }) {
+  const [search, setSearch] = useState("");
+  const [results, setResults] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [incomingRequests, setIncomingRequests] = useState([]);
+  const [toast, setToast] = useState(null);
 
-const [search, setSearch] =
-useState("");
+  const showToast = (text, type = "success") => {
+    setToast({ text, type });
+    setTimeout(() => setToast(null), 2500);
+  };
 
-const [results, setResults] =
-useState([]);
+  // LOAD REQUESTS FROM MONGODB (FIXED)
+  const loadRequests = async () => {
+    if (!currentUser?.userId) return;
 
-const [loading, setLoading] =
-useState(false);
-
-const [
-incomingRequests,
-setIncomingRequests,
-] = useState([]);
-
-const [toast, setToast] =
-useState(null);
-
-// TOAST
-const showToast = (
-text,
-type = "success"
-) => {
-
-setToast({
-  text,
-  type,
-});
-
-setTimeout(() => {
-
-  setToast(null);
-
-}, 2500);
-
-};
-
-// LOAD REQUESTS FROM MONGODB
-const loadRequests =
-async () => {
-
-  if (
-    !currentUser?.userId
-  )
-    return;
-
-  try {
-
-    const res =
-      await fetch(
+    try {
+      const res = await fetch(
         `/api/friends/requests?userId=${currentUser.userId}`
       );
 
-    const data =
-      await res.json();
-
-    if (
-      data.success
-    ) {
-
-      setIncomingRequests(
-        data.requests || []
-      );
-
-    }
-
-  } catch (
-    err
-  ) {
-
-    console.log(err);
-
-  }
-
-};
-
-// LIVE LOAD
-useEffect(() => {
-
-loadRequests();
-
-const interval =
-  setInterval(
-    loadRequests,
-    2000
-  );
-
-return () =>
-  clearInterval(
-    interval
-  );
-
-}, [
-currentUser?.userId,
-]);
-
-// SEARCH USER
-const searchUser =
-async () => {
-
-  if (
-    !search.trim()
-  )
-    return;
-
-  try {
-
-    setLoading(
-      true
-    );
-
-    const res =
-      await fetch(
-        "/api/search-user",
-        {
-          method:
-            "POST",
-
-          headers: {
-            "Content-Type":
-              "application/json",
-          },
-
-          body:
-            JSON.stringify(
-              {
-                search,
-              }
-            ),
-        }
-      );
-
-    const data =
-      await res.json();
-
-    if (
-      !data.success
-    ) {
-
-      setResults(
-        []
-      );
-
-      showToast(
-        data.message ||
-          "User not found",
-        "error"
-      );
-
-      return;
-
-    }
-
-    if (
-      data.user
-        .userId ===
-      currentUser.userId
-    ) {
-
-      showToast(
-        "You cannot add yourself",
-        "error"
-      );
-
-      return;
-
-    }
-
-    setResults([
-      data.user,
-    ]);
-
-  } catch (
-    err
-  ) {
-
-    console.log(err);
-
-    showToast(
-      "Search failed",
-      "error"
-    );
-
-  } finally {
-
-    setLoading(
-      false
-    );
-
-  }
-
-};
-
-// SEND REQUEST
-const addFriend =
-async (user) => {
-
-  try {
-
-    const res =
-      await fetch(
-        "/api/friends/send-request",
-        {
-          method:
-            "POST",
-
-          headers: {
-            "Content-Type":
-              "application/json",
-          },
-
-          body:
-            JSON.stringify(
-              {
-                from:
-                  {
-                    username:
-                      currentUser.username,
-
-                    userId:
-                      currentUser.userId,
-
-                    avatar:
-                      currentUser.avatar ||
-                      "",
-                  },
-
-                toUserId:
-                  user.userId,
-              }
-            ),
-        }
-      );
-
-    const data =
-      await res.json();
-
-    if (
-      !data.success
-    ) {
-
-      showToast(
-        data.message,
-        "error"
-      );
-
-      return;
-
-    }
-
-    showToast(
-      "Friend request sent"
-    );
-
-    setSearch(
-      ""
-    );
-
-    setResults(
-      []
-    );
-
-  } catch (
-    err
-  ) {
-
-    console.log(err);
-
-    showToast(
-      "Failed to send request",
-      "error"
-    );
-
-  }
-
-};
-
-// ACCEPT REQUEST
-const acceptRequest =
-async (user) => {
-
-  try {
-
-    const res =
-      await fetch(
-        "/api/friends/accept-request",
-        {
-          method:
-            "POST",
-
-          headers: {
-            "Content-Type":
-              "application/json",
-          },
-
-          body:
-            JSON.stringify(
-              {
-                currentUser,
-                user,
-              }
-            ),
-        }
-      );
-
-    const data =
-      await res.json();
-
-    if (
-      !data.success
-    ) {
-
-      showToast(
-        data.message,
-        "error"
-      );
-
-      return;
-
-    }
-
-    const updatedFriends =
-      [
-        ...friends,
-        user,
-      ];
-
-    setFriends(
-      updatedFriends
-    );
-
-    setIncomingRequests(
-      (
-        prev
-      ) =>
-        prev.filter(
-          (
-            r
-          ) =>
-            r.userId !==
-            user.userId
-        )
-    );
-
-    setActiveChat(
-      {
-        type:
-          "dm",
-
-        id:
-          user.userId,
-
-        user,
+      const data = await res.json();
+
+      if (data.success) {
+        setIncomingRequests(data.requests || []);
+      } else {
+        setIncomingRequests([]);
       }
-    );
+    } catch (err) {
+      console.log("loadRequests error:", err);
+      setIncomingRequests([]);
+    }
+  };
 
-    showToast(
-      "Friend accepted"
-    );
+  useEffect(() => {
+    loadRequests();
 
-    setTimeout(
-      () => {
+    const interval = setInterval(loadRequests, 2000);
 
-        close();
+    return () => clearInterval(interval);
+  }, [currentUser?.userId]);
 
-      },
-      700
-    );
+  // SEARCH USER
+  const searchUser = async () => {
+    if (!search.trim()) return;
 
-  } catch (
-    err
-  ) {
+    setLoading(true);
 
-    console.log(err);
+    try {
+      const res = await fetch("/api/search-user", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ search }),
+      });
 
-    showToast(
-      "Failed to accept friend",
-      "error"
-    );
+      const data = await res.json();
 
-  }
+      if (!data.success) {
+        showToast(data.message || "User not found", "error");
+        setResults([]);
+        return;
+      }
 
-};
+      if (data.user.userId === currentUser.userId) {
+        showToast("You cannot add yourself", "error");
+        setResults([]);
+        return;
+      }
 
-return (
+      setResults([data.user]);
+    } catch (err) {
+      console.log(err);
+      showToast("Search failed", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-<div className="fixed inset-0 z-[9999] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+  // SEND REQUEST (FIXED API ONLY)
+  const addFriend = async (user) => {
+    try {
+      const res = await fetch("/api/friends/send-request", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fromUserId: currentUser.userId,
+          toUserId: user.userId,
+        }),
+      });
 
-  {/* TOAST */}
+      const data = await res.json();
 
-  {toast && (
+      if (!data.success) {
+        showToast(data.message || "Failed to send request", "error");
+        return;
+      }
 
-    <div
-      className={`
-        fixed
-        top-5
-        left-1/2
-        -translate-x-1/2
-        z-[10000]
-        px-5
-        py-3
-        rounded-2xl
-        text-white
-        font-bold
-        shadow-2xl
+      showToast("Friend request sent");
 
-        ${
-          toast.type ===
-          "error"
-            ? "bg-red-600"
-            : "bg-green-600"
-        }
-      `}
-    >
+      setSearch("");
+      setResults([]);
+    } catch (err) {
+      console.log(err);
+      showToast("Server error", "error");
+    }
+  };
 
-      {toast.text}
+  // ACCEPT REQUEST
+  const acceptRequest = async (user) => {
+    try {
+      const res = await fetch("/api/friends/accept-request", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          currentUserId: currentUser.userId,
+          fromUserId: user.userId,
+        }),
+      });
 
-    </div>
+      const data = await res.json();
 
-  )}
+      if (!data.success) {
+        showToast(data.message || "Failed", "error");
+        return;
+      }
 
-  <div className="w-full max-w-md rounded-3xl bg-white dark:bg-[#1e1f22] border border-white/10 shadow-2xl overflow-hidden">
+      setFriends((prev) => [...prev, user]);
 
-    {/* HEADER */}
+      setIncomingRequests((prev) =>
+        prev.filter((r) => r.userId !== user.userId)
+      );
 
-    <div className="px-6 py-5 border-b border-black/10 dark:border-white/10 flex items-center justify-between">
+      setActiveChat({
+        type: "dm",
+        id: user.userId,
+        user,
+      });
 
-      <div>
+      showToast("Friend accepted");
 
-        <h2 className="text-2xl font-black">
+      setTimeout(close, 700);
+    } catch (err) {
+      console.log(err);
+      showToast("Error accepting request", "error");
+    }
+  };
 
-          Friends
+  return (
+    <div className="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center p-4">
 
-        </h2>
-
-        <p className="text-sm opacity-60">
-
-          Add and accept friends
-
-        </p>
-
-      </div>
-
-      <button
-        onClick={
-          close
-        }
-        className="w-10 h-10 rounded-xl bg-black/5 dark:bg-white/10"
-      >
-        ✕
-      </button>
-
-    </div>
-
-    <div className="p-5">
-
-      {/* SEARCH */}
-
-      <div className="flex gap-2">
-
-        <input
-          type="text"
-          placeholder="Search username or ID..."
-          value={
-            search
-          }
-          onChange={(
-            e
-          ) =>
-            setSearch(
-              e.target
-                .value
-            )
-          }
-          onKeyDown={(
-            e
-          ) => {
-
-            if (
-              e.key ===
-              "Enter"
-            ) {
-
-              searchUser();
-
-            }
-
-          }}
-          className="
-            flex-1
-            h-12
-            px-4
-            rounded-2xl
-            bg-gray-100
-            dark:bg-[#383a40]
-            outline-none
-          "
-        />
-
-        <button
-          onClick={
-            searchUser
-          }
-          disabled={
-            loading
-          }
-          className="
-            h-12
-            px-5
-            rounded-2xl
-            bg-blue-600
-            text-white
-            font-bold
-          "
+      {/* TOAST */}
+      {toast && (
+        <div
+          className={`fixed top-5 left-1/2 -translate-x-1/2 px-5 py-3 rounded-xl text-white font-bold ${
+            toast.type === "error" ? "bg-red-600" : "bg-green-600"
+          }`}
         >
+          {toast.text}
+        </div>
+      )}
 
-          {loading
-            ? "..."
-            : "Search"}
+      <div className="w-full max-w-md bg-white dark:bg-[#1e1f22] rounded-3xl p-5">
 
-        </button>
+        {/* SEARCH */}
+        <div className="flex gap-2">
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search user..."
+            className="flex-1 h-12 px-4 rounded-xl bg-gray-100 dark:bg-[#383a40]"
+          />
 
-      </div>
+          <button
+            onClick={searchUser}
+            disabled={loading}
+            className="px-4 bg-blue-600 text-white rounded-xl"
+          >
+            {loading ? "..." : "Search"}
+          </button>
+        </div>
 
-      {/* RESULTS */}
-
-      <div className="mt-5 space-y-3">
-
-        {results.map(
-          (
-            user
-          ) => (
-
-            <div
-              key={
-                user.userId
-              }
-              className="
-                flex
-                items-center
-                gap-3
-                p-3
-                rounded-2xl
-                bg-black/5
-                dark:bg-white/5
-              "
-            >
-
-              {user.avatar ? (
-
-                <img
-                  src={
-                    user.avatar
-                  }
-                  className="
-                    avatar
-                    object-cover
-                  "
-                />
-
-              ) : (
-
-                <div className="avatar">
-
-                  {user.username
-                    ?.charAt(
-                      0
-                    )
-                    ?.toUpperCase()}
-
-                </div>
-
-              )}
-
-              <div className="flex-1">
-
-                <div className="font-bold">
-
-                  {
-                    user.username
-                  }
-
-                </div>
-
-                <div className="text-sm opacity-60">
-
-                  {
-                    user.userId
-                  }
-
-                </div>
-
-              </div>
-
+        {/* RESULTS */}
+        <div className="mt-5 space-y-3">
+          {results.map((user) => (
+            <div key={user.userId} className="flex items-center gap-3">
+              <div className="flex-1 font-bold">{user.username}</div>
               <button
-                onClick={() =>
-                  addFriend(
-                    user
-                  )
-                }
-                className="
-                  px-4
-                  h-10
-                  rounded-xl
-                  bg-blue-600
-                  text-white
-                  font-bold
-                "
+                onClick={() => addFriend(user)}
+                className="bg-blue-600 text-white px-3 py-2 rounded-xl"
               >
-
                 Add
-
               </button>
-
             </div>
-
-          )
-        )}
-
-      </div>
-
-      {/* REQUESTS */}
-
-      <div className="mt-8">
-
-        <div className="font-bold mb-3">
-
-          Incoming Friend Requests
-
+          ))}
         </div>
 
-        <div className="space-y-3">
+        {/* REQUESTS */}
+        <div className="mt-8">
+          <div className="font-bold mb-3">
+            Incoming Friend Requests
+          </div>
 
-          {incomingRequests.length ===
-            0 && (
-
-            <div className="text-sm opacity-60">
-
+          {incomingRequests.length === 0 ? (
+            <div className="opacity-60 text-sm">
               No requests
-
             </div>
-
-          )}
-
-          {incomingRequests.map(
-            (
-              user
-            ) => (
-
-              <div
-                key={
-                  user.userId
-                }
-                className="
-                  flex
-                  items-center
-                  gap-3
-                  p-3
-                  rounded-2xl
-                  bg-black/5
-                  dark:bg-white/5
-                "
-              >
-
-                {user.avatar ? (
-
-                  <img
-                    src={
-                      user.avatar
-                    }
-                    className="
-                      avatar
-                      object-cover
-                    "
-                  />
-
-                ) : (
-
-                  <div className="avatar">
-
-                    {user.username
-                      ?.charAt(
-                        0
-                      )
-                      ?.toUpperCase()}
-
-                  </div>
-
-                )}
-
-                <div className="flex-1">
-
-                  <div className="font-bold">
-
-                    {
-                      user.username
-                    }
-
-                  </div>
-
-                  <div className="text-sm opacity-60">
-
-                    {
-                      user.userId
-                    }
-
-                  </div>
-
-                </div>
-
+          ) : (
+            incomingRequests.map((user) => (
+              <div key={user.userId} className="flex items-center gap-3">
+                <div className="flex-1">{user.username}</div>
                 <button
-                  onClick={() =>
-                    acceptRequest(
-                      user
-                    )
-                  }
-                  className="
-                    px-4
-                    h-10
-                    rounded-xl
-                    bg-green-600
-                    text-white
-                    font-bold
-                  "
+                  onClick={() => acceptRequest(user)}
+                  className="bg-green-600 text-white px-3 py-2 rounded-xl"
                 >
-
                   Accept
-
                 </button>
-
               </div>
-
-            )
+            ))
           )}
-
         </div>
-
       </div>
-
     </div>
-
-  </div>
-
-</div>
-
-);
-
+  );
 }
