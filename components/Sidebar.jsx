@@ -17,42 +17,42 @@ import SettingsModal from "./SettingsModal";
 import FriendsModal from "./FriendsModal";
 
 export default function Sidebar(props) {
-
+  
   const [openSettings, setOpenSettings] =
-    useState(false);
-
+  useState(false);
+  
   const [mobileOpen, setMobileOpen] =
-    useState(false);
-
+  useState(false);
+  
   const [openFriends, setOpenFriends] =
-    useState(false);
-
+  useState(false);
+  
   const [friends, setFriends] =
-    useState([]);
-
+  useState([]);
+  
   // LOAD FRIENDS
   useEffect(() => {
-
+    
     if (!props.userId)
       return;
-
+    
     const saved =
       localStorage.getItem(
         `bluechat-friends-${props.userId}`
       );
-
+    
     if (saved) {
-
+      
       setFriends(
         JSON.parse(saved)
       );
-
+      
     }
-
+    
   }, [props.userId]);
-
+  
   return (
-
+    
     <>
 
       {/* MOBILE MENU BUTTON */}
@@ -182,79 +182,65 @@ export default function Sidebar(props) {
 
             <div className="space-y-2">
 
-              {friends.map(
-                (friend) => (
+              {friends.map((friend) => (
 
-                  <button
-                    key={
-                      friend.userId
-                    }
-                    className="
-                      w-full
-                      flex
-                      items-center
-                      gap-3
-                      p-2
-                      rounded-2xl
-                      hover:bg-black/5
-                      dark:hover:bg-white/5
-                      transition
-                    "
-                  >
+  <button
+    key={friend.userId}
 
-                    {/* AVATAR */}
+    onClick={() => {
 
-                    {friend.avatar ? (
+      props.setActiveChat({
+        type: "dm",
+        id: friend.userId,
+        user: friend,
+      });
 
-                      <img
-                        src={
-                          friend.avatar
-                        }
-                        alt="avatar"
-                        className="
-                          avatar
-                          object-cover
-                        "
-                      />
+    }}
 
-                    ) : (
+    className={`
+      channel
+      ${
+        props.activeChat?.id ===
+        friend.userId
+          ? "active"
+          : ""
+      }
+    `}
+  >
 
-                      <div className="avatar">
+    {friend.avatar ? (
 
-                        {friend.username
-                          ?.charAt(0)
-                          ?.toUpperCase()}
+      <img
+        src={friend.avatar}
+        className="
+          avatar
+          object-cover
+        "
+      />
 
-                      </div>
+    ) : (
 
-                    )}
+      <div className="avatar">
 
-                    {/* INFO */}
+        {friend.username
+          ?.charAt(0)
+          ?.toUpperCase()}
 
-                    <div className="text-left min-w-0">
+      </div>
 
-                      <div className="font-semibold truncate">
+    )}
 
-                        {
-                          friend.username
-                        }
+    {/* ONLY USERNAME */}
 
-                      </div>
+    <div className="channel-name truncate">
 
-                      <div className="text-xs opacity-60">
+      {friend.username}
 
-                        {
-                          friend.userId
-                        }
+    </div>
 
-                      </div>
+  </button>
 
-                    </div>
-
-                  </button>
-
-                )
-              )}
+))}
 
             </div>
 
@@ -348,6 +334,14 @@ export default function Sidebar(props) {
             avatar:
               props.avatar,
           }}
+          
+          activeChat={
+  activeChat
+}
+
+setActiveChat={
+  setActiveChat
+}
 
           friends={friends}
 
@@ -358,7 +352,7 @@ export default function Sidebar(props) {
       )}
 
     </>
-
+    
   );
-
+  
 }
