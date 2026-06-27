@@ -82,6 +82,7 @@ if (
 const updatedUser = {
   ...currentUser,
   password: newPassword,
+  avatar: newAvatar,
 };
 
 localStorage.setItem(
