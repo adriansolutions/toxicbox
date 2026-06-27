@@ -24,6 +24,28 @@ export default function FriendsModal({
     setIncomingRequests,
   ] = useState([]);
 
+  const [toast, setToast] =
+    useState(null);
+
+  // TOAST
+  const showToast = (
+    text,
+    type = "success"
+  ) => {
+
+    setToast({
+      text,
+      type,
+    });
+
+    setTimeout(() => {
+
+      setToast(null);
+
+    }, 2500);
+
+  };
+
   // LOAD REQUESTS LIVE
   useEffect(() => {
 
@@ -32,26 +54,31 @@ export default function FriendsModal({
 
     const loadRequests = () => {
 
-      const saved =
-        localStorage.getItem(
-          `bluechat-requests-${currentUser.userId}`
-        );
+      try {
 
-      if (saved) {
-
-        try {
-
-          setIncomingRequests(
-            JSON.parse(saved)
+        const saved =
+          localStorage.getItem(
+            `bluechat-requests-${currentUser.userId}`
           );
 
-        } catch {
+        if (saved) {
+
+          const parsed =
+            JSON.parse(saved);
+
+          setIncomingRequests(
+            Array.isArray(parsed)
+              ? parsed
+              : []
+          );
+
+        } else {
 
           setIncomingRequests([]);
 
         }
 
-      } else {
+      } catch {
 
         setIncomingRequests([]);
 
@@ -130,9 +157,10 @@ export default function FriendsModal({
 
         setResults([]);
 
-        alert(
+        showToast(
           data.message ||
-          "User not found"
+            "User not found",
+          "error"
         );
 
         return;
@@ -145,8 +173,9 @@ export default function FriendsModal({
         currentUser.userId
       ) {
 
-        alert(
-          "You cannot add yourself"
+        showToast(
+          "You cannot add yourself",
+          "error"
         );
 
         setResults([]);
@@ -163,8 +192,9 @@ export default function FriendsModal({
 
       console.log(err);
 
-      alert(
-        "Search failed"
+      showToast(
+        "Search failed",
+        "error"
       );
 
     } finally {
@@ -189,20 +219,32 @@ export default function FriendsModal({
 
     if (alreadyFriend) {
 
-      alert(
-        "Already friends"
+      showToast(
+        "Already friends",
+        "error"
       );
 
       return;
 
     }
 
-    const existing =
-      JSON.parse(
-        localStorage.getItem(
-          `bluechat-requests-${user.userId}`
-        ) || "[]"
-      );
+    // TARGET USER REQUESTS
+    let existing = [];
+
+    try {
+
+      existing =
+        JSON.parse(
+          localStorage.getItem(
+            `bluechat-requests-${user.userId}`
+          ) || "[]"
+        );
+
+    } catch {
+
+      existing = [];
+
+    }
 
     const alreadyRequested =
       existing.find(
@@ -215,8 +257,9 @@ export default function FriendsModal({
       alreadyRequested
     ) {
 
-      alert(
-        "Request already sent"
+      showToast(
+        "Request already sent",
+        "error"
       );
 
       return;
@@ -238,17 +281,25 @@ export default function FriendsModal({
       },
     ];
 
+    // SAVE REQUEST
     localStorage.setItem(
       `bluechat-requests-${user.userId}`,
-      JSON.stringify(updatedRequests)
+      JSON.stringify(
+        updatedRequests
+      )
     );
 
     // FORCE REFRESH
     window.dispatchEvent(
-      new Event("storage")
+      new StorageEvent(
+        "storage",
+        {
+          key: `bluechat-requests-${user.userId}`,
+        }
+      )
     );
 
-    alert(
+    showToast(
       "Friend request sent"
     );
 
@@ -275,7 +326,9 @@ export default function FriendsModal({
 
     localStorage.setItem(
       `bluechat-friends-${currentUser.userId}`,
-      JSON.stringify(updatedFriends)
+      JSON.stringify(
+        updatedFriends
+      )
     );
 
     // REMOVE REQUEST
@@ -292,16 +345,28 @@ export default function FriendsModal({
 
     localStorage.setItem(
       `bluechat-requests-${currentUser.userId}`,
-      JSON.stringify(updatedRequests)
+      JSON.stringify(
+        updatedRequests
+      )
     );
 
     // THEIR FRIENDS
-    const theirFriends =
-      JSON.parse(
-        localStorage.getItem(
-          `bluechat-friends-${user.userId}`
-        ) || "[]"
-      );
+    let theirFriends = [];
+
+    try {
+
+      theirFriends =
+        JSON.parse(
+          localStorage.getItem(
+            `bluechat-friends-${user.userId}`
+          ) || "[]"
+        );
+
+    } catch {
+
+      theirFriends = [];
+
+    }
 
     const already =
       theirFriends.find(
@@ -325,14 +390,18 @@ export default function FriendsModal({
 
       localStorage.setItem(
         `bluechat-friends-${user.userId}`,
-        JSON.stringify(theirFriends)
+        JSON.stringify(
+          theirFriends
+        )
       );
 
     }
 
     // FORCE REFRESH
     window.dispatchEvent(
-      new Event("storage")
+      new StorageEvent(
+        "storage"
+      )
     );
 
     // OPEN DM
@@ -342,13 +411,55 @@ export default function FriendsModal({
       user,
     });
 
-    close();
+    showToast(
+      "Friend accepted"
+    );
+
+    setTimeout(() => {
+
+      close();
+
+    }, 700);
 
   };
 
   return (
 
     <div className="fixed inset-0 z-[9999] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+
+      {/* TOAST */}
+
+      {toast && (
+
+        <div
+          className={`
+            fixed
+            top-5
+            left-1/2
+            -translate-x-1/2
+            z-[10000]
+            px-5
+            py-3
+            rounded-2xl
+            text-white
+            font-bold
+            shadow-2xl
+            animate-[fadeIn_.2s_ease]
+
+            ${
+              toast.type ===
+              "error"
+                ? "bg-red-600"
+                : "bg-green-600"
+            }
+          `}
+        >
+
+          {toast.text}
+
+        </div>
+
+      )}
 
       <div className="w-full max-w-md rounded-3xl bg-white dark:bg-[#1e1f22] border border-white/10 shadow-2xl overflow-hidden">
 
