@@ -40,6 +40,21 @@ export default function Home() {
   // LOAD USER + SETTINGS
   useEffect(() => {
 
+    Object.keys(localStorage).forEach((key) => {
+
+  if (
+    key.startsWith("bluechat-friends-") ||
+    key.startsWith("bluechat-requests-")
+  ) {
+
+    localStorage.removeItem(key);
+
+  }
+
+});
+
+location.reload();
+
     const savedUser =
       localStorage.getItem(
         "bluechat-user"
