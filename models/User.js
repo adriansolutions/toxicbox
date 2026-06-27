@@ -4,8 +4,8 @@ const UserSchema =
 new mongoose.Schema({
 
 username: {
-  type: String,
-  unique: true,
+type: String,
+unique: true,
 },
 
 userId: String,
@@ -15,9 +15,17 @@ password: String,
 avatar: String,
 
 online: {
-  type: Boolean,
-  default: false,
+type: Boolean,
+default: false,
 },
+
+friends: [
+{
+username: String,
+userId: String,
+avatar: String,
+},
+],
 
 });
 
