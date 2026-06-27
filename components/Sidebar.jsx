@@ -176,13 +176,9 @@ export default function Sidebar(props) {
 
           {/* FRIENDS */}
 
-          <div className="mt-5 px-3">
+<div className="mt-5 px-3">
 
-            <div className="text-xs opacity-60 font-bold mb-3 px-2">
-
-              FRIENDS
-
-            </div>
+  <div className="h-[1px] bg-white/10 mb-3 rounded-full" />
 
             <div className="space-y-2">
 
@@ -268,35 +264,35 @@ export default function Sidebar(props) {
 
         {/* BOTTOM BUTTONS */}
 
-        <div className="flex items-center gap-3 p-4">
+<div className="flex flex-col items-center gap-3 p-4">
 
-          {/* ADD FRIEND */}
+  {/* ADD FRIEND */}
 
-          <button
-            onClick={() =>
-              setOpenFriends(true)
-            }
-            className="sidebar-btn"
-          >
+  <button
+    onClick={() =>
+      setOpenFriends(true)
+    }
+    className="sidebar-btn"
+  >
 
-            <FiUserPlus size={22} />
+    <FiUserPlus size={22} />
 
-          </button>
+  </button>
 
-          {/* SETTINGS */}
+  {/* SETTINGS */}
 
-          <button
-            onClick={() =>
-              setOpenSettings(true)
-            }
-            className="sidebar-btn"
-          >
+  <button
+    onClick={() =>
+      setOpenSettings(true)
+    }
+    className="sidebar-btn"
+  >
 
-            <FiSettings size={22} />
+    <FiSettings size={22} />
 
-          </button>
+  </button>
 
-        </div>
+</div>
 
       </div>
 
