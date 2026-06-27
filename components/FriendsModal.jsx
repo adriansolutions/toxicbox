@@ -7,6 +7,7 @@ export default function FriendsModal({
   currentUser,
   friends,
   setFriends,
+  setActiveChat,
 }) {
 
   const [search, setSearch] =
@@ -15,6 +16,9 @@ export default function FriendsModal({
   const [results, setResults] =
     useState([]);
 
+  const [loading, setLoading] =
+    useState(false);
+
   // SEARCH USER
   const searchUser = async () => {
 
@@ -22,6 +26,8 @@ export default function FriendsModal({
       return;
 
     try {
+
+      setLoading(true);
 
       const res = await fetch(
         "/api/search-user",
@@ -46,9 +52,25 @@ export default function FriendsModal({
 
       if (!data.success) {
 
+        setResults([]);
+
         alert(
           data.message ||
           "User not found"
+        );
+
+        return;
+
+      }
+
+      // DON'T SHOW YOURSELF
+      if (
+        data.user.userId ===
+        currentUser.userId
+      ) {
+
+        alert(
+          "You cannot add yourself"
         );
 
         setResults([]);
@@ -68,6 +90,10 @@ export default function FriendsModal({
       alert(
         "Search failed"
       );
+
+    } finally {
+
+      setLoading(false);
 
     }
 
@@ -107,15 +133,24 @@ export default function FriendsModal({
       JSON.stringify(updated)
     );
 
+    // AUTO OPEN DM
+    setActiveChat({
+      type: "dm",
+      id: user.userId,
+      user,
+    });
+
     alert(
       "Friend added"
     );
+
+    close();
 
   };
 
   return (
 
-    <div className="fixed inset-0 z-[999] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-[9999] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
 
       <div className="w-full max-w-md rounded-3xl bg-white dark:bg-[#1e1f22] border border-white/10 shadow-2xl overflow-hidden">
 
@@ -126,11 +161,15 @@ export default function FriendsModal({
           <div>
 
             <h2 className="text-2xl font-black">
+
               Add Friend
+
             </h2>
 
             <p className="text-sm opacity-60">
+
               Search username or ID
+
             </p>
 
           </div>
@@ -140,6 +179,7 @@ export default function FriendsModal({
             className="w-10 h-10 rounded-xl bg-black/5 dark:bg-white/10"
           >
             ✕
+
           </button>
 
         </div>
@@ -152,13 +192,17 @@ export default function FriendsModal({
 
             <input
               type="text"
-              placeholder="Search..."
+
+              placeholder="Search username or ID..."
+
               value={search}
+
               onChange={(e) =>
                 setSearch(
                   e.target.value
                 )
               }
+
               onKeyDown={(e) => {
 
                 if (
@@ -171,6 +215,7 @@ export default function FriendsModal({
                 }
 
               }}
+
               className="
                 flex-1
                 min-w-0
@@ -187,6 +232,7 @@ export default function FriendsModal({
               onClick={
                 searchUser
               }
+              disabled={loading}
               className="
                 h-12
                 px-4
@@ -194,12 +240,17 @@ export default function FriendsModal({
                 rounded-2xl
                 bg-blue-600
                 hover:bg-blue-700
+                disabled:opacity-50
                 text-white
                 font-bold
                 transition
               "
             >
-              Search
+
+              {loading
+                ? "..."
+                : "Search"}
+
             </button>
 
           </div>
@@ -208,16 +259,17 @@ export default function FriendsModal({
 
           <div className="mt-5 space-y-3 max-h-[350px] overflow-y-auto">
 
-            {results.length ===
-              0 && (
+            {!loading &&
+              results.length ===
+                0 && (
 
-              <div className="text-center text-sm opacity-60 py-6">
+                <div className="text-center text-sm opacity-60 py-6">
 
-                No results
+                  No results
 
-              </div>
+                </div>
 
-            )}
+              )}
 
             {results.map(
               (user) => (
@@ -245,6 +297,9 @@ export default function FriendsModal({
                       src={
                         user.avatar
                       }
+
+                      alt="avatar"
+
                       className="
                         avatar
                         object-cover
@@ -275,7 +330,7 @@ export default function FriendsModal({
 
                     </div>
 
-                    <div className="text-sm opacity-60">
+                    <div className="text-sm opacity-60 truncate">
 
                       {
                         user.userId
@@ -301,9 +356,12 @@ export default function FriendsModal({
                       hover:bg-blue-700
                       text-white
                       font-bold
+                      shrink-0
                     "
                   >
+
                     Add
+
                   </button>
 
                 </div>
