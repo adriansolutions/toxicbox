@@ -1,40 +1,41 @@
 import mongoose from "mongoose";
 
+const FriendSchema =
+  new mongoose.Schema({
+    username: String,
+    userId: String,
+    avatar: String,
+  });
+
 const UserSchema =
-new mongoose.Schema({
+  new mongoose.Schema({
 
-username: {
-type: String,
-unique: true,
-},
+    username: {
+      type: String,
+      unique: true,
+    },
 
-userId: String,
+    userId: String,
 
-password: String,
+    password: String,
 
-avatar: String,
+    avatar: String,
 
-online: {
-type: Boolean,
-default: false,
-},
+    online: {
+      type: Boolean,
+      default: false,
+    },
 
-friends: {
-type: [
-{
-username: String,
-userId: String,
-avatar: String,
-},
-],
-default: [],
-},
+    friends: {
+      type: [FriendSchema],
+      default: [],
+    },
 
-});
+  });
 
 export default
-mongoose.models.User ||
-mongoose.model(
-"User",
-UserSchema
-);
+  mongoose.models.User ||
+  mongoose.model(
+    "User",
+    UserSchema
+  );
