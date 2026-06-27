@@ -4,22 +4,16 @@ import connectDB from "../../../lib/mongodb";
 import FriendRequest from "../../../models/FriendRequest";
 
 export async function GET(req) {
+
   try {
+
     await connectDB();
 
-    const { searchParams } = new URL(req.url);
+    const { searchParams } =
+      new URL(req.url);
 
     const userId =
       searchParams.get("userId");
-
-    if (!userId) {
-
-      return Response.json({
-        success: false,
-        message: "Missing userId",
-      });
-
-    }
 
     const requests =
       await FriendRequest.find({
@@ -37,8 +31,9 @@ export async function GET(req) {
 
     return Response.json({
       success: false,
-      message: "Server error",
+      requests: [],
     });
 
   }
+
 }
