@@ -1,12 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function ProfileModal({
   close,
-  profile,
+  profileUser,
   currentUser,
 }) {
+
+  const [profile, setProfile] =
+    useState(null);
 
   const [editing, setEditing] =
     useState(false);
@@ -14,45 +17,104 @@ export default function ProfileModal({
   const [form, setForm] =
     useState({
 
-      avatar:
-        profile?.avatar || "",
+      avatar: "",
+      banner: "",
+      bio: "",
 
-      banner:
-        profile?.banner || "",
-
-      bio:
-        profile?.bio || "",
-
-      hometown:
-        profile?.hometown || "",
-
-      birthday:
-        profile?.birthday || "",
-
-      status:
-        profile?.status || "",
-
-      language:
-        profile?.language || "",
-
-      work:
-        profile?.work || "",
-
-      education:
-        profile?.education || "",
-
-      hobbies:
-        profile?.hobbies || "",
+      hometown: "",
+      birthday: "",
+      status: "",
+      language: "",
+      work: "",
+      education: "",
+      hobbies: "",
 
     });
 
-  const isOwner =
+  const isOwnProfile =
     currentUser?.userId ===
-    profile?.userId;
+    profileUser?.userId;
 
-  // =========================
+  // LOAD PROFILE
+  useEffect(() => {
+
+    if (!profileUser?.userId)
+      return;
+
+    const loadProfile =
+      async () => {
+
+        try {
+
+          const res =
+            await fetch(
+              `/api/get-profile?userId=${profileUser.userId}`,
+              {
+                cache:
+                  "no-store",
+              }
+            );
+
+          const data =
+            await res.json();
+
+          if (
+            data.success
+          ) {
+
+            setProfile(
+              data.profile
+            );
+
+            setForm({
+
+              avatar:
+                data.profile.avatar || "",
+
+              banner:
+                data.profile.banner || "",
+
+              bio:
+                data.profile.bio || "",
+
+              hometown:
+                data.profile.hometown || "",
+
+              birthday:
+                data.profile.birthday || "",
+
+              status:
+                data.profile.status || "",
+
+              language:
+                data.profile.language || "",
+
+              work:
+                data.profile.work || "",
+
+              education:
+                data.profile.education || "",
+
+              hobbies:
+                data.profile.hobbies || "",
+
+            });
+
+          }
+
+        } catch (err) {
+
+          console.log(err);
+
+        }
+
+      };
+
+    loadProfile();
+
+  }, [profileUser]);
+
   // SAVE PROFILE
-  // =========================
   const saveProfile =
     async () => {
 
@@ -85,22 +147,27 @@ export default function ProfileModal({
         const data =
           await res.json();
 
-        if (!data.success) {
+        if (
+          !data.success
+        ) {
 
           alert(
             data.message ||
-            "Failed to update profile"
+            "Failed"
           );
 
           return;
 
         }
 
-        alert(
-          "Profile updated"
-        );
+        setProfile({
+          ...profile,
+          ...form,
+        });
 
-        window.location.reload();
+        setEditing(
+          false
+        );
 
       } catch (err) {
 
@@ -110,25 +177,25 @@ export default function ProfileModal({
 
     };
 
+  if (!profile)
+    return null;
+
   return (
 
-    <div className="fixed inset-0 z-[999999] bg-black/70 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4">
-
-      {/* MODAL */}
+    <div className="fixed inset-0 z-[999999] bg-black/70 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4 overflow-y-auto">
 
       <div
         className="
           relative
           w-full
-          max-w-[700px]
-          h-auto
-          max-h-[95vh]
-          overflow-y-auto
+          max-w-2xl
           rounded-3xl
           bg-[#1e1f22]
           border
           border-white/10
-          shadow-2xl
+          overflow-hidden
+          max-h-[95vh]
+          overflow-y-auto
         "
       >
 
@@ -138,6 +205,7 @@ export default function ProfileModal({
           onClick={close}
           className="
             fixed
+            sm:absolute
             top-3
             right-3
             z-[999999]
@@ -146,10 +214,11 @@ export default function ProfileModal({
             rounded-full
             bg-black/70
             text-white
-            text-xl
             flex
             items-center
             justify-center
+            text-xl
+            backdrop-blur-xl
           "
         >
 
@@ -159,14 +228,17 @@ export default function ProfileModal({
 
         {/* BANNER */}
 
-        <div className="relative w-full h-[170px] sm:h-[220px]">
+        <div className="relative w-full h-[180px] sm:h-[240px]">
 
-          {profile?.banner ? (
+          {profile.banner ? (
 
             <img
-              src={profile.banner}
-              alt="banner"
+              src={
+                profile.banner
+              }
               className="
+                absolute
+                inset-0
                 w-full
                 h-full
                 object-cover
@@ -176,8 +248,8 @@ export default function ProfileModal({
           ) : (
 
             <div className="
-              w-full
-              h-full
+              absolute
+              inset-0
               bg-gradient-to-r
               from-blue-600
               to-purple-600
@@ -185,73 +257,55 @@ export default function ProfileModal({
 
           )}
 
-          {/* DARK OVERLAY */}
-
-          <div className="
-            absolute
-            inset-0
-            bg-black/30
-          " />
-
         </div>
 
-        {/* CONTENT */}
+        {/* PROFILE CONTENT */}
 
         <div className="relative px-4 sm:px-6 pb-6">
 
           {/* AVATAR */}
 
-          <div className="
-            flex
-            flex-col
-            sm:flex-row
-            sm:items-end
-            gap-4
-            -mt-16
-            relative
-            z-20
-          ">
+          <div className="-mt-16 sm:-mt-20 flex flex-col items-center sm:items-start">
 
-            {profile?.avatar ? (
+            {profile.avatar ? (
 
               <img
-                src={profile.avatar}
-                alt="avatar"
+                src={
+                  profile.avatar
+                }
                 className="
-                  w-[110px]
-                  h-[110px]
-                  sm:w-[130px]
-                  sm:h-[130px]
+                  w-28
+                  h-28
+                  sm:w-36
+                  sm:h-36
                   rounded-full
-                  border-4
+                  border-[6px]
                   border-[#1e1f22]
                   object-cover
                   bg-[#1e1f22]
-                  shrink-0
                 "
               />
 
             ) : (
 
               <div className="
-                w-[110px]
-                h-[110px]
-                sm:w-[130px]
-                sm:h-[130px]
+                w-28
+                h-28
+                sm:w-36
+                sm:h-36
                 rounded-full
-                border-4
+                border-[6px]
                 border-[#1e1f22]
                 bg-blue-600
-                text-white
-                text-5xl
-                font-black
                 flex
                 items-center
                 justify-center
-                shrink-0
+                text-5xl
+                font-black
+                text-white
               ">
 
-                {profile?.username
+                {profile.username
                   ?.charAt(0)
                   ?.toUpperCase()}
 
@@ -259,91 +313,58 @@ export default function ProfileModal({
 
             )}
 
-            {/* USER INFO */}
+          </div>
 
-            <div className="
-              min-w-0
-              flex-1
-              pb-2
-            ">
+          {/* USERNAME */}
 
-              <div className="
-                text-[24px]
-                sm:text-[32px]
-                font-black
-                text-white
-                break-words
-                leading-tight
-              ">
+          <div className="mt-4 text-center sm:text-left break-words">
 
-                {profile?.username}
+            <div className="text-2xl sm:text-3xl font-black text-white break-all">
 
-              </div>
-
-              <div className="
-                text-sm
-                opacity-70
-                break-all
-                text-white
-              ">
-
-                ID:
-                {" "}
-                {profile?.userId}
-
-              </div>
-
-              <div className="
-                mt-2
-                text-sm
-                text-blue-400
-                font-semibold
-              ">
-
-                {profile?.friends?.length || 0}
-                {" "}
-                Friends
-
-              </div>
+              {profile.username}
 
             </div>
+
+            <div className="opacity-60 text-sm break-all">
+
+              {profile.userId}
+
+            </div>
+
+          </div>
+
+          {/* FRIENDS */}
+
+          <div className="mt-4 text-sm opacity-80 text-center sm:text-left">
+
+            {profile.friends?.length || 0}
+            {" "}
+            Friends
 
           </div>
 
           {/* BIO */}
 
-          <div className="mt-6">
-
-            <div className="
-              text-lg
-              font-bold
-              text-white
-              mb-2
-            ">
-
-              Bio
-
-            </div>
-
-            <div className="
+          <div
+            className="
+              mt-5
               bg-white/5
               rounded-2xl
               p-4
-              text-sm
-              text-white/80
+              text-white/90
+              whitespace-pre-wrap
               break-words
-            ">
+            "
+          >
 
-              {profile?.bio ||
-                "No bio yet"}
-
-            </div>
+            {profile.bio ||
+              "No bio yet"}
 
           </div>
 
-          {/* EDIT PROFILE BUTTON BELOW BIO */}
+          {/* EDIT PROFILE BUTTON */}
 
-          {isOwner && (
+          {isOwnProfile && (
 
             <button
               onClick={() =>
@@ -351,16 +372,15 @@ export default function ProfileModal({
                   !editing
                 )
               }
+
               className="
                 mt-4
                 w-full
                 h-12
                 rounded-2xl
                 bg-blue-600
-                hover:bg-blue-700
                 text-white
                 font-bold
-                transition
               "
             >
 
@@ -372,17 +392,11 @@ export default function ProfileModal({
 
           )}
 
-          {/* EDIT FORM */}
+          {/* EDITOR */}
 
-          {editing && isOwner && (
+          {editing && (
 
-            <div className="
-              mt-5
-              bg-white/5
-              rounded-3xl
-              p-4
-              space-y-4
-            ">
+            <div className="mt-5 space-y-3">
 
               <input
                 value={form.avatar}
@@ -393,7 +407,9 @@ export default function ProfileModal({
                       e.target.value,
                   })
                 }
+
                 placeholder="Avatar URL"
+
                 className="
                   w-full
                   h-12
@@ -414,7 +430,9 @@ export default function ProfileModal({
                       e.target.value,
                   })
                 }
+
                 placeholder="Banner URL"
+
                 className="
                   w-full
                   h-12
@@ -435,10 +453,12 @@ export default function ProfileModal({
                       e.target.value,
                   })
                 }
+
                 placeholder="Bio"
+
                 className="
                   w-full
-                  min-h-[100px]
+                  min-h-[120px]
                   rounded-2xl
                   bg-[#2a2b30]
                   p-4
@@ -457,16 +477,10 @@ export default function ProfileModal({
                       e.target.value,
                   })
                 }
+
                 placeholder="Hometown"
-                className="
-                  w-full
-                  h-12
-                  rounded-2xl
-                  bg-[#2a2b30]
-                  px-4
-                  text-white
-                  outline-none
-                "
+
+                className="w-full h-12 rounded-2xl bg-[#2a2b30] px-4 text-white outline-none"
               />
 
               <input
@@ -478,16 +492,10 @@ export default function ProfileModal({
                       e.target.value,
                   })
                 }
+
                 placeholder="Birthday"
-                className="
-                  w-full
-                  h-12
-                  rounded-2xl
-                  bg-[#2a2b30]
-                  px-4
-                  text-white
-                  outline-none
-                "
+
+                className="w-full h-12 rounded-2xl bg-[#2a2b30] px-4 text-white outline-none"
               />
 
               <input
@@ -499,16 +507,10 @@ export default function ProfileModal({
                       e.target.value,
                   })
                 }
-                placeholder="Status"
-                className="
-                  w-full
-                  h-12
-                  rounded-2xl
-                  bg-[#2a2b30]
-                  px-4
-                  text-white
-                  outline-none
-                "
+
+                placeholder="Relationship Status"
+
+                className="w-full h-12 rounded-2xl bg-[#2a2b30] px-4 text-white outline-none"
               />
 
               <input
@@ -520,16 +522,10 @@ export default function ProfileModal({
                       e.target.value,
                   })
                 }
+
                 placeholder="Language"
-                className="
-                  w-full
-                  h-12
-                  rounded-2xl
-                  bg-[#2a2b30]
-                  px-4
-                  text-white
-                  outline-none
-                "
+
+                className="w-full h-12 rounded-2xl bg-[#2a2b30] px-4 text-white outline-none"
               />
 
               <input
@@ -541,16 +537,10 @@ export default function ProfileModal({
                       e.target.value,
                   })
                 }
+
                 placeholder="Work"
-                className="
-                  w-full
-                  h-12
-                  rounded-2xl
-                  bg-[#2a2b30]
-                  px-4
-                  text-white
-                  outline-none
-                "
+
+                className="w-full h-12 rounded-2xl bg-[#2a2b30] px-4 text-white outline-none"
               />
 
               <input
@@ -562,16 +552,10 @@ export default function ProfileModal({
                       e.target.value,
                   })
                 }
+
                 placeholder="Education"
-                className="
-                  w-full
-                  h-12
-                  rounded-2xl
-                  bg-[#2a2b30]
-                  px-4
-                  text-white
-                  outline-none
-                "
+
+                className="w-full h-12 rounded-2xl bg-[#2a2b30] px-4 text-white outline-none"
               />
 
               <input
@@ -583,20 +567,17 @@ export default function ProfileModal({
                       e.target.value,
                   })
                 }
+
                 placeholder="Hobbies"
-                className="
-                  w-full
-                  h-12
-                  rounded-2xl
-                  bg-[#2a2b30]
-                  px-4
-                  text-white
-                  outline-none
-                "
+
+                className="w-full h-12 rounded-2xl bg-[#2a2b30] px-4 text-white outline-none"
               />
 
               <button
-                onClick={saveProfile}
+                onClick={
+                  saveProfile
+                }
+
                 className="
                   w-full
                   h-12
@@ -615,113 +596,76 @@ export default function ProfileModal({
 
           )}
 
-          {/* DETAILS */}
+          {/* INFO */}
 
-          <div className="mt-6">
+          <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
 
-            <div className="
-              text-lg
-              font-bold
-              text-white
-              mb-3
-            ">
-
-              Personal Information
-
+            <div className="bg-white/5 rounded-2xl p-4">
+              <div className="opacity-50 text-sm">
+                Hometown
+              </div>
+              <div>
+                {profile.hometown || "-"}
+              </div>
             </div>
 
-            <div className="
-              grid
-              grid-cols-1
-              sm:grid-cols-2
-              gap-3
-            ">
+            <div className="bg-white/5 rounded-2xl p-4">
+              <div className="opacity-50 text-sm">
+                Birthday
+              </div>
+              <div>
+                {profile.birthday || "-"}
+              </div>
+            </div>
 
-              <Info
-                label="Hometown"
-                value={profile?.hometown}
-              />
+            <div className="bg-white/5 rounded-2xl p-4">
+              <div className="opacity-50 text-sm">
+                Status
+              </div>
+              <div>
+                {profile.status || "-"}
+              </div>
+            </div>
 
-              <Info
-                label="Birthday"
-                value={profile?.birthday}
-              />
+            <div className="bg-white/5 rounded-2xl p-4">
+              <div className="opacity-50 text-sm">
+                Language
+              </div>
+              <div>
+                {profile.language || "-"}
+              </div>
+            </div>
 
-              <Info
-                label="Status"
-                value={profile?.status}
-              />
+            <div className="bg-white/5 rounded-2xl p-4">
+              <div className="opacity-50 text-sm">
+                Work
+              </div>
+              <div>
+                {profile.work || "-"}
+              </div>
+            </div>
 
-              <Info
-                label="Language"
-                value={profile?.language}
-              />
+            <div className="bg-white/5 rounded-2xl p-4">
+              <div className="opacity-50 text-sm">
+                Education
+              </div>
+              <div>
+                {profile.education || "-"}
+              </div>
+            </div>
 
-              <Info
-                label="Work"
-                value={profile?.work}
-              />
-
-              <Info
-                label="Education"
-                value={profile?.education}
-              />
-
-              <Info
-                label="Hobbies"
-                value={profile?.hobbies}
-              />
-
+            <div className="bg-white/5 rounded-2xl p-4 sm:col-span-2">
+              <div className="opacity-50 text-sm">
+                Hobbies
+              </div>
+              <div>
+                {profile.hobbies || "-"}
+              </div>
             </div>
 
           </div>
 
         </div>
-
-      </div>
-
-    </div>
-
-  );
-
-}
-
-// =========================
-// INFO CARD
-// =========================
-
-function Info({
-  label,
-  value,
-}) {
-
-  return (
-
-    <div className="
-      bg-white/5
-      rounded-2xl
-      p-4
-    ">
-
-      <div className="
-        text-xs
-        uppercase
-        opacity-50
-        mb-1
-        text-white
-      ">
-
-        {label}
-
-      </div>
-
-      <div className="
-        text-sm
-        break-words
-        text-white
-      ">
-
-        {value || "Not set"}
 
       </div>
 
