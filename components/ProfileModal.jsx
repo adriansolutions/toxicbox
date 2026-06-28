@@ -1,161 +1,140 @@
 "use client";
 
-import { useState } from "react";
-
-import {
-  FiX,
-  FiEdit2,
-} from "react-icons/fi";
+import { useEffect, useState } from "react";
+import EditProfileModal from "./EditProfileModal";
 
 export default function ProfileModal({
   close,
-  profileUser,
-  currentUser,
+  userId,
+  currentUserId,
 }) {
 
-  const isOwner =
-    currentUser?.userId ===
-    profileUser?.userId;
+  const [profile, setProfile] =
+    useState(null);
 
-  const [editing, setEditing] =
+  const [loading, setLoading] =
+    useState(true);
+
+  const [openEdit, setOpenEdit] =
     useState(false);
+
+  const isOwnProfile =
+    userId === currentUserId;
+
+  useEffect(() => {
+
+    const loadProfile =
+      async () => {
+
+        try {
+
+          const res =
+            await fetch(
+              `/api/get-profile?userId=${userId}`,
+              {
+                cache: "no-store",
+              }
+            );
+
+          const data =
+            await res.json();
+
+          if (data.success) {
+
+            setProfile(
+              data.user
+            );
+
+          }
+
+        } catch (err) {
+
+          console.log(err);
+
+        } finally {
+
+          setLoading(false);
+
+        }
+
+      };
+
+    loadProfile();
+
+  }, [userId]);
+
+  if (loading) {
+
+    return (
+
+      <div className="fixed inset-0 z-[99999] bg-black/60 flex items-center justify-center">
+
+        <div className="text-white text-lg">
+          Loading...
+        </div>
+
+      </div>
+
+    );
+
+  }
+
+  if (!profile)
+    return null;
 
   return (
 
-    <div
-      className="
-        fixed
-        inset-0
-        z-[999999]
-        bg-black/70
-        backdrop-blur-sm
-        flex
-        items-center
-        justify-center
-        p-2
-        sm:p-5
-        overflow-y-auto
-      "
-    >
+    <>
 
-      <div
-        className="
-          relative
-          w-full
-          max-w-[430px]
-          rounded-[28px]
-          bg-[#1e1f22]
-          border
-          border-white/10
-          overflow-hidden
-          shadow-2xl
-        "
-      >
-
-        {/* CLOSE BUTTON */}
-
-        <button
-          onClick={close}
-          className="
-            absolute
-            top-3
-            right-3
-            z-[999999]
-            w-10
-            h-10
-            rounded-full
-            bg-black/60
-            text-white
-            flex
-            items-center
-            justify-center
-            backdrop-blur-xl
-          "
-        >
-
-          <FiX size={22} />
-
-        </button>
-
-        {/* BANNER */}
+      <div className="fixed inset-0 z-[99999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5 overflow-y-auto">
 
         <div
           className="
             relative
             w-full
-            h-[170px]
-            bg-[#2f3136]
+            max-w-2xl
+            rounded-3xl
             overflow-hidden
+            bg-[#1e1f22]
+            border
+            border-white/10
+            shadow-2xl
           "
         >
 
-          {profileUser?.banner ? (
+          {/* CLOSE BUTTON */}
 
-            <img
-              src={profileUser.banner}
-              alt="banner"
-              className="
-                w-full
-                h-full
-                object-cover
-              "
-            />
-
-          ) : (
-
-            <div
-              className="
-                w-full
-                h-full
-                bg-gradient-to-r
-                from-blue-600
-                to-cyan-500
-              "
-            />
-
-          )}
-
-        </div>
-
-        {/* CONTENT */}
-
-        <div
-          className="
-            relative
-            px-4
-            sm:px-6
-            pb-6
-            pt-[70px]
-            flex
-            flex-col
-            items-center
-          "
-        >
-
-          {/* AVATAR */}
-
-          <div
+          <button
+            onClick={close}
             className="
               absolute
-              -top-[60px]
-              left-1/2
-              -translate-x-1/2
-              w-[120px]
-              h-[120px]
+              top-3
+              right-3
+              z-50
+              w-10
+              h-10
               rounded-full
-              overflow-hidden
-              border-[5px]
-              border-[#1e1f22]
-              bg-[#5865f2]
-              shadow-2xl
+              bg-black/60
+              text-white
+              flex
+              items-center
+              justify-center
+              text-xl
             "
           >
 
-            {profileUser?.avatar ? (
+            ✕
+
+          </button>
+
+          {/* BANNER */}
+
+          <div className="relative h-[180px] sm:h-[220px] w-full">
+
+            {profile.banner ? (
 
               <img
-                src={profileUser.avatar}
-                alt="avatar"
+                src={profile.banner}
                 className="
                   w-full
                   h-full
@@ -165,277 +144,244 @@ export default function ProfileModal({
 
             ) : (
 
-              <div
-                className="
-                  w-full
-                  h-full
-                  flex
-                  items-center
-                  justify-center
-                  text-white
-                  text-5xl
-                  font-black
-                "
-              >
-
-                {profileUser?.username
-                  ?.charAt(0)
-                  ?.toUpperCase()}
-
-              </div>
+              <div className="w-full h-full bg-gradient-to-r from-blue-600 to-cyan-500" />
 
             )}
 
           </div>
 
-          {/* USERNAME */}
+          {/* CONTENT */}
 
-          <div
-            className="
-              w-full
-              text-center
-              mt-2
-            "
-          >
+          <div className="relative px-4 sm:px-6 pb-6">
 
-            <div
-              className="
-                text-[26px]
-                font-black
-                text-white
-                leading-tight
-                break-words
-              "
-            >
+            {/* AVATAR */}
 
-              {profileUser?.username}
+            <div className="-mt-[60px] sm:-mt-[70px] flex flex-col sm:flex-row sm:items-end gap-4">
+
+              {profile.avatar ? (
+
+                <img
+                  src={profile.avatar}
+                  className="
+                    w-[110px]
+                    h-[110px]
+                    sm:w-[130px]
+                    sm:h-[130px]
+                    rounded-full
+                    border-4
+                    border-[#1e1f22]
+                    object-cover
+                    bg-[#2a2b30]
+                    shrink-0
+                  "
+                />
+
+              ) : (
+
+                <div
+                  className="
+                    w-[110px]
+                    h-[110px]
+                    sm:w-[130px]
+                    sm:h-[130px]
+                    rounded-full
+                    border-4
+                    border-[#1e1f22]
+                    bg-blue-600
+                    flex
+                    items-center
+                    justify-center
+                    text-white
+                    text-4xl
+                    font-black
+                    shrink-0
+                  "
+                >
+
+                  {profile.username
+                    ?.charAt(0)
+                    ?.toUpperCase()}
+
+                </div>
+
+              )}
+
+              {/* USER INFO */}
+
+              <div className="min-w-0 flex-1 pb-2">
+
+                <div
+                  className="
+                    text-2xl
+                    sm:text-3xl
+                    font-black
+                    text-white
+                    break-words
+                  "
+                >
+
+                  {profile.username}
+
+                </div>
+
+                <div
+                  className="
+                    text-sm
+                    text-white/60
+                    break-all
+                  "
+                >
+
+                  {profile.userId}
+
+                </div>
+
+              </div>
 
             </div>
 
-            <div
-              className="
-                text-sm
-                opacity-60
-                break-all
-                mt-1
-              "
-            >
+            {/* FRIEND COUNT */}
 
-              {profileUser?.userId}
+            <div className="mt-5 text-white">
+
+              <span className="font-bold">
+                {profile.friends?.length || 0}
+              </span>{" "}
+              Friends
 
             </div>
 
-          </div>
+            {/* BIO */}
 
-          {/* FRIEND COUNT */}
+            <div className="mt-4">
 
-          <div
-            className="
-              mt-4
-              text-sm
-              opacity-80
-            "
-          >
+              <div className="text-white font-bold mb-2">
+                Bio
+              </div>
 
-            {profileUser?.friends?.length || 0}
-            {" "}
-            Friends
+              <div className="text-white/70 whitespace-pre-wrap break-words">
 
-          </div>
+                {profile.bio ||
+                  "No bio yet"}
 
-          {/* BIO */}
+              </div>
 
-          <div
-            className="
-              mt-4
-              w-full
-              rounded-2xl
-              bg-white/5
-              p-4
-              text-center
-              text-sm
-              leading-relaxed
-              break-words
-            "
-          >
+            </div>
 
-            {profileUser?.bio ||
-              "No bio yet."}
+            {/* EDIT PROFILE BUTTON */}
 
-          </div>
+            {isOwnProfile && (
 
-          {/* EDIT BUTTON */}
-
-          {isOwner && (
-
-            <button
-              onClick={() =>
-                setEditing(
-                  !editing
-                )
-              }
-              className="
-                mt-4
-                w-full
-                h-12
-                rounded-2xl
-                bg-blue-600
-                hover:bg-blue-700
-                transition
-                text-white
-                font-bold
-                flex
-                items-center
-                justify-center
-                gap-2
-              "
-            >
-
-              <FiEdit2 />
-
-              {editing
-                ? "Close Edit"
-                : "Edit Profile"}
-
-            </button>
-
-          )}
-
-          {/* EDIT PANEL */}
-
-          {editing && (
-
-            <div
-              className="
-                mt-4
-                w-full
-                space-y-3
-              "
-            >
-
-              <input
-                placeholder="Avatar URL"
-                defaultValue={
-                  profileUser?.avatar
+              <button
+                onClick={() =>
+                  setOpenEdit(true)
                 }
                 className="
+                  mt-5
                   w-full
-                  h-12
-                  px-4
+                  sm:w-auto
+                  px-5
+                  h-11
                   rounded-2xl
-                  bg-white/10
-                  outline-none
+                  bg-blue-600
+                  text-white
+                  font-bold
                 "
+              >
+
+                Edit Profile
+
+              </button>
+
+            )}
+
+            {/* DETAILS */}
+
+            <div className="mt-6 space-y-3">
+
+              <ProfileItem
+                label="Hometown"
+                value={profile.hometown}
               />
 
-              <input
-                placeholder="Banner URL"
-                defaultValue={
-                  profileUser?.banner
-                }
-                className="
-                  w-full
-                  h-12
-                  px-4
-                  rounded-2xl
-                  bg-white/10
-                  outline-none
-                "
+              <ProfileItem
+                label="Birthday"
+                value={profile.birthday}
               />
 
-              <textarea
-                placeholder="Bio"
-                defaultValue={
-                  profileUser?.bio
-                }
-                className="
-                  w-full
-                  h-24
-                  p-4
-                  rounded-2xl
-                  bg-white/10
-                  outline-none
-                  resize-none
-                "
+              <ProfileItem
+                label="Status"
+                value={profile.status}
               />
 
-            </div>
+              <ProfileItem
+                label="Language"
+                value={profile.language}
+              />
 
-          )}
+              <ProfileItem
+                label="Work"
+                value={profile.work}
+              />
 
-          {/* DETAILS */}
+              <ProfileItem
+                label="Education"
+                value={profile.education}
+              />
 
-          <div
-            className="
-              mt-5
-              w-full
-              rounded-2xl
-              bg-white/5
-              p-4
-              space-y-3
-              text-sm
-            "
-          >
+              <ProfileItem
+                label="Hobbies"
+                value={profile.hobbies}
+              />
 
-            <div>
-              <strong>
-                Hometown:
-              </strong>
-              {" "}
-              {profileUser?.hometown || "—"}
-            </div>
-
-            <div>
-              <strong>
-                Birthday:
-              </strong>
-              {" "}
-              {profileUser?.birthday || "—"}
-            </div>
-
-            <div>
-              <strong>
-                Status:
-              </strong>
-              {" "}
-              {profileUser?.status || "—"}
-            </div>
-
-            <div>
-              <strong>
-                Language:
-              </strong>
-              {" "}
-              {profileUser?.language || "—"}
-            </div>
-
-            <div>
-              <strong>
-                Work:
-              </strong>
-              {" "}
-              {profileUser?.work || "—"}
-            </div>
-
-            <div>
-              <strong>
-                Education:
-              </strong>
-              {" "}
-              {profileUser?.education || "—"}
-            </div>
-
-            <div>
-              <strong>
-                Hobbies:
-              </strong>
-              {" "}
-              {profileUser?.hobbies || "—"}
             </div>
 
           </div>
 
         </div>
+
+      </div>
+
+      {/* EDIT MODAL */}
+
+      {openEdit && (
+
+        <EditProfileModal
+          profile={profile}
+          close={() =>
+            setOpenEdit(false)
+          }
+          refreshProfile={() =>
+            window.location.reload()
+          }
+        />
+
+      )}
+
+    </>
+
+  );
+
+}
+
+function ProfileItem({
+  label,
+  value,
+}) {
+
+  return (
+
+    <div className="bg-white/5 rounded-2xl p-4">
+
+      <div className="text-white/50 text-sm">
+
+        {label}
+
+      </div>
+
+      <div className="text-white break-words">
+
+        {value || "Not set"}
 
       </div>
 
