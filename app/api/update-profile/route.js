@@ -19,44 +19,155 @@ export async function POST(req) {
 
       return Response.json({
         success: false,
+        message: "User not found",
       });
 
     }
 
-    user.avatar =
-      data.avatar || "";
+    // =========================
+    // BASIC PROFILE
+    // =========================
 
-    user.banner =
-      data.banner || "";
+    if (
+      data.avatar !== undefined
+    ) {
 
-    user.bio =
-      data.bio || "";
+      user.avatar =
+        data.avatar;
 
-    user.hometown =
-      data.hometown || "";
+    }
 
-    user.birthday =
-      data.birthday || "";
+    if (
+      data.banner !== undefined
+    ) {
 
-    user.status =
-      data.status || "";
+      user.banner =
+        data.banner;
 
-    user.language =
-      data.language || "";
+    }
 
-    user.work =
-      data.work || "";
+    if (
+      data.bio !== undefined
+    ) {
 
-    user.education =
-      data.education || "";
+      user.bio =
+        data.bio;
 
-    user.hobbies =
-      data.hobbies || "";
+    }
+
+    if (
+      data.hometown !== undefined
+    ) {
+
+      user.hometown =
+        data.hometown;
+
+    }
+
+    if (
+      data.birthday !== undefined
+    ) {
+
+      user.birthday =
+        data.birthday;
+
+    }
+
+    if (
+      data.status !== undefined
+    ) {
+
+      user.status =
+        data.status;
+
+    }
+
+    if (
+      data.language !== undefined
+    ) {
+
+      user.language =
+        data.language;
+
+    }
+
+    if (
+      data.gender !== undefined
+    ) {
+
+      user.gender =
+        data.gender;
+
+    }
+
+    // =========================
+    // WORK
+    // =========================
+
+    if (
+      Array.isArray(
+        data.work
+      )
+    ) {
+
+      user.work =
+        data.work;
+
+    }
+
+    // =========================
+    // EDUCATION
+    // =========================
+
+    if (
+      Array.isArray(
+        data.education
+      )
+    ) {
+
+      user.education =
+        data.education;
+
+    }
+
+    // =========================
+    // HOBBIES
+    // =========================
+
+    if (
+      Array.isArray(
+        data.hobbies
+      )
+    ) {
+
+      user.hobbies =
+        data.hobbies;
+
+    }
+
+    // =========================
+    // PINNED DETAILS
+    // =========================
+
+    if (
+      data.pinnedDetails
+    ) {
+
+      user.pinnedDetails =
+        data.pinnedDetails;
+
+    }
+
+    // =========================
+    // SAVE
+    // =========================
 
     await user.save();
 
     return Response.json({
       success: true,
+
+      user,
     });
 
   } catch (err) {
@@ -65,6 +176,8 @@ export async function POST(req) {
 
     return Response.json({
       success: false,
+      message:
+        "Server error",
     });
 
   }
