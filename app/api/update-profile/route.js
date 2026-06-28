@@ -23,17 +23,15 @@ export async function POST(req) {
       });
     }
 
-    // SAFE UPDATE
-    const fields = [
-      "avatar",
-      "banner",
-      "bio",
-      "hometown",
-      "birthday",
-      "status",
-      "language",
-      "gender",
-    ];
+if (
+  ["bio", "work", "education", "hobbies"].includes(field)
+) {
+  user[field] = Array.isArray(data[field])
+    ? data[field]
+    : [];
+} else {
+  user[field] = data[field];
+}
 
     fields.forEach((f) => {
       if (data[f] !== undefined) user[f] = data[f];
