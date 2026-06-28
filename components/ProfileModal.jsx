@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+
 import EditProfileModal from "./EditProfileModal";
 
 export default function ProfileModal({
@@ -15,12 +16,13 @@ export default function ProfileModal({
   const [loading, setLoading] =
     useState(true);
 
-  const [openEdit, setOpenEdit] =
+  const [editOpen, setEditOpen] =
     useState(false);
 
   const isOwnProfile =
     userId === currentUserId;
 
+  // LOAD PROFILE
   useEffect(() => {
 
     const loadProfile =
@@ -67,7 +69,7 @@ export default function ProfileModal({
 
     return (
 
-      <div className="fixed inset-0 z-[99999] bg-black/60 flex items-center justify-center">
+      <div className="fixed inset-0 z-[99999] bg-black/70 flex items-center justify-center">
 
         <div className="text-white text-lg">
           Loading...
@@ -86,39 +88,42 @@ export default function ProfileModal({
 
     <>
 
-      <div className="fixed inset-0 z-[99999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5 overflow-y-auto">
+      {/* MODAL */}
+      <div
+        className="
+          fixed inset-0 z-[99999]
+          bg-black/70 backdrop-blur-sm
+          flex items-center justify-center
+          p-2 sm:p-4
+          overflow-y-auto
+        "
+      >
 
         <div
           className="
             relative
             w-full
-            max-w-2xl
+            max-w-[850px]
             rounded-3xl
             overflow-hidden
             bg-[#1e1f22]
-            border
-            border-white/10
+            border border-white/10
             shadow-2xl
           "
         >
 
           {/* CLOSE BUTTON */}
-
           <button
             onClick={close}
             className="
               absolute
-              top-3
-              right-3
+              top-3 right-3
               z-50
-              w-10
-              h-10
+              w-10 h-10
               rounded-full
-              bg-black/60
+              bg-black/70
               text-white
-              flex
-              items-center
-              justify-center
+              flex items-center justify-center
               text-xl
             "
           >
@@ -128,13 +133,20 @@ export default function ProfileModal({
           </button>
 
           {/* BANNER */}
-
-          <div className="relative h-[180px] sm:h-[220px] w-full">
+          <div
+            className="
+              relative
+              w-full
+              h-[160px]
+              sm:h-[240px]
+            "
+          >
 
             {profile.banner ? (
 
               <img
                 src={profile.banner}
+                alt="banner"
                 className="
                   w-full
                   h-full
@@ -144,32 +156,48 @@ export default function ProfileModal({
 
             ) : (
 
-              <div className="w-full h-full bg-gradient-to-r from-blue-600 to-cyan-500" />
+              <div
+                className="
+                  w-full
+                  h-full
+                  bg-gradient-to-r
+                  from-blue-600
+                  to-cyan-500
+                "
+              />
 
             )}
 
           </div>
 
           {/* CONTENT */}
+          <div className="px-4 sm:px-6 pb-6">
 
-          <div className="relative px-4 sm:px-6 pb-6">
+            {/* AVATAR + USER */}
+            <div
+              className="
+                relative
+                flex
+                flex-col
+                sm:flex-row
+                sm:items-end
+                gap-4
+                -mt-16
+                sm:-mt-20
+              "
+            >
 
-            {/* AVATAR */}
-
-            <div className="-mt-[60px] sm:-mt-[70px] flex flex-col sm:flex-row sm:items-end gap-4">
-
+              {/* AVATAR */}
               {profile.avatar ? (
 
                 <img
                   src={profile.avatar}
+                  alt="avatar"
                   className="
-                    w-[110px]
-                    h-[110px]
-                    sm:w-[130px]
-                    sm:h-[130px]
+                    w-28 h-28
+                    sm:w-36 sm:h-36
                     rounded-full
-                    border-4
-                    border-[#1e1f22]
+                    border-4 border-[#1e1f22]
                     object-cover
                     bg-[#2a2b30]
                     shrink-0
@@ -180,18 +208,13 @@ export default function ProfileModal({
 
                 <div
                   className="
-                    w-[110px]
-                    h-[110px]
-                    sm:w-[130px]
-                    sm:h-[130px]
+                    w-28 h-28
+                    sm:w-36 sm:h-36
                     rounded-full
-                    border-4
-                    border-[#1e1f22]
+                    border-4 border-[#1e1f22]
                     bg-blue-600
-                    flex
-                    items-center
-                    justify-center
                     text-white
+                    flex items-center justify-center
                     text-4xl
                     font-black
                     shrink-0
@@ -207,16 +230,22 @@ export default function ProfileModal({
               )}
 
               {/* USER INFO */}
-
-              <div className="min-w-0 flex-1 pb-2">
+              <div
+                className="
+                  min-w-0
+                  flex-1
+                  pb-2
+                "
+              >
 
                 <div
                   className="
                     text-2xl
-                    sm:text-3xl
+                    sm:text-4xl
                     font-black
                     text-white
                     break-words
+                    leading-tight
                   "
                 >
 
@@ -240,26 +269,31 @@ export default function ProfileModal({
 
             </div>
 
-            {/* FRIEND COUNT */}
+            {/* FRIENDS */}
+            <div className="mt-5 text-white/70 text-sm">
 
-            <div className="mt-5 text-white">
-
-              <span className="font-bold">
-                {profile.friends?.length || 0}
-              </span>{" "}
+              {profile.friends?.length || 0}
+              {" "}
               Friends
 
             </div>
 
             {/* BIO */}
-
             <div className="mt-4">
 
               <div className="text-white font-bold mb-2">
+
                 Bio
+
               </div>
 
-              <div className="text-white/70 whitespace-pre-wrap break-words">
+              <div
+                className="
+                  text-white/80
+                  whitespace-pre-wrap
+                  break-words
+                "
+              >
 
                 {profile.bio ||
                   "No bio yet"}
@@ -269,19 +303,18 @@ export default function ProfileModal({
             </div>
 
             {/* EDIT PROFILE BUTTON */}
-
             {isOwnProfile && (
 
               <button
                 onClick={() =>
-                  setOpenEdit(true)
+                  setEditOpen(true)
                 }
                 className="
-                  mt-5
+                  mt-4
                   w-full
                   sm:w-auto
-                  px-5
                   h-11
+                  px-5
                   rounded-2xl
                   bg-blue-600
                   text-white
@@ -296,7 +329,6 @@ export default function ProfileModal({
             )}
 
             {/* DETAILS */}
-
             <div className="mt-6 space-y-3">
 
               <ProfileItem
@@ -342,14 +374,13 @@ export default function ProfileModal({
 
       </div>
 
-      {/* EDIT MODAL */}
-
-      {openEdit && (
+      {/* EDIT PROFILE MODAL */}
+      {editOpen && (
 
         <EditProfileModal
           profile={profile}
           close={() =>
-            setOpenEdit(false)
+            setEditOpen(false)
           }
           refreshProfile={() =>
             window.location.reload()
@@ -364,6 +395,7 @@ export default function ProfileModal({
 
 }
 
+// PROFILE ITEM
 function ProfileItem({
   label,
   value,
@@ -371,7 +403,13 @@ function ProfileItem({
 
   return (
 
-    <div className="bg-white/5 rounded-2xl p-4">
+    <div
+      className="
+        bg-white/5
+        rounded-2xl
+        p-4
+      "
+    >
 
       <div className="text-white/50 text-sm">
 
@@ -379,7 +417,12 @@ function ProfileItem({
 
       </div>
 
-      <div className="text-white break-words">
+      <div
+        className="
+          text-white
+          break-words
+        "
+      >
 
         {value || "Not set"}
 
