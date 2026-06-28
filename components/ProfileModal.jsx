@@ -50,9 +50,7 @@ export default function ProfileModal({
     currentUser?.userId ===
     profile?.userId;
 
-  // =========================
   // SAVE PROFILE
-  // =========================
 
   const saveProfile =
     async () => {
@@ -63,8 +61,7 @@ export default function ProfileModal({
           await fetch(
             "/api/update-profile",
             {
-              method:
-                "POST",
+              method: "POST",
 
               headers: {
                 "Content-Type":
@@ -113,27 +110,24 @@ export default function ProfileModal({
 
   return (
 
-    <div className="fixed inset-0 z-[999999] bg-black/70 backdrop-blur-sm flex items-start justify-center overflow-y-auto p-3 sm:p-6">
-
-      {/* MODAL */}
+    <div className="fixed inset-0 z-[999999] bg-black/70 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4">
 
       <div
         className="
           relative
           w-full
-          max-w-[720px]
-          rounded-[28px]
-          overflow-hidden
+          max-w-[700px]
+          max-h-[95vh]
+          overflow-y-auto
+          rounded-3xl
           bg-[#1e1f22]
           border
           border-white/10
           shadow-2xl
-          mt-2
-          mb-10
         "
       >
 
-        {/* CLOSE BUTTON */}
+        {/* CLOSE */}
 
         <button
           onClick={close}
@@ -146,14 +140,11 @@ export default function ProfileModal({
             h-11
             rounded-full
             bg-black/70
-            hover:bg-black
             text-white
             text-xl
             flex
             items-center
             justify-center
-            border
-            border-white/10
           "
         >
 
@@ -163,7 +154,7 @@ export default function ProfileModal({
 
         {/* BANNER */}
 
-        <div className="relative h-[170px] sm:h-[240px] w-full overflow-hidden">
+        <div className="relative w-full h-[170px] sm:h-[230px] overflow-hidden">
 
           {profile?.banner ? (
 
@@ -171,8 +162,6 @@ export default function ProfileModal({
               src={profile.banner}
               alt="banner"
               className="
-                absolute
-                inset-0
                 w-full
                 h-full
                 object-cover
@@ -183,40 +172,37 @@ export default function ProfileModal({
 
             <div
               className="
-                absolute
-                inset-0
+                w-full
+                h-full
                 bg-gradient-to-r
                 from-blue-600
-                via-cyan-500
                 to-purple-600
               "
             />
 
           )}
 
-          {/* DARK OVERLAY */}
-
           <div className="absolute inset-0 bg-black/30" />
 
         </div>
 
-        {/* MAIN CONTENT */}
+        {/* CONTENT */}
 
-        <div className="relative px-4 sm:px-7 pb-7">
+        <div className="relative px-4 sm:px-6 pb-6">
 
-          {/* PROFILE SECTION */}
+          {/* PROFILE HEADER */}
 
           <div
             className="
               relative
-              z-30
+              z-20
               flex
               flex-col
               sm:flex-row
               sm:items-end
               gap-4
-              -mt-[58px]
-              sm:-mt-[70px]
+              -mt-14
+              sm:-mt-16
             "
           >
 
@@ -230,14 +216,14 @@ export default function ProfileModal({
                   src={profile.avatar}
                   alt="avatar"
                   className="
-                    w-[115px]
-                    h-[115px]
-                    sm:w-[145px]
-                    sm:h-[145px]
+                    w-[110px]
+                    h-[110px]
+                    sm:w-[130px]
+                    sm:h-[130px]
                     rounded-full
+                    object-cover
                     border-4
                     border-[#1e1f22]
-                    object-cover
                     bg-[#1e1f22]
                   "
                 />
@@ -246,10 +232,10 @@ export default function ProfileModal({
 
                 <div
                   className="
-                    w-[115px]
-                    h-[115px]
-                    sm:w-[145px]
-                    sm:h-[145px]
+                    w-[110px]
+                    h-[110px]
+                    sm:w-[130px]
+                    sm:h-[130px]
                     rounded-full
                     border-4
                     border-[#1e1f22]
@@ -265,7 +251,7 @@ export default function ProfileModal({
 
                   {profile?.username
                     ?.charAt(0)
-                    ?.toUpperCase()}
+                    ?.toUpperCase() || "U"}
 
                 </div>
 
@@ -277,8 +263,8 @@ export default function ProfileModal({
 
             <div
               className="
-                min-w-0
                 flex-1
+                min-w-0
                 pb-2
               "
             >
@@ -286,15 +272,15 @@ export default function ProfileModal({
               <div
                 className="
                   text-[26px]
-                  sm:text-[36px]
+                  sm:text-[34px]
                   font-black
                   text-white
-                  break-words
                   leading-tight
+                  break-words
                 "
               >
 
-                {profile?.username}
+                {profile?.username || "Unknown User"}
 
               </div>
 
@@ -307,9 +293,7 @@ export default function ProfileModal({
                 "
               >
 
-                ID:
-                {" "}
-                {profile?.userId}
+                ID: {profile?.userId || "Unknown"}
 
               </div>
 
@@ -317,14 +301,12 @@ export default function ProfileModal({
                 className="
                   mt-2
                   text-sm
-                  text-cyan-400
+                  text-blue-400
                   font-semibold
                 "
               >
 
-                {profile?.friends?.length || 0}
-                {" "}
-                Friends
+                {profile?.friends?.length || 0} Friends
 
               </div>
 
@@ -336,7 +318,14 @@ export default function ProfileModal({
 
           <div className="mt-6">
 
-            <div className="text-lg font-bold text-white mb-2">
+            <div
+              className="
+                text-lg
+                font-bold
+                text-white
+                mb-2
+              "
+            >
 
               Bio
 
@@ -353,22 +342,19 @@ export default function ProfileModal({
               "
             >
 
-              {profile?.bio ||
-                "No bio yet"}
+              {profile?.bio || "No bio yet"}
 
             </div>
 
           </div>
 
-          {/* EDIT BUTTON BELOW BIO */}
+          {/* EDIT BUTTON */}
 
           {isOwner && (
 
             <button
               onClick={() =>
-                setEditing(
-                  !editing
-                )
+                setEditing(!editing)
               }
               className="
                 mt-4
@@ -377,9 +363,9 @@ export default function ProfileModal({
                 rounded-2xl
                 bg-blue-600
                 hover:bg-blue-700
-                transition
                 text-white
                 font-bold
+                transition
               "
             >
 
@@ -391,7 +377,7 @@ export default function ProfileModal({
 
           )}
 
-          {/* EDITOR */}
+          {/* EDIT FORM */}
 
           {editing && isOwner && (
 
@@ -439,7 +425,7 @@ export default function ProfileModal({
                 placeholder="Bio"
                 className="
                   w-full
-                  min-h-[110px]
+                  min-h-[100px]
                   rounded-2xl
                   bg-[#2a2b30]
                   p-4
@@ -533,8 +519,6 @@ export default function ProfileModal({
                   h-12
                   rounded-2xl
                   bg-green-600
-                  hover:bg-green-700
-                  transition
                   text-white
                   font-bold
                 "
@@ -548,11 +532,18 @@ export default function ProfileModal({
 
           )}
 
-          {/* PERSONAL INFO */}
+          {/* DETAILS */}
 
-          <div className="mt-7">
+          <div className="mt-6">
 
-            <div className="text-lg font-bold text-white mb-3">
+            <div
+              className="
+                text-lg
+                font-bold
+                text-white
+                mb-3
+              "
+            >
 
               Personal Information
 
@@ -567,40 +558,13 @@ export default function ProfileModal({
               "
             >
 
-              <Info
-                label="Hometown"
-                value={profile?.hometown}
-              />
-
-              <Info
-                label="Birthday"
-                value={profile?.birthday}
-              />
-
-              <Info
-                label="Status"
-                value={profile?.status}
-              />
-
-              <Info
-                label="Language"
-                value={profile?.language}
-              />
-
-              <Info
-                label="Work"
-                value={profile?.work}
-              />
-
-              <Info
-                label="Education"
-                value={profile?.education}
-              />
-
-              <Info
-                label="Hobbies"
-                value={profile?.hobbies}
-              />
+              <Info label="Hometown" value={profile?.hometown} />
+              <Info label="Birthday" value={profile?.birthday} />
+              <Info label="Status" value={profile?.status} />
+              <Info label="Language" value={profile?.language} />
+              <Info label="Work" value={profile?.work} />
+              <Info label="Education" value={profile?.education} />
+              <Info label="Hobbies" value={profile?.hobbies} />
 
             </div>
 
@@ -616,10 +580,6 @@ export default function ProfileModal({
 
 }
 
-// =========================
-// INPUT
-// =========================
-
 function Input({
   value,
   onChange,
@@ -631,9 +591,7 @@ function Input({
     <input
       value={value}
       onChange={(e) =>
-        onChange(
-          e.target.value
-        )
+        onChange(e.target.value)
       }
       placeholder={placeholder}
       className="
@@ -650,10 +608,6 @@ function Input({
   );
 
 }
-
-// =========================
-// INFO CARD
-// =========================
 
 function Info({
   label,
