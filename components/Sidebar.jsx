@@ -630,9 +630,23 @@ export default function Sidebar(props) {
 {openProfile && (
 
   <ProfileModal
-  key={
-    JSON.stringify(props)
-  }
+    key={JSON.stringify({
+      avatar: props.avatar,
+      banner: props.banner,
+      bio: props.bio,
+      hometown: props.hometown,
+      birthday: props.birthday,
+      status: props.status,
+      language: props.language,
+      gender: props.gender,
+      work: props.work,
+      education: props.education,
+      hobbies: props.hobbies,
+    })}
+
+    close={() =>
+      setOpenProfile(false)
+    }
 
     currentUser={{
       username:
@@ -673,26 +687,17 @@ export default function Sidebar(props) {
       language:
         props.language || "",
 
+      work:
+        props.work || "",
+
+      education:
+        props.education || "",
+
+      hobbies:
+        props.hobbies || "",
+
       gender:
         props.gender || "",
-
-      // ✅ FIXED
-      work:
-        Array.isArray(props.work)
-          ? props.work
-          : [],
-
-      // ✅ FIXED
-      education:
-        Array.isArray(props.education)
-          ? props.education
-          : [],
-
-      // ✅ FIXED
-      hobbies:
-        Array.isArray(props.hobbies)
-          ? props.hobbies
-          : [],
 
       friends:
         friends,
