@@ -1,38 +1,152 @@
 "use client";
 
-import { FiX, FiEdit2 } from "react-icons/fi";
+import { useState } from "react";
+
+import {
+  FiX,
+  FiEdit2,
+} from "react-icons/fi";
 
 export default function ProfileModal({
-  user,
-  currentUser,
   close,
-  onEdit,
+  user,
+  isOwnProfile,
+  onSave,
 }) {
 
-  const isOwnProfile =
-    currentUser?.userId === user?.userId;
+  const [editing, setEditing] =
+    useState(false);
+
+  const [form, setForm] =
+    useState({
+
+      username:
+        user?.username || "",
+
+      avatar:
+        user?.avatar || "",
+
+      banner:
+        user?.banner || "",
+
+      bio:
+        user?.bio || "",
+
+      hometown:
+        user?.hometown || "",
+
+      birthday:
+        user?.birthday || "",
+
+      status:
+        user?.status || "",
+
+      language:
+        user?.language || "",
+
+      work:
+        user?.work || "",
+
+      education:
+        user?.education || "",
+
+      hobbies:
+        user?.hobbies || "",
+
+    });
+
+  const updateField =
+    (key, value) => {
+
+      setForm((prev) => ({
+        ...prev,
+        [key]: value,
+      }));
+
+    };
+
+  const saveProfile =
+    async () => {
+
+      try {
+
+        const res =
+          await fetch(
+            "/api/update-profile",
+            {
+              method:
+                "POST",
+
+              headers: {
+                "Content-Type":
+                  "application/json",
+              },
+
+              body:
+                JSON.stringify({
+                  userId:
+                    user.userId,
+
+                  ...form,
+                }),
+            }
+          );
+
+        const data =
+          await res.json();
+
+        if (!data.success) {
+
+          alert(
+            data.message ||
+            "Failed to save profile"
+          );
+
+          return;
+
+        }
+
+        if (onSave) {
+
+          onSave(form);
+
+        }
+
+        setEditing(false);
+
+      } catch (err) {
+
+        console.log(err);
+
+        alert(
+          "Server error"
+        );
+
+      }
+
+    };
 
   return (
 
-    <div className="fixed inset-0 z-[99999] bg-black/70 backdrop-blur-md flex items-center justify-center p-3 sm:p-5 overflow-y-auto">
+    <div className="fixed inset-0 z-[999999] bg-black/70 backdrop-blur-sm flex items-center justify-center p-3 overflow-y-auto">
 
-      {/* MODAL */}
       <div
         className="
           relative
           w-full
-          max-w-3xl
-          rounded-[28px]
+          max-w-2xl
+          rounded-[32px]
           overflow-hidden
-          bg-[#111214]
+          bg-[#1e1f22]
           border
           border-white/10
           shadow-2xl
-          animate-[fadeIn_.2s_ease]
+          my-6
         "
       >
 
         {/* CLOSE BUTTON */}
+
         <button
           onClick={close}
           className="
@@ -44,26 +158,56 @@ export default function ProfileModal({
             h-11
             rounded-2xl
             bg-black/50
-            hover:bg-black/70
+            backdrop-blur-xl
             text-white
             flex
             items-center
             justify-center
-            transition
-            backdrop-blur-md
           "
         >
-          <FiX size={24} />
+
+          <FiX size={22} />
+
         </button>
 
         {/* BANNER */}
-        <div className="relative h-[180px] sm:h-[230px] md:h-[280px] bg-[#1b1c1f]">
 
-          {user?.banner ? (
+        <div className="relative h-[180px] sm:h-[220px] w-full">
+
+          {editing ? (
+
+            <input
+              value={form.banner}
+              onChange={(e) =>
+                updateField(
+                  "banner",
+                  e.target.value
+                )
+              }
+              placeholder="Banner image URL"
+              className="
+                absolute
+                bottom-4
+                left-4
+                right-4
+                z-30
+                h-11
+                px-4
+                rounded-2xl
+                bg-black/60
+                text-white
+                outline-none
+                border
+                border-white/10
+              "
+            />
+
+          ) : null}
+
+          {form.banner ? (
 
             <img
-              src={user.banner}
-              alt="banner"
+              src={form.banner}
               className="
                 w-full
                 h-full
@@ -79,47 +223,50 @@ export default function ProfileModal({
                 h-full
                 bg-gradient-to-r
                 from-blue-600
-                via-purple-600
-                to-pink-600
+                via-cyan-500
+                to-indigo-600
               "
             />
 
           )}
 
+          <div className="absolute inset-0 bg-black/30" />
+
         </div>
 
-        {/* CONTENT */}
-        <div className="px-4 sm:px-6 md:px-8 pb-8">
+        {/* PROFILE CONTENT */}
 
-          {/* AVATAR + USER INFO */}
-          <div className="flex flex-col sm:flex-row sm:items-end gap-4 -mt-16 sm:-mt-20 relative z-20">
+        <div className="relative px-4 sm:px-6 pb-6">
 
-            {/* AVATAR */}
-            <div
-              className="
-                w-[120px]
-                h-[120px]
-                sm:w-[150px]
-                sm:h-[150px]
-                rounded-full
-                border-[5px]
-                border-[#111214]
-                overflow-hidden
-                bg-[#1e1f22]
-                shadow-2xl
-                shrink-0
-              "
-            >
+          {/* AVATAR + NAME */}
 
-              {user?.avatar ? (
+          <div
+            className="
+              flex
+              flex-col
+              sm:flex-row
+              sm:items-end
+              gap-4
+              -mt-16
+              relative
+              z-20
+            "
+          >
+
+            <div className="relative shrink-0">
+
+              {form.avatar ? (
 
                 <img
-                  src={user.avatar}
-                  alt="avatar"
+                  src={form.avatar}
                   className="
-                    w-full
-                    h-full
+                    w-32
+                    h-32
+                    rounded-full
                     object-cover
+                    border-[5px]
+                    border-[#1e1f22]
+                    bg-[#2b2d31]
                   "
                 />
 
@@ -127,105 +274,99 @@ export default function ProfileModal({
 
                 <div
                   className="
-                    w-full
-                    h-full
+                    w-32
+                    h-32
+                    rounded-full
+                    bg-blue-600
+                    border-[5px]
+                    border-[#1e1f22]
                     flex
                     items-center
                     justify-center
                     text-5xl
                     font-black
                     text-white
-                    bg-blue-600
                   "
                 >
-                  {user?.username
+
+                  {form.username
                     ?.charAt(0)
                     ?.toUpperCase()}
+
                 </div>
+
+              )}
+
+              {editing && (
+
+                <input
+                  value={form.avatar}
+                  onChange={(e) =>
+                    updateField(
+                      "avatar",
+                      e.target.value
+                    )
+                  }
+                  placeholder="Avatar URL"
+                  className="
+                    mt-3
+                    w-full
+                    h-10
+                    px-3
+                    rounded-xl
+                    bg-[#2b2d31]
+                    text-white
+                    text-sm
+                    outline-none
+                  "
+                />
 
               )}
 
             </div>
 
-            {/* USER DETAILS */}
             <div className="flex-1 min-w-0 pb-2">
 
-              <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+              {editing ? (
 
-                <h1
+                <input
+                  value={form.username}
+                  onChange={(e) =>
+                    updateField(
+                      "username",
+                      e.target.value
+                    )
+                  }
                   className="
-                    text-2xl
-                    sm:text-3xl
-                    font-black
+                    w-full
+                    h-12
+                    px-4
+                    rounded-2xl
+                    bg-[#2b2d31]
                     text-white
-                    truncate
+                    text-2xl
+                    font-black
+                    outline-none
                   "
-                >
-                  {user?.username}
-                </h1>
+                />
 
-                {/* EDIT BUTTON */}
-                {isOwnProfile && (
+              ) : (
 
-                  <button
-                    onClick={onEdit}
-                    className="
-                      h-11
-                      px-5
-                      rounded-2xl
-                      bg-blue-600
-                      hover:bg-blue-700
-                      text-white
-                      font-bold
-                      flex
-                      items-center
-                      justify-center
-                      gap-2
-                      transition
-                      w-fit
-                    "
-                  >
+                <div className="text-3xl font-black text-white break-words">
 
-                    <FiEdit2 />
+                  {form.username}
 
-                    Edit Profile
+                </div>
 
-                  </button>
+              )}
 
-                )}
+              <div className="text-sm opacity-60 text-white mt-1 break-all">
+
+                ID: {user.userId}
 
               </div>
 
-              <div
-                className="
-                  text-sm
-                  sm:text-base
-                  text-white/60
-                  mt-1
-                  break-all
-                "
-              >
-                {user?.userId}
-              </div>
-
-              {/* FRIEND COUNT */}
-              <div
-                className="
-                  mt-4
-                  inline-flex
-                  items-center
-                  gap-2
-                  px-4
-                  py-2
-                  rounded-2xl
-                  bg-white/5
-                  text-white
-                  text-sm
-                  font-medium
-                "
-              >
-
-                👥
+              <div className="mt-3 text-sm text-white/80">
 
                 {user?.friends?.length || 0}
                 {" "}
@@ -238,137 +379,251 @@ export default function ProfileModal({
           </div>
 
           {/* BIO */}
-          <div className="mt-7">
 
-            <div className="text-lg font-bold text-white mb-2">
+          <div className="mt-6">
+
+            <div className="text-white font-bold mb-2">
               Bio
             </div>
 
-            <div
-              className="
-                rounded-3xl
-                bg-white/5
-                border
-                border-white/10
-                p-5
-                text-white/80
-                leading-relaxed
-                break-words
-              "
-            >
+            {editing ? (
 
-              {user?.bio || "No bio yet."}
+              <textarea
+                value={form.bio}
+                onChange={(e) =>
+                  updateField(
+                    "bio",
+                    e.target.value
+                  )
+                }
+                className="
+                  w-full
+                  min-h-[110px]
+                  rounded-2xl
+                  bg-[#2b2d31]
+                  text-white
+                  p-4
+                  outline-none
+                  resize-none
+                "
+              />
 
-            </div>
+            ) : (
+
+              <div
+                className="
+                  rounded-2xl
+                  bg-[#2b2d31]
+                  p-4
+                  text-white/90
+                  whitespace-pre-wrap
+                  break-words
+                "
+              >
+
+                {form.bio ||
+                  "No bio yet."}
+
+              </div>
+
+            )}
 
           </div>
 
-          {/* PERSONAL DETAILS */}
-          <div className="mt-7">
+          {/* EDIT BUTTON BELOW BIO */}
 
-            <div className="text-lg font-bold text-white mb-4">
+          {isOwnProfile && !editing && (
+
+            <button
+              onClick={() =>
+                setEditing(true)
+              }
+              className="
+                mt-4
+                w-full
+                h-12
+                rounded-2xl
+                bg-blue-600
+                hover:bg-blue-700
+                text-white
+                font-bold
+                flex
+                items-center
+                justify-center
+                gap-2
+              "
+            >
+
+              <FiEdit2 />
+
+              Edit Profile
+
+            </button>
+
+          )}
+
+          {/* DETAILS */}
+
+          <div className="mt-6">
+
+            <div className="text-white font-bold mb-3">
               Personal Details
             </div>
 
-            <div
-              className="
-                grid
-                grid-cols-1
-                sm:grid-cols-2
-                gap-4
-              "
-            >
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
 
-              <InfoCard
-                title="Hometown"
-                value={user?.hometown}
-              />
+              {[
+                [
+                  "Hometown",
+                  "hometown",
+                ],
 
-              <InfoCard
-                title="Birthday"
-                value={user?.birthday}
-              />
+                [
+                  "Birthday",
+                  "birthday",
+                ],
 
-              <InfoCard
-                title="Status"
-                value={user?.status}
-              />
+                [
+                  "Status",
+                  "status",
+                ],
 
-              <InfoCard
-                title="Language"
-                value={user?.language}
-              />
+                [
+                  "Language",
+                  "language",
+                ],
 
-              <InfoCard
-                title="Work"
-                value={user?.work}
-              />
+                [
+                  "Work",
+                  "work",
+                ],
 
-              <InfoCard
-                title="Education"
-                value={user?.education}
-              />
+                [
+                  "Education",
+                  "education",
+                ],
 
-              <InfoCard
-                title="Hobbies"
-                value={user?.hobbies}
-              />
+                [
+                  "Hobbies",
+                  "hobbies",
+                ],
+
+              ].map(
+                ([
+                  label,
+                  key,
+                ]) => (
+
+                  <div
+                    key={key}
+                    className="
+                      rounded-2xl
+                      bg-[#2b2d31]
+                      p-4
+                    "
+                  >
+
+                    <div className="text-xs uppercase opacity-50 text-white mb-1">
+
+                      {label}
+
+                    </div>
+
+                    {editing ? (
+
+                      <input
+                        value={
+                          form[key]
+                        }
+
+                        onChange={(e) =>
+                          updateField(
+                            key,
+                            e.target.value
+                          )
+                        }
+
+                        className="
+                          w-full
+                          h-10
+                          px-3
+                          rounded-xl
+                          bg-[#1e1f22]
+                          text-white
+                          outline-none
+                        "
+                      />
+
+                    ) : (
+
+                      <div className="text-white break-words">
+
+                        {form[key] ||
+                          "Not set"}
+
+                      </div>
+
+                    )}
+
+                  </div>
+
+                )
+              )}
 
             </div>
 
           </div>
 
+          {/* SAVE BUTTON */}
+
+          {editing && (
+
+            <div className="mt-6 flex gap-3">
+
+              <button
+                onClick={() =>
+                  setEditing(false)
+                }
+
+                className="
+                  flex-1
+                  h-12
+                  rounded-2xl
+                  bg-white/10
+                  text-white
+                  font-bold
+                "
+              >
+
+                Cancel
+
+              </button>
+
+              <button
+                onClick={
+                  saveProfile
+                }
+
+                className="
+                  flex-1
+                  h-12
+                  rounded-2xl
+                  bg-blue-600
+                  text-white
+                  font-bold
+                "
+              >
+
+                Save Profile
+
+              </button>
+
+            </div>
+
+          )}
+
         </div>
 
-      </div>
-
-    </div>
-
-  );
-
-}
-
-/* ========================= */
-/* INFO CARD */
-/* ========================= */
-
-function InfoCard({
-  title,
-  value,
-}) {
-
-  return (
-
-    <div
-      className="
-        rounded-3xl
-        bg-white/5
-        border
-        border-white/10
-        p-5
-      "
-    >
-
-      <div
-        className="
-          text-xs
-          uppercase
-          tracking-wider
-          text-white/40
-          mb-2
-        "
-      >
-        {title}
-      </div>
-
-      <div
-        className="
-          text-white
-          font-medium
-          break-words
-        "
-      >
-        {value || "Not set"}
       </div>
 
     </div>
