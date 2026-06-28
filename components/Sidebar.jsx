@@ -1,12 +1,16 @@
 "use client";
 
-import { useState, useRef } from "react";
+import {
+useState,
+useRef,
+useEffect,
+} from "react";
 
 import {
-  FiMenu,
-  FiSettings,
-  FiX,
-  FiUserPlus,
+FiMenu,
+FiSettings,
+FiX,
+FiUserPlus,
 } from "react-icons/fi";
 
 import SettingsModal from "./SettingsModal";
@@ -15,19 +19,20 @@ import ProfileModal from "./ProfileModal";
 
 export default function Sidebar(props) {
 
-  const [openSettings, setOpenSettings] =
-    useState(false);
+const [openSettings, setOpenSettings] =
+useState(false);
 
-  const [mobileOpen, setMobileOpen] =
-    useState(false);
+const [mobileOpen, setMobileOpen] =
+useState(false);
 
-  const [openFriends, setOpenFriends] =
-    useState(false);
+const [openFriends, setOpenFriends] =
+useState(false);
 
-  const [openProfile, setOpenProfile] =
-    useState(false);
+const [openProfile, setOpenProfile] =
+useState(false);
 
-  const [userData, setUserData] = useState({
+const [userData, setUserData] =
+useState({
 username: props.username,
 userId: props.userId,
 avatar: props.avatar,
@@ -43,17 +48,55 @@ education: props.education,
 hobbies: props.hobbies,
 });
 
+// =========================
+// SYNC PROPS
+// =========================
+
+useEffect(() => {
+
+setUserData({
+  username: props.username,
+  userId: props.userId,
+  avatar: props.avatar,
+  banner: props.banner,
+  bio: props.bio,
+  hometown: props.hometown,
+  birthday: props.birthday,
+  status: props.status,
+  language: props.language,
+  gender: props.gender,
+  work: props.work,
+  education: props.education,
+  hobbies: props.hobbies,
+});
+
+}, [
+props.username,
+props.userId,
+props.avatar,
+props.banner,
+props.bio,
+props.hometown,
+props.birthday,
+props.status,
+props.language,
+props.gender,
+props.work,
+props.education,
+props.hobbies,
+]);
+
 const friends =
 props.friends || [];
 
-  const [friendMenu, setFriendMenu] =
-    useState(null);
+const [friendMenu, setFriendMenu] =
+useState(null);
 
-  const [confirmRemove, setConfirmRemove] =
-    useState(null);
+const [confirmRemove, setConfirmRemove] =
+useState(null);
 
-  const holdTimeout =
-    useRef(null);
+const holdTimeout =
+useRef(null);
 
   // =========================
   // CHANGE CHAT
