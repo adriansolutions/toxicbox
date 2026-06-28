@@ -242,25 +242,30 @@ export default function ProfileModal({
         {/* CLOSE */}
 
         <button
-          onClick={close}
-          className="
-            fixed
-            top-3
-            right-3
-            z-[999999]
-            w-11
-            h-11
-            rounded-full
-            bg-black/70
-            text-white
-            text-xl
-            flex
-            items-center
-            justify-center
-          "
-        >
-          ✕
-        </button>
+  onClick={(e) => {
+    e.stopPropagation();
+    close();
+  }}
+  className="
+    absolute
+    top-4
+    right-4
+    z-[99999999]
+    w-11
+    h-11
+    rounded-full
+    bg-black/70
+    hover:bg-black
+    text-white
+    flex
+    items-center
+    justify-center
+    text-xl
+    cursor-pointer
+  "
+>
+  ✕
+</button>
 
         {/* MENU */}
 
