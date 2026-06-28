@@ -6,6 +6,7 @@ export default function ProfileModal({
   close,
   profile,
   currentUser,
+  updateProfile,
 }) {
   const safeProfile = {
     username:
@@ -190,17 +191,18 @@ export default function ProfileModal({
 
     }
 
-    // UPDATE LOCAL PROFILE
-    Object.assign(
-      safeProfile,
-      payload
-    );
+setForm((prev) => ({
+  ...prev,
+  ...payload,
+}));
 
-    setForm(payload);
+updateProfile?.({
+  ...payload,
+});
 
-    setEditingField(null);
+setEditingField(null);
 
-    setMenuOpen(false);
+setMenuOpen(false);
 
     alert("Profile updated!");
 
@@ -241,7 +243,7 @@ export default function ProfileModal({
 
         {/* CLOSE */}
 
-        <button
+<button
   onClick={(e) => {
     e.stopPropagation();
     close();
