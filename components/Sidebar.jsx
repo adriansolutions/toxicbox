@@ -719,112 +719,112 @@ return (
 
 {openProfile && (
 
-<ProfileModal
+  <ProfileModal
 
-updateProfile={(newData) => {
+    updateProfile={(newData) => {
 
-  // UPDATE SIDEBAR
-  setUserData((prev) => ({
-    ...prev,
-    ...newData,
-  }));
-
-  // UPDATE MAIN USER
-  if (props.setCurrentUser) {
-
-    props.setCurrentUser((prev) => ({
-      ...prev,
-      ...newData,
-    }));
-
-  }
-
-  // UPDATE LOCAL CACHE
-  try {
-
-    const oldUser =
-      JSON.parse(
-        localStorage.getItem(
-          "bluechat-user"
-        ) || "{}"
-      );
-
-    localStorage.setItem(
-      "bluechat-user",
-      JSON.stringify({
-        ...oldUser,
+      // UPDATE SIDEBAR
+      setUserData((prev) => ({
+        ...prev,
         ...newData,
-      })
-    );
+      }));
 
-  } catch (err) {
+      // UPDATE MAIN USER
+      if (props.setCurrentUser) {
 
-    console.log(err);
+        props.setCurrentUser((prev) => ({
+          ...prev,
+          ...newData,
+        }));
 
-  }
+      }
 
-}}
+      // UPDATE LOCAL CACHE
+      try {
 
-close={() =>
-setOpenProfile(false)
-}
+        const oldUser =
+          JSON.parse(
+            localStorage.getItem(
+              "bluechat-user"
+            ) || "{}"
+          );
 
-currentUser={{
-username:
-userData.username,
+        localStorage.setItem(
+          "bluechat-user",
+          JSON.stringify({
+            ...oldUser,
+            ...newData,
+          })
+        );
 
-userId:
-userData.userId,
+      } catch (err) {
 
-avatar:
-userData.avatar,
-}}
+        console.log(err);
 
-profile={{
-username:
-userData.username,
+      }
 
-userId:
-userData.userId,
+    }}
 
-avatar:
-userData.avatar,
+    close={() =>
+      setOpenProfile(false)
+    }
 
-banner:
-userData.banner || "",
+    currentUser={{
+      username:
+        userData.username,
 
-bio:
-userData.bio || "",
+      userId:
+        userData.userId,
 
-hometown:
-userData.hometown || "",
+      avatar:
+        userData.avatar,
+    }}
 
-birthday:
-userData.birthday || "",
+    profile={{
+      username:
+        userData.username,
 
-status:
-userData.status || "",
+      userId:
+        userData.userId,
 
-language:
-userData.language || "",
+      avatar:
+        userData.avatar,
 
-work:
-userData.work || "",
+      banner:
+        userData.banner || "",
 
-education:
-userData.education || "",
+      bio:
+        userData.bio || "",
 
-hobbies:
-userData.hobbies || "",
+      hometown:
+        userData.hometown || "",
 
-gender:
-userData.gender || "",
+      birthday:
+        userData.birthday || "",
 
-friends:
-friends,
-}}
+      status:
+        userData.status || "",
 
-/>
+      language:
+        userData.language || "",
+
+      work:
+        userData.work || "",
+
+      education:
+        userData.education || "",
+
+      hobbies:
+        userData.hobbies || "",
+
+      gender:
+        userData.gender || "",
+
+      friends:
+        friends,
+    }}
+
+  />
 
 )}
 
