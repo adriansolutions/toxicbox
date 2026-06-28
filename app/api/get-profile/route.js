@@ -1,14 +1,12 @@
 import connectDB from "../../../lib/mongodb";
 import User from "../../../models/User";
-
 export const dynamic = "force-dynamic";
-
 export async function GET(req) {
   try {
     await connectDB();
 
-    const { searchParams } = new URL(req.url);
-    const userId = searchParams.get("userId");
+    const url = new URL(req.url);
+    const userId = url.searchParams.get("userId");
 
     if (!userId) {
       return Response.json({
@@ -32,7 +30,8 @@ export async function GET(req) {
     });
 
   } catch (err) {
-    console.log(err);
+    console.log("GET PROFILE ERROR:", err);
+
     return Response.json({
       success: false,
       message: "Server error",
