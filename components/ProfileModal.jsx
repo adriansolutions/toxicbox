@@ -8,49 +8,106 @@ export default function ProfileModal({
   currentUser,
 }) {
 
-  const [editing, setEditing] =
+  const safeProfile = {
+    username:
+      profile?.username ||
+      currentUser?.username ||
+      "Unknown User",
+
+    userId:
+      profile?.userId ||
+      currentUser?.userId ||
+      "Unknown ID",
+
+    avatar:
+      profile?.avatar ||
+      currentUser?.avatar ||
+      "",
+
+    banner:
+      profile?.banner || "",
+
+    bio:
+      profile?.bio || "",
+
+    hometown:
+      profile?.hometown || "",
+
+    birthday:
+      profile?.birthday || "",
+
+    status:
+      profile?.status || "",
+
+    language:
+      profile?.language || "",
+
+    work:
+      profile?.work || "",
+
+    education:
+      profile?.education || "",
+
+    hobbies:
+      profile?.hobbies || "",
+
+    gender:
+      profile?.gender || "",
+
+    friends:
+      profile?.friends || [],
+  };
+
+  const isOwner =
+    currentUser?.userId ===
+    safeProfile?.userId;
+
+  const [menuOpen, setMenuOpen] =
     useState(false);
+
+  const [editingField, setEditingField] =
+    useState(null);
 
   const [form, setForm] =
     useState({
 
       avatar:
-        profile?.avatar || "",
+        safeProfile.avatar,
 
       banner:
-        profile?.banner || "",
+        safeProfile.banner,
 
       bio:
-        profile?.bio || "",
+        safeProfile.bio,
 
       hometown:
-        profile?.hometown || "",
+        safeProfile.hometown,
 
       birthday:
-        profile?.birthday || "",
+        safeProfile.birthday,
 
       status:
-        profile?.status || "",
+        safeProfile.status,
 
       language:
-        profile?.language || "",
+        safeProfile.language,
 
       work:
-        profile?.work || "",
+        safeProfile.work,
 
       education:
-        profile?.education || "",
+        safeProfile.education,
 
       hobbies:
-        profile?.hobbies || "",
+        safeProfile.hobbies,
 
+      gender:
+        safeProfile.gender,
     });
 
-  const isOwner =
-    currentUser?.userId ===
-    profile?.userId;
-
-  // SAVE PROFILE
+  // =========================
+  // SAVE
+  // =========================
 
   const saveProfile =
     async () => {
@@ -87,16 +144,12 @@ export default function ProfileModal({
 
           alert(
             data.message ||
-            "Failed to update profile"
+            "Failed to update"
           );
 
           return;
 
         }
-
-        alert(
-          "Profile updated"
-        );
 
         window.location.reload();
 
@@ -112,14 +165,16 @@ export default function ProfileModal({
 
     <div className="fixed inset-0 z-[999999] bg-black/70 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4">
 
+      {/* MODAL */}
+
       <div
         className="
           relative
           w-full
-          max-w-[700px]
+          max-w-[760px]
           max-h-[95vh]
           overflow-y-auto
-          rounded-3xl
+          rounded-[28px]
           bg-[#1e1f22]
           border
           border-white/10
@@ -132,10 +187,10 @@ export default function ProfileModal({
         <button
           onClick={close}
           className="
-            absolute
+            fixed
             top-3
             right-3
-            z-50
+            z-[999999]
             w-11
             h-11
             rounded-full
@@ -152,15 +207,116 @@ export default function ProfileModal({
 
         </button>
 
+        {/* TOP RIGHT MENU */}
+
+        {isOwner && (
+
+          <div className="absolute top-4 left-4 z-50">
+
+            <button
+              onClick={() =>
+                setMenuOpen(
+                  !menuOpen
+                )
+              }
+              className="
+                w-11
+                h-11
+                rounded-full
+                bg-black/60
+                text-white
+                text-2xl
+              "
+            >
+
+              ⋮
+
+            </button>
+
+            {menuOpen && (
+
+              <div
+                className="
+                  mt-2
+                  w-[180px]
+                  rounded-2xl
+                  bg-[#2a2b30]
+                  border
+                  border-white/10
+                  overflow-hidden
+                "
+              >
+
+                <button
+                  onClick={() => {
+
+                    setEditingField(
+                      "avatar"
+                    );
+
+                    setMenuOpen(
+                      false
+                    );
+
+                  }}
+
+                  className="
+                    w-full
+                    text-left
+                    px-4
+                    py-3
+                    hover:bg-white/10
+                    text-white
+                  "
+                >
+
+                  Change Avatar
+
+                </button>
+
+                <button
+                  onClick={() => {
+
+                    setEditingField(
+                      "banner"
+                    );
+
+                    setMenuOpen(
+                      false
+                    );
+
+                  }}
+
+                  className="
+                    w-full
+                    text-left
+                    px-4
+                    py-3
+                    hover:bg-white/10
+                    text-white
+                  "
+                >
+
+                  Change Banner
+
+                </button>
+
+              </div>
+
+            )}
+
+          </div>
+
+        )}
+
         {/* BANNER */}
 
-        <div className="relative w-full h-[170px] sm:h-[230px] overflow-hidden">
+        <div className="relative h-[190px] sm:h-[260px] overflow-hidden">
 
-          {profile?.banner ? (
+          {form.banner ? (
 
             <img
-              src={profile.banner}
-              alt="banner"
+              src={form.banner}
               className="
                 w-full
                 h-full
@@ -186,11 +342,11 @@ export default function ProfileModal({
 
         </div>
 
-        {/* CONTENT */}
+        {/* PROFILE SECTION */}
 
-        <div className="relative px-4 sm:px-6 pb-6">
+        <div className="relative px-4 sm:px-7 pb-8">
 
-          {/* PROFILE HEADER */}
+          {/* AVATAR + NAME */}
 
           <div
             className="
@@ -199,10 +355,10 @@ export default function ProfileModal({
               flex
               flex-col
               sm:flex-row
-              sm:items-end
               gap-4
-              -mt-14
-              sm:-mt-16
+              items-start
+              sm:items-end
+              -mt-16
             "
           >
 
@@ -210,19 +366,18 @@ export default function ProfileModal({
 
             <div className="shrink-0">
 
-              {profile?.avatar ? (
+              {form.avatar ? (
 
                 <img
-                  src={profile.avatar}
-                  alt="avatar"
+                  src={form.avatar}
                   className="
-                    w-[110px]
-                    h-[110px]
-                    sm:w-[130px]
-                    sm:h-[130px]
+                    w-[115px]
+                    h-[115px]
+                    sm:w-[140px]
+                    sm:h-[140px]
                     rounded-full
                     object-cover
-                    border-4
+                    border-[5px]
                     border-[#1e1f22]
                     bg-[#1e1f22]
                   "
@@ -232,13 +387,11 @@ export default function ProfileModal({
 
                 <div
                   className="
-                    w-[110px]
-                    h-[110px]
-                    sm:w-[130px]
-                    sm:h-[130px]
+                    w-[115px]
+                    h-[115px]
+                    sm:w-[140px]
+                    sm:h-[140px]
                     rounded-full
-                    border-4
-                    border-[#1e1f22]
                     bg-blue-600
                     text-white
                     text-5xl
@@ -246,12 +399,14 @@ export default function ProfileModal({
                     flex
                     items-center
                     justify-center
+                    border-[5px]
+                    border-[#1e1f22]
                   "
                 >
 
-                  {profile?.username
+                  {safeProfile.username
                     ?.charAt(0)
-                    ?.toUpperCase() || "U"}
+                    ?.toUpperCase()}
 
                 </div>
 
@@ -259,20 +414,14 @@ export default function ProfileModal({
 
             </div>
 
-            {/* USER INFO */}
+            {/* INFO */}
 
-            <div
-              className="
-                flex-1
-                min-w-0
-                pb-2
-              "
-            >
+            <div className="min-w-0 flex-1 pb-2">
 
               <div
                 className="
-                  text-[26px]
-                  sm:text-[34px]
+                  text-[28px]
+                  sm:text-[36px]
                   font-black
                   text-white
                   leading-tight
@@ -280,7 +429,7 @@ export default function ProfileModal({
                 "
               >
 
-                {profile?.username || "Unknown User"}
+                {safeProfile.username}
 
               </div>
 
@@ -289,24 +438,29 @@ export default function ProfileModal({
                   text-sm
                   text-white/60
                   break-all
-                  mt-1
                 "
               >
 
-                ID: {profile?.userId || "Unknown"}
+                {safeProfile.userId}
 
               </div>
 
               <div
                 className="
                   mt-2
-                  text-sm
                   text-blue-400
                   font-semibold
+                  text-sm
                 "
               >
 
-                {profile?.friends?.length || 0} Friends
+                {
+                  safeProfile
+                    ?.friends
+                    ?.length || 0
+                }
+                {" "}
+                Friends
 
               </div>
 
@@ -318,16 +472,30 @@ export default function ProfileModal({
 
           <div className="mt-6">
 
-            <div
-              className="
-                text-lg
-                font-bold
-                text-white
-                mb-2
-              "
-            >
+            <div className="flex items-center justify-between mb-2">
 
-              Bio
+              <div className="text-lg font-bold text-white">
+
+                Bio
+
+              </div>
+
+              {isOwner && (
+
+                <button
+                  onClick={() =>
+                    setEditingField(
+                      "bio"
+                    )
+                  }
+                  className="text-white/60 text-xl"
+                >
+
+                  ✎
+
+                </button>
+
+              )}
 
             </div>
 
@@ -336,214 +504,24 @@ export default function ProfileModal({
                 bg-white/5
                 rounded-2xl
                 p-4
-                text-sm
                 text-white/80
+                text-sm
                 break-words
               "
             >
 
-              {profile?.bio || "No bio yet"}
+              {form.bio ||
+                "No bio yet"}
 
             </div>
 
           </div>
 
-          {/* EDIT BUTTON */}
-
-          {isOwner && (
-
-            <button
-              onClick={() =>
-                setEditing(!editing)
-              }
-              className="
-                mt-4
-                w-full
-                h-12
-                rounded-2xl
-                bg-blue-600
-                hover:bg-blue-700
-                text-white
-                font-bold
-                transition
-              "
-            >
-
-              {editing
-                ? "Close Editor"
-                : "Edit Profile"}
-
-            </button>
-
-          )}
-
-          {/* EDIT FORM */}
-
-          {editing && isOwner && (
-
-            <div
-              className="
-                mt-5
-                bg-white/5
-                rounded-3xl
-                p-4
-                space-y-4
-              "
-            >
-
-              <Input
-                value={form.avatar}
-                onChange={(v) =>
-                  setForm({
-                    ...form,
-                    avatar: v,
-                  })
-                }
-                placeholder="Avatar URL"
-              />
-
-              <Input
-                value={form.banner}
-                onChange={(v) =>
-                  setForm({
-                    ...form,
-                    banner: v,
-                  })
-                }
-                placeholder="Banner URL"
-              />
-
-              <textarea
-                value={form.bio}
-                onChange={(e) =>
-                  setForm({
-                    ...form,
-                    bio:
-                      e.target.value,
-                  })
-                }
-                placeholder="Bio"
-                className="
-                  w-full
-                  min-h-[100px]
-                  rounded-2xl
-                  bg-[#2a2b30]
-                  p-4
-                  text-white
-                  outline-none
-                  resize-none
-                "
-              />
-
-              <Input
-                value={form.hometown}
-                onChange={(v) =>
-                  setForm({
-                    ...form,
-                    hometown: v,
-                  })
-                }
-                placeholder="Hometown"
-              />
-
-              <Input
-                value={form.birthday}
-                onChange={(v) =>
-                  setForm({
-                    ...form,
-                    birthday: v,
-                  })
-                }
-                placeholder="Birthday"
-              />
-
-              <Input
-                value={form.status}
-                onChange={(v) =>
-                  setForm({
-                    ...form,
-                    status: v,
-                  })
-                }
-                placeholder="Status"
-              />
-
-              <Input
-                value={form.language}
-                onChange={(v) =>
-                  setForm({
-                    ...form,
-                    language: v,
-                  })
-                }
-                placeholder="Language"
-              />
-
-              <Input
-                value={form.work}
-                onChange={(v) =>
-                  setForm({
-                    ...form,
-                    work: v,
-                  })
-                }
-                placeholder="Work"
-              />
-
-              <Input
-                value={form.education}
-                onChange={(v) =>
-                  setForm({
-                    ...form,
-                    education: v,
-                  })
-                }
-                placeholder="Education"
-              />
-
-              <Input
-                value={form.hobbies}
-                onChange={(v) =>
-                  setForm({
-                    ...form,
-                    hobbies: v,
-                  })
-                }
-                placeholder="Hobbies"
-              />
-
-              <button
-                onClick={saveProfile}
-                className="
-                  w-full
-                  h-12
-                  rounded-2xl
-                  bg-green-600
-                  text-white
-                  font-bold
-                "
-              >
-
-                Save Profile
-
-              </button>
-
-            </div>
-
-          )}
-
           {/* DETAILS */}
 
           <div className="mt-6">
 
-            <div
-              className="
-                text-lg
-                font-bold
-                text-white
-                mb-3
-              "
-            >
+            <div className="text-lg font-bold text-white mb-3">
 
               Personal Information
 
@@ -558,13 +536,93 @@ export default function ProfileModal({
               "
             >
 
-              <Info label="Hometown" value={profile?.hometown} />
-              <Info label="Birthday" value={profile?.birthday} />
-              <Info label="Status" value={profile?.status} />
-              <Info label="Language" value={profile?.language} />
-              <Info label="Work" value={profile?.work} />
-              <Info label="Education" value={profile?.education} />
-              <Info label="Hobbies" value={profile?.hobbies} />
+              <Info
+                label="Gender"
+                value={form.gender}
+                edit={() =>
+                  setEditingField(
+                    "gender"
+                  )
+                }
+                isOwner={isOwner}
+              />
+
+              <Info
+                label="Hometown"
+                value={form.hometown}
+                edit={() =>
+                  setEditingField(
+                    "hometown"
+                  )
+                }
+                isOwner={isOwner}
+              />
+
+              <Info
+                label="Birthday"
+                value={form.birthday}
+                edit={() =>
+                  setEditingField(
+                    "birthday"
+                  )
+                }
+                isOwner={isOwner}
+              />
+
+              <Info
+                label="Status"
+                value={form.status}
+                edit={() =>
+                  setEditingField(
+                    "status"
+                  )
+                }
+                isOwner={isOwner}
+              />
+
+              <Info
+                label="Language"
+                value={form.language}
+                edit={() =>
+                  setEditingField(
+                    "language"
+                  )
+                }
+                isOwner={isOwner}
+              />
+
+              <Info
+                label="Work"
+                value={form.work}
+                edit={() =>
+                  setEditingField(
+                    "work"
+                  )
+                }
+                isOwner={isOwner}
+              />
+
+              <Info
+                label="Education"
+                value={form.education}
+                edit={() =>
+                  setEditingField(
+                    "education"
+                  )
+                }
+                isOwner={isOwner}
+              />
+
+              <Info
+                label="Hobbies"
+                value={form.hobbies}
+                edit={() =>
+                  setEditingField(
+                    "hobbies"
+                  )
+                }
+                isOwner={isOwner}
+              />
 
             </div>
 
@@ -574,44 +632,239 @@ export default function ProfileModal({
 
       </div>
 
+      {/* EDIT MODAL */}
+
+      {editingField && (
+
+        <div className="fixed inset-0 z-[9999999] bg-black/80 flex items-center justify-center p-4">
+
+          <div
+            className="
+              w-full
+              max-w-md
+              rounded-3xl
+              bg-[#1e1f22]
+              border
+              border-white/10
+              p-6
+            "
+          >
+
+            <div className="flex items-center justify-between mb-5">
+
+              <div className="text-2xl font-black text-white capitalize">
+
+                Edit {editingField}
+
+              </div>
+
+              <button
+                onClick={() =>
+                  setEditingField(
+                    null
+                  )
+                }
+                className="text-white text-2xl"
+              >
+
+                ✕
+
+              </button>
+
+            </div>
+
+            {/* INPUT */}
+
+            {editingField ===
+            "status" ? (
+
+              <select
+                value={
+                  form.status
+                }
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    status:
+                      e.target.value,
+                  })
+                }
+                className="
+                  w-full
+                  h-12
+                  rounded-2xl
+                  bg-[#2a2b30]
+                  px-4
+                  text-white
+                "
+              >
+
+                <option value="">
+                  Select Status
+                </option>
+
+                <option>
+                  Single
+                </option>
+
+                <option>
+                  In a relationship
+                </option>
+
+                <option>
+                  Engaged
+                </option>
+
+                <option>
+                  Married
+                </option>
+
+                <option>
+                  Divorced
+                </option>
+
+              </select>
+
+            ) : editingField ===
+              "gender" ? (
+
+              <select
+                value={
+                  form.gender
+                }
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    gender:
+                      e.target.value,
+                  })
+                }
+                className="
+                  w-full
+                  h-12
+                  rounded-2xl
+                  bg-[#2a2b30]
+                  px-4
+                  text-white
+                "
+              >
+
+                <option value="">
+                  Select Gender
+                </option>
+
+                <option>
+                  Male
+                </option>
+
+                <option>
+                  Female
+                </option>
+
+              </select>
+
+            ) : editingField ===
+              "bio" ? (
+
+              <textarea
+                value={
+                  form.bio
+                }
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    bio:
+                      e.target.value,
+                  })
+                }
+                placeholder="Introduce yourself"
+                className="
+                  w-full
+                  min-h-[140px]
+                  rounded-2xl
+                  bg-[#2a2b30]
+                  p-4
+                  text-white
+                  resize-none
+                "
+              />
+
+            ) : (
+
+              <input
+                value={
+                  form[
+                    editingField
+                  ]
+                }
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    [
+                      editingField
+                    ]:
+                      e.target
+                        .value,
+                  })
+                }
+                className="
+                  w-full
+                  h-12
+                  rounded-2xl
+                  bg-[#2a2b30]
+                  px-4
+                  text-white
+                "
+              />
+
+            )}
+
+            {/* SAVE */}
+
+            <button
+              onClick={() => {
+
+                saveProfile();
+
+                setEditingField(
+                  null
+                );
+
+              }}
+              className="
+                mt-5
+                w-full
+                h-12
+                rounded-2xl
+                bg-blue-600
+                text-white
+                font-bold
+              "
+            >
+
+              Save
+
+            </button>
+
+          </div>
+
+        </div>
+
+      )}
+
     </div>
 
   );
 
 }
 
-function Input({
-  value,
-  onChange,
-  placeholder,
-}) {
-
-  return (
-
-    <input
-      value={value}
-      onChange={(e) =>
-        onChange(e.target.value)
-      }
-      placeholder={placeholder}
-      className="
-        w-full
-        h-12
-        rounded-2xl
-        bg-[#2a2b30]
-        px-4
-        text-white
-        outline-none
-      "
-    />
-
-  );
-
-}
+// INFO CARD
 
 function Info({
   label,
   value,
+  edit,
+  isOwner,
 }) {
 
   return (
@@ -624,25 +877,44 @@ function Info({
       "
     >
 
-      <div
-        className="
-          text-xs
-          uppercase
-          opacity-50
-          mb-1
-          text-white
-        "
-      >
+      <div className="flex items-center justify-between mb-1">
 
-        {label}
+        <div
+          className="
+            text-xs
+            uppercase
+            opacity-50
+            text-white
+          "
+        >
+
+          {label}
+
+        </div>
+
+        {isOwner && (
+
+          <button
+            onClick={edit}
+            className="
+              text-white/60
+              text-sm
+            "
+          >
+
+            ✎
+
+          </button>
+
+        )}
 
       </div>
 
       <div
         className="
           text-sm
-          break-words
           text-white
+          break-words
         "
       >
 
