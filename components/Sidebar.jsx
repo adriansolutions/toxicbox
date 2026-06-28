@@ -565,6 +565,154 @@ className="sidebar-btn"
 
 </div>
 
+{/* RIGHT CLICK MENU */}
+
+{friendMenu && (
+
+  <>
+
+    <div
+      onClick={() =>
+        setFriendMenu(null)
+      }
+
+      className="fixed inset-0 z-[9998]"
+    />
+
+    <div
+      className="
+        fixed
+        z-[9999]
+        w-[180px]
+        rounded-2xl
+        bg-[#1e1f22]
+        border
+        border-white/10
+        shadow-2xl
+        overflow-hidden
+      "
+
+      style={{
+        left: friendMenu.x,
+        top: friendMenu.y,
+      }}
+    >
+
+      <button
+        onClick={() => {
+
+          setConfirmRemove(
+            friendMenu.friend
+          );
+
+          setFriendMenu(null);
+
+        }}
+
+        className="
+          w-full
+          px-4
+          py-3
+          text-left
+          hover:bg-red-500/20
+          text-red-400
+          transition
+        "
+      >
+
+        Remove Friend
+
+      </button>
+
+    </div>
+
+  </>
+
+)}
+
+{/* CONFIRM REMOVE */}
+
+{confirmRemove && (
+
+  <div className="fixed inset-0 z-[99999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+
+    <div className="
+      w-full
+      max-w-sm
+      rounded-3xl
+      bg-white
+      dark:bg-[#1e1f22]
+      border
+      border-white/10
+      p-6
+    ">
+
+      <div className="text-xl font-black mb-2">
+
+        Remove Friend
+
+      </div>
+
+      <div className="opacity-70 text-sm mb-6">
+
+        Remove{" "}
+        <strong>
+
+          {confirmRemove.username}
+
+        </strong>{" "}
+        from your friends list?
+
+      </div>
+
+      <div className="flex gap-3">
+
+        <button
+          onClick={() =>
+            setConfirmRemove(null)
+          }
+
+          className="
+            flex-1
+            h-12
+            rounded-2xl
+            bg-white/10
+          "
+        >
+
+          Cancel
+
+        </button>
+
+        <button
+          onClick={() =>
+            removeFriend(
+              confirmRemove
+            )
+          }
+
+          className="
+            flex-1
+            h-12
+            rounded-2xl
+            bg-red-500
+            text-white
+            font-bold
+          "
+        >
+
+          Remove
+
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+)}
+
 {openProfile && (
 
 <ProfileModal
