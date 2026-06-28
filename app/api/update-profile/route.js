@@ -1,6 +1,8 @@
 import connectDB from "../../../lib/mongodb";
 import User from "../../../models/User";
+
 export const dynamic = "force-dynamic";
+
 export async function POST(req) {
   try {
     await connectDB();
@@ -14,7 +16,9 @@ export async function POST(req) {
       });
     }
 
-    const user = await User.findOne({ userId: data.userId });
+    const user = await User.findOne({
+      userId: data.userId,
+    });
 
     if (!user) {
       return Response.json({
@@ -23,24 +27,42 @@ export async function POST(req) {
       });
     }
 
-if (
-  ["bio", "work", "education", "hobbies"].includes(field)
-) {
-  user[field] = Array.isArray(data[field])
-    ? data[field]
-    : [];
-} else {
-  user[field] = data[field];
-}
+    // =========================
+    // NORMAL STRING FIELDS
+    // =========================
 
-    fields.forEach((f) => {
-      if (data[f] !== undefined) user[f] = data[f];
+    const stringFields = [
+      "avatar",
+      "banner",
+      "bio",
+      "hometown",
+      "birthday",
+      "status",
+      "language",
+      "gender",
+    ];
+
+    stringFields.forEach((field) => {
+      if (data[field] !== undefined) {
+        user[field] = data[field];
+      }
     });
 
-    // ⚠️ FIX ARRAY FIELDS
-    if (Array.isArray(data.work)) user.work = data.work;
-    if (Array.isArray(data.education)) user.education = data.education;
-    if (Array.isArray(data.hobbies)) user.hobbies = data.hobbies;
+    // =========================
+    // ARRAY FIELDS
+    // =========================
+
+    if (Array.isArray(data.work)) {
+      user.work = data.work;
+    }
+
+    if (Array.isArray(data.education)) {
+      user.education = data.education;
+    }
+
+    if (Array.isArray(data.hobbies)) {
+      user.hobbies = data.hobbies;
+    }
 
     await user.save();
 
@@ -50,7 +72,11 @@ if (
     });
 
   } catch (err) {
-    console.log("UPDATE ERROR:", err);
+
+    console.log(
+      "UPDATE PROFILE ERROR:",
+      err
+    );
 
     return Response.json({
       success: false,
