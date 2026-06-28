@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import EditProfileModal from "./EditProfileModal";
 
 export default function ProfileModal({
   close,
@@ -10,33 +9,25 @@ export default function ProfileModal({
 }) {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [openEdit, setOpenEdit] = useState(false);
+
+  const [editingField, setEditingField] = useState(null);
 
   const isOwnProfile = userId === currentUserId;
 
+  // -------------------------
+  // LOAD PROFILE
+  // -------------------------
   useEffect(() => {
-    if (!userId) {
-      setLoading(false);
-      return;
-    }
-
     const loadProfile = async () => {
       try {
-        const res = await fetch(
-          `/api/get-profile?userId=${userId}`,
-          { cache: "no-store" }
-        );
-
+        const res = await fetch(`/api/get-profile?userId=${userId}`);
         const data = await res.json();
 
-        if (data?.success && data?.profile) {
+        if (data.success) {
           setProfile(data.profile);
-        } else {
-          setProfile(null);
         }
       } catch (err) {
-        console.log("Profile load error:", err);
-        setProfile(null);
+        console.log(err);
       } finally {
         setLoading(false);
       }
@@ -45,149 +36,228 @@ export default function ProfileModal({
     loadProfile();
   }, [userId]);
 
-  // LOADING UI
+  // -------------------------
+  // UPDATE PROFILE
+  // -------------------------
+  const updateField = async (field, value) => {
+    const updated = {
+      ...profile,
+      [field]: value,
+    };
+
+    setProfile(updated);
+
+    await fetch("/api/update-profile", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        userId: currentUserId,
+        [field]: value,
+      }),
+    });
+  };
+
+  // -------------------------
+  // IMAGE TO BASE64
+  // -------------------------
+  const handleImage = (file, field) => {
+    const reader = new FileReader();
+
+    reader.onloadend = () => {
+      updateField(field, reader.result);
+    };
+
+    if (file) {
+      reader.readAsDataURL(file);
+    }
+  };
+
   if (loading) {
     return (
-      <div className="fixed inset-0 z-[99999] bg-black/60 flex items-center justify-center">
-        <div className="text-white">Loading profile...</div>
+      <div className="fixed inset-0 bg-black/60 flex items-center justify-center text-white">
+        Loading...
       </div>
     );
   }
 
-  // NOT FOUND UI
-  if (!profile) {
-    return (
-      <div className="fixed inset-0 z-[99999] bg-black/60 flex items-center justify-center">
-        <div className="text-white text-center">
-          Profile not found
-          <br />
-          <button
-            onClick={close}
-            className="mt-3 px-4 py-2 bg-blue-600 rounded-xl"
-          >
-            Close
-          </button>
-        </div>
-      </div>
-    );
-  }
+  if (!profile) return null;
 
   return (
-    <>
-      {/* MODAL */}
-      <div className="fixed inset-0 z-[99999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5">
+    <div className="fixed inset-0 z-[99999] bg-black/70 flex items-center justify-center p-3">
+      <div className="w-full max-w-2xl bg-[#1e1f22] rounded-3xl overflow-y-auto max-h-[95vh] border border-white/10">
 
-        <div className="relative w-full max-w-2xl rounded-3xl overflow-hidden bg-[#1e1f22] border border-white/10 shadow-2xl">
+        {/* CLOSE */}
+        <button
+          onClick={close}
+          className="absolute top-3 right-3 w-10 h-10 bg-black/60 rounded-full text-white"
+        >
+          ✕
+        </button>
 
-          {/* CLOSE */}
-          <button
-            onClick={close}
-            className="absolute top-3 right-3 z-50 w-10 h-10 rounded-full bg-black/60 text-white flex items-center justify-center text-xl"
-          >
-            ✕
-          </button>
+        {/* BANNER */}
+        <div className="relative h-[200px]">
+          {profile.banner ? (
+            <img src={profile.banner} className="w-full h-full object-cover" />
+          ) : (
+            <div className="w-full h-full bg-gradient-to-r from-blue-600 to-purple-600" />
+          )}
 
-          {/* BANNER */}
-          <div className="h-[180px] w-full">
-            {profile.banner ? (
-              <img
-                src={profile.banner}
-                className="w-full h-full object-cover"
+          {isOwnProfile && (
+            <label className="absolute bottom-3 right-3 bg-black/60 px-3 py-1 rounded text-white text-sm cursor-pointer">
+              Change Banner
+              <input
+                type="file"
+                hidden
+                onChange={(e) =>
+                  handleImage(e.target.files[0], "banner")
+                }
               />
-            ) : (
-              <div className="w-full h-full bg-gradient-to-r from-blue-600 to-cyan-500" />
+            </label>
+          )}
+        </div>
+
+        {/* AVATAR */}
+        <div className="-mt-16 px-5 flex items-end gap-4">
+          <div className="relative">
+            <img
+              src={profile.avatar}
+              className="w-[120px] h-[120px] rounded-full border-4 border-[#1e1f22] object-cover"
+            />
+
+            {isOwnProfile && (
+              <label className="absolute bottom-0 right-0 bg-black/70 text-white text-xs px-2 py-1 rounded-full cursor-pointer">
+                ✎
+                <input
+                  type="file"
+                  hidden
+                  onChange={(e) =>
+                    handleImage(e.target.files[0], "avatar")
+                  }
+                />
+              </label>
             )}
           </div>
 
-          {/* CONTENT */}
-          <div className="px-5 pb-6">
-
-            {/* AVATAR */}
-            <div className="-mt-[60px] flex gap-4 items-end">
-
-              {profile.avatar ? (
-                <img
-                  src={profile.avatar}
-                  className="w-[120px] h-[120px] rounded-full border-4 border-[#1e1f22] object-cover bg-[#2a2b30]"
-                />
-              ) : (
-                <div className="w-[120px] h-[120px] rounded-full bg-blue-600 flex items-center justify-center text-white text-4xl font-black border-4 border-[#1e1f22]">
-                  {profile.username?.charAt(0)?.toUpperCase()}
-                </div>
-              )}
-
-              {/* USER INFO */}
-              <div className="pb-2">
-                <div className="text-2xl font-black text-white">
-                  {profile.username || "Unknown User"}
-                </div>
-
-                <div className="text-sm text-white/60">
-                  ID: {profile.userId || "Unknown ID"}
-                </div>
-
-                <div className="text-sm text-blue-400 font-semibold mt-1">
-                  {profile.friends?.length || 0} Friends
-                </div>
-              </div>
-            </div>
-
-            {/* BIO */}
-            <div className="mt-5">
-              <div className="text-white font-bold mb-2">Bio</div>
-              <div className="text-white/70">
-                {profile.bio || "No bio yet"}
-              </div>
-            </div>
-
-            {/* EDIT BUTTON */}
-            {isOwnProfile && (
-              <button
-                onClick={() => setOpenEdit(true)}
-                className="mt-5 w-full sm:w-auto px-5 h-11 rounded-2xl bg-blue-600 text-white font-bold"
-              >
-                Edit Profile
-              </button>
-            )}
-
-            {/* DETAILS */}
-            <div className="mt-6 space-y-3 text-white">
-
-              <Item label="Hometown" value={profile.hometown} />
-              <Item label="Birthday" value={profile.birthday} />
-              <Item label="Status" value={profile.status} />
-              <Item label="Language" value={profile.language} />
-              <Item label="Work" value={profile.work} />
-              <Item label="Education" value={profile.education} />
-              <Item label="Hobbies" value={profile.hobbies} />
-
-            </div>
-
+          <div className="text-white">
+            <h2 className="text-2xl font-bold">{profile.username}</h2>
+            <p className="text-white/60">{profile.userId}</p>
           </div>
         </div>
-      </div>
 
-      {/* EDIT MODAL */}
-      {openEdit && (
-        <EditProfileModal
-          profile={profile}
-          close={() => setOpenEdit(false)}
-          refreshProfile={() => {
-            setOpenEdit(false);
-            setLoading(true);
-            window.location.reload();
-          }}
+        {/* BIO */}
+        <Section
+          title="Bio"
+          value={profile.bio}
+          editable={isOwnProfile}
+          onEdit={() => setEditingField("bio")}
         />
-      )}
-    </>
+
+        {editingField === "bio" && (
+          <EditBox
+            value={profile.bio}
+            onSave={(val) => {
+              updateField("bio", val);
+              setEditingField(null);
+            }}
+            onClose={() => setEditingField(null)}
+          />
+        )}
+
+        {/* HOMETOWN */}
+        <Section
+          title="Hometown"
+          value={profile.hometown}
+          editable={isOwnProfile}
+          onEdit={() => setEditingField("hometown")}
+        />
+
+        {editingField === "hometown" && (
+          <EditBox
+            value={profile.hometown}
+            onSave={(val) => {
+              updateField("hometown", val);
+              setEditingField(null);
+            }}
+            onClose={() => setEditingField(null)}
+          />
+        )}
+
+        {/* STATUS */}
+        <Section
+          title="Status"
+          value={profile.status}
+          editable={isOwnProfile}
+          onEdit={() => setEditingField("status")}
+        />
+
+        {editingField === "status" && (
+          <select
+            value={profile.status}
+            onChange={(e) => updateField("status", e.target.value)}
+            className="w-full p-3 bg-[#2a2b30] text-white"
+          >
+            <option>Single</option>
+            <option>In a relationship</option>
+            <option>Married</option>
+            <option>Complicated</option>
+          </select>
+        )}
+
+      </div>
+    </div>
   );
 }
 
-function Item({ label, value }) {
+// --------------------
+// SECTION UI
+// --------------------
+function Section({ title, value, editable, onEdit }) {
   return (
-    <div className="bg-white/5 rounded-2xl p-4">
-      <div className="text-white/50 text-sm">{label}</div>
-      <div className="text-white">{value || "Not set"}</div>
+    <div className="p-4 text-white border-t border-white/10">
+      <div className="flex justify-between">
+        <h3 className="font-bold">{title}</h3>
+        {editable && (
+          <button onClick={onEdit} className="text-white/60">
+            ✎
+          </button>
+        )}
+      </div>
+      <p className="text-white/70 mt-2">{value || "Not set"}</p>
+    </div>
+  );
+}
+
+// --------------------
+// EDIT BOX
+// --------------------
+function EditBox({ value, onSave, onClose }) {
+  const [text, setText] = useState(value || "");
+
+  return (
+    <div className="p-4 bg-black/40">
+      <textarea
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        className="w-full p-3 bg-[#2a2b30] text-white rounded"
+      />
+
+      <div className="flex gap-2 mt-3">
+        <button
+          onClick={() => onSave(text)}
+          className="bg-blue-600 px-4 py-2 text-white rounded"
+        >
+          Save
+        </button>
+
+        <button
+          onClick={onClose}
+          className="bg-gray-600 px-4 py-2 text-white rounded"
+        >
+          Cancel
+        </button>
+      </div>
     </div>
   );
 }
