@@ -5,8 +5,8 @@ export async function GET(req) {
   try {
     await connectDB();
 
-    const { searchParams } = new URL(req.url);
-    const userId = searchParams.get("userId");
+    // SAFE WAY (Next.js App Router compatible)
+    const userId = req.nextUrl.searchParams.get("userId");
 
     if (!userId) {
       return Response.json({
@@ -26,11 +26,11 @@ export async function GET(req) {
 
     return Response.json({
       success: true,
-      user,
+      profile: user,
     });
 
   } catch (err) {
-    console.log(err);
+    console.log("GET PROFILE ERROR:", err);
 
     return Response.json({
       success: false,
