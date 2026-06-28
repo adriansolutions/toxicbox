@@ -7,9 +7,7 @@ export async function POST(req) {
 
     const data = await req.json();
 
-    const user = await User.findOne({
-      userId: data.userId,
-    });
+    const user = await User.findOne({ userId: data.userId });
 
     if (!user) {
       return Response.json({
@@ -18,52 +16,21 @@ export async function POST(req) {
       });
     }
 
-    // =========================
-    // SAFE UPDATE SYSTEM
-    // =========================
-
-    const fields = [
-      "avatar",
-      "banner",
-      "bio",
-      "hometown",
-      "birthday",
-      "status",
-      "language",
-      "gender",
-    ];
-
-    fields.forEach((field) => {
-      if (data[field] !== undefined) {
-        user[field] = data[field];
+    // SAFE UPDATE
+    Object.keys(data).forEach((key) => {
+      if (key !== "userId") {
+        user[key] = data[key];
       }
     });
-
-    // =========================
-    // ARRAY FIELDS (SAFE MERGE)
-    // =========================
-
-    if (data.work !== undefined) {
-      user.work = data.work;
-    }
-
-    if (data.education !== undefined) {
-      user.education = data.education;
-    }
-
-    if (data.hobbies !== undefined) {
-      user.hobbies = data.hobbies;
-    }
 
     await user.save();
 
     return Response.json({
       success: true,
-      profile: user,
     });
 
   } catch (err) {
-    console.log("UPDATE PROFILE ERROR:", err);
+    console.log(err);
 
     return Response.json({
       success: false,
