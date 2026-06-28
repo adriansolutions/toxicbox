@@ -18,28 +18,53 @@ export async function POST(req) {
       });
     }
 
-    // UPDATE ALL FIELDS
-    user.avatar = data.avatar || user.avatar;
-    user.banner = data.banner || user.banner;
-    user.bio = data.bio || user.bio;
-    user.hometown = data.hometown || "";
-    user.birthday = data.birthday || "";
-    user.status = data.status || "";
-    user.language = data.language || "";
-    user.work = data.work || "";
-    user.education = data.education || "";
-    user.hobbies = data.hobbies || "";
-    user.gender = data.gender || "";
+    // =========================
+    // SAFE UPDATE SYSTEM
+    // =========================
+
+    const fields = [
+      "avatar",
+      "banner",
+      "bio",
+      "hometown",
+      "birthday",
+      "status",
+      "language",
+      "gender",
+    ];
+
+    fields.forEach((field) => {
+      if (data[field] !== undefined) {
+        user[field] = data[field];
+      }
+    });
+
+    // =========================
+    // ARRAY FIELDS (SAFE MERGE)
+    // =========================
+
+    if (data.work !== undefined) {
+      user.work = data.work;
+    }
+
+    if (data.education !== undefined) {
+      user.education = data.education;
+    }
+
+    if (data.hobbies !== undefined) {
+      user.hobbies = data.hobbies;
+    }
 
     await user.save();
 
     return Response.json({
       success: true,
-      user,
+      profile: user,
     });
 
   } catch (err) {
-    console.log(err);
+    console.log("UPDATE PROFILE ERROR:", err);
+
     return Response.json({
       success: false,
       message: "Server error",
