@@ -643,6 +643,15 @@ export default function Sidebar(props) {
       education: props.education,
       hobbies: props.hobbies,
     })}
+    
+    updateProfile={(newData) => {
+
+  props.setUserData?.((prev) => ({
+    ...prev,
+    ...newData,
+  }));
+
+}}
 
     close={() =>
       setOpenProfile(false)
