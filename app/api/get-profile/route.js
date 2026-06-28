@@ -1,14 +1,15 @@
 import connectDB from "../../../lib/mongodb";
 import User from "../../../models/User";
 
+export const dynamic = "force-dynamic"; 
+// 👈 THIS FIXES VERCEL STATIC ERROR
+
 export async function GET(req) {
   try {
     await connectDB();
 
     const { searchParams } = new URL(req.url);
     const userId = searchParams.get("userId");
-
-    console.log("GET PROFILE USERID:", userId);
 
     if (!userId) {
       return Response.json({
@@ -22,7 +23,7 @@ export async function GET(req) {
     if (!user) {
       return Response.json({
         success: false,
-        message: "User not found",
+        message: "Profile not found",
       });
     }
 
