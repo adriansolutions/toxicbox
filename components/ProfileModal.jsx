@@ -107,31 +107,95 @@ export default function ProfileModal({
         safeProfile.gender,
     });
 
-  // =========================
-  // IMAGE UPLOAD
-  // =========================
+// =========================
+// IMAGE UPLOAD
+// =========================
 
-  const handleImageUpload =
-    (file, field) => {
+const handleImageUpload =
+  async (file, field) => {
 
-      if (!file) return;
+    if (!file) return;
 
-      const reader =
-        new FileReader();
+    const reader =
+      new FileReader();
 
-      reader.onloadend = () => {
+    reader.onloadend =
+      async () => {
 
+        const image =
+          reader.result;
+
+        // UPDATE UI INSTANTLY
         setForm((prev) => ({
           ...prev,
           [field]:
-            reader.result,
+            image,
         }));
+
+        try {
+
+          // AUTO SAVE TO DATABASE
+          const payload = {
+            userId:
+              currentUser.userId,
+
+            [field]:
+              image,
+          };
+
+          const res =
+            await fetch(
+              "/api/update-profile",
+              {
+                method: "POST",
+
+                headers: {
+                  "Content-Type":
+                    "application/json",
+                },
+
+                body:
+                  JSON.stringify(
+                    payload
+                  ),
+              }
+            );
+
+          const data =
+            await res.json();
+
+          if (!data.success) {
+
+            alert(
+              data.message ||
+              "Failed to save image"
+            );
+
+            return;
+
+          }
+
+          // UPDATE PARENT SIDEBAR
+          updateProfile?.({
+            [field]:
+              image,
+          });
+
+        } catch (err) {
+
+          console.log(err);
+
+          alert(
+            "Failed to upload image"
+          );
+
+        }
 
       };
 
-      reader.readAsDataURL(file);
+    reader.readAsDataURL(file);
 
-    };
+  };
 
   // =========================
   // SAVE PROFILE
