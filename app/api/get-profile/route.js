@@ -1,13 +1,14 @@
 import connectDB from "../../../lib/mongodb";
 import User from "../../../models/User";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(req) {
   try {
     await connectDB();
 
-    // ✅ SAFE FOR VERCEL + STATIC EXPORT
-    const url = new URL(req.url);
-    const userId = url.searchParams.get("userId");
+    const { searchParams } = new URL(req.url);
+    const userId = searchParams.get("userId");
 
     if (!userId) {
       return Response.json({
@@ -27,12 +28,11 @@ export async function GET(req) {
 
     return Response.json({
       success: true,
-      profile: user,
+      user,
     });
 
   } catch (err) {
-    console.log("GET PROFILE ERROR:", err);
-
+    console.log(err);
     return Response.json({
       success: false,
       message: "Server error",
