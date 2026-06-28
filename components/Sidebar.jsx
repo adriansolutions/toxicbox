@@ -627,69 +627,81 @@ export default function Sidebar(props) {
 
       {/* PROFILE MODAL */}
 
-      {openProfile && (
+{openProfile && (
 
-        <ProfileModal
+  <ProfileModal
 
-          close={() =>
-            setOpenProfile(false)
-          }
+    close={() =>
+      setOpenProfile(false)
+    }
 
-          currentUser={{
-            username:
-              props.username,
+    currentUser={{
+      username:
+        props.username,
 
-            userId:
-              props.userId,
+      userId:
+        props.userId,
 
-            avatar:
-              props.avatar,
-          }}
+      avatar:
+        props.avatar,
+    }}
 
-          profile={{
-            username:
-              props.username,
+    profile={{
+      username:
+        props.username,
 
-            userId:
-              props.userId,
+      userId:
+        props.userId,
 
-            avatar:
-              props.avatar,
+      avatar:
+        props.avatar,
 
-            banner:
-              props.banner || "",
+      banner:
+        props.banner || "",
 
-            bio:
-              props.bio || "",
+      bio:
+        props.bio || "",
 
-            hometown:
-              props.hometown || "",
+      hometown:
+        props.hometown || "",
 
-            birthday:
-              props.birthday || "",
+      birthday:
+        props.birthday || "",
 
-            status:
-              props.status || "",
+      status:
+        props.status || "",
 
-            language:
-              props.language || "",
+      language:
+        props.language || "",
 
-            work:
-              props.work || "",
+      gender:
+        props.gender || "",
 
-            education:
-              props.education || "",
+      // ✅ FIXED
+      work:
+        Array.isArray(props.work)
+          ? props.work
+          : [],
 
-            hobbies:
-              props.hobbies || "",
+      // ✅ FIXED
+      education:
+        Array.isArray(props.education)
+          ? props.education
+          : [],
 
-            friends:
-              friends,
-          }}
+      // ✅ FIXED
+      hobbies:
+        Array.isArray(props.hobbies)
+          ? props.hobbies
+          : [],
 
-        />
+      friends:
+        friends,
+    }}
 
-      )}
+  />
+
+)}
 
       {/* MOBILE BG */}
 
