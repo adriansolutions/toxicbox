@@ -1,70 +1,87 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { FiX, FiEdit2 } from "react-icons/fi";
 
 export default function ProfileModal({
-  close,
+  user,
   currentUser,
-  profileUser,
+  close,
+  onEdit,
 }) {
 
-  const isOwner =
-    currentUser.userId ===
-    profileUser.userId;
-
-  const [edit, setEdit] =
-    useState(false);
-
-  const [profile, setProfile] =
-    useState(profileUser);
-
-  const saveProfile =
-    async () => {
-
-      const res =
-        await fetch(
-          "/api/update-profile",
-          {
-            method: "POST",
-
-            headers: {
-              "Content-Type":
-                "application/json",
-            },
-
-            body:
-              JSON.stringify(profile),
-          }
-        );
-
-      const data =
-        await res.json();
-
-      if (data.success) {
-
-        alert("Profile updated");
-
-        setEdit(false);
-
-      }
-
-    };
+  const isOwnProfile =
+    currentUser?.userId === user?.userId;
 
   return (
 
-    <div className="fixed inset-0 z-[99999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+    <div className="fixed inset-0 z-[99999] bg-black/70 backdrop-blur-md flex items-center justify-center p-3 sm:p-5 overflow-y-auto">
 
-      <div className="w-full max-w-3xl rounded-3xl overflow-hidden bg-[#1e1f22] text-white border border-white/10">
+      {/* MODAL */}
+      <div
+        className="
+          relative
+          w-full
+          max-w-3xl
+          rounded-[28px]
+          overflow-hidden
+          bg-[#111214]
+          border
+          border-white/10
+          shadow-2xl
+          animate-[fadeIn_.2s_ease]
+        "
+      >
+
+        {/* CLOSE BUTTON */}
+        <button
+          onClick={close}
+          className="
+            absolute
+            top-4
+            right-4
+            z-50
+            w-11
+            h-11
+            rounded-2xl
+            bg-black/50
+            hover:bg-black/70
+            text-white
+            flex
+            items-center
+            justify-center
+            transition
+            backdrop-blur-md
+          "
+        >
+          <FiX size={24} />
+        </button>
 
         {/* BANNER */}
+        <div className="relative h-[180px] sm:h-[230px] md:h-[280px] bg-[#1b1c1f]">
 
-        <div className="relative h-[220px] bg-[#2a2d31]">
-
-          {profile.banner && (
+          {user?.banner ? (
 
             <img
-              src={profile.banner}
-              className="w-full h-full object-cover"
+              src={user.banner}
+              alt="banner"
+              className="
+                w-full
+                h-full
+                object-cover
+              "
+            />
+
+          ) : (
+
+            <div
+              className="
+                w-full
+                h-full
+                bg-gradient-to-r
+                from-blue-600
+                via-purple-600
+                to-pink-600
+              "
             />
 
           )}
@@ -72,40 +89,148 @@ export default function ProfileModal({
         </div>
 
         {/* CONTENT */}
+        <div className="px-4 sm:px-6 md:px-8 pb-8">
 
-        <div className="p-6">
-
-          <div className="flex gap-5 items-start">
+          {/* AVATAR + USER INFO */}
+          <div className="flex flex-col sm:flex-row sm:items-end gap-4 -mt-16 sm:-mt-20 relative z-20">
 
             {/* AVATAR */}
+            <div
+              className="
+                w-[120px]
+                h-[120px]
+                sm:w-[150px]
+                sm:h-[150px]
+                rounded-full
+                border-[5px]
+                border-[#111214]
+                overflow-hidden
+                bg-[#1e1f22]
+                shadow-2xl
+                shrink-0
+              "
+            >
 
-            <div className="w-[120px] h-[120px] rounded-full overflow-hidden border-4 border-[#1e1f22] -mt-[80px] bg-[#2a2d31]">
-
-              {profile.avatar && (
+              {user?.avatar ? (
 
                 <img
-                  src={profile.avatar}
-                  className="w-full h-full object-cover"
+                  src={user.avatar}
+                  alt="avatar"
+                  className="
+                    w-full
+                    h-full
+                    object-cover
+                  "
                 />
+
+              ) : (
+
+                <div
+                  className="
+                    w-full
+                    h-full
+                    flex
+                    items-center
+                    justify-center
+                    text-5xl
+                    font-black
+                    text-white
+                    bg-blue-600
+                  "
+                >
+                  {user?.username
+                    ?.charAt(0)
+                    ?.toUpperCase()}
+                </div>
 
               )}
 
             </div>
 
-            {/* USER */}
+            {/* USER DETAILS */}
+            <div className="flex-1 min-w-0 pb-2">
 
-            <div className="flex-1">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3">
 
-              <div className="text-3xl font-black">
-                {profile.username}
+                <h1
+                  className="
+                    text-2xl
+                    sm:text-3xl
+                    font-black
+                    text-white
+                    truncate
+                  "
+                >
+                  {user?.username}
+                </h1>
+
+                {/* EDIT BUTTON */}
+                {isOwnProfile && (
+
+                  <button
+                    onClick={onEdit}
+                    className="
+                      h-11
+                      px-5
+                      rounded-2xl
+                      bg-blue-600
+                      hover:bg-blue-700
+                      text-white
+                      font-bold
+                      flex
+                      items-center
+                      justify-center
+                      gap-2
+                      transition
+                      w-fit
+                    "
+                  >
+
+                    <FiEdit2 />
+
+                    Edit Profile
+
+                  </button>
+
+                )}
+
               </div>
 
-              <div className="opacity-60">
-                {profile.userId}
+              <div
+                className="
+                  text-sm
+                  sm:text-base
+                  text-white/60
+                  mt-1
+                  break-all
+                "
+              >
+                {user?.userId}
               </div>
 
-              <div className="mt-3 text-sm opacity-70">
-                Friends: {profile.friends?.length || 0}
+              {/* FRIEND COUNT */}
+              <div
+                className="
+                  mt-4
+                  inline-flex
+                  items-center
+                  gap-2
+                  px-4
+                  py-2
+                  rounded-2xl
+                  bg-white/5
+                  text-white
+                  text-sm
+                  font-medium
+                "
+              >
+
+                👥
+
+                {user?.friends?.length || 0}
+                {" "}
+                Friends
+
               </div>
 
             </div>
@@ -113,125 +238,137 @@ export default function ProfileModal({
           </div>
 
           {/* BIO */}
+          <div className="mt-7">
 
-          <div className="mt-6">
-
-            <div className="font-bold mb-2">
+            <div className="text-lg font-bold text-white mb-2">
               Bio
             </div>
 
-            {edit ? (
+            <div
+              className="
+                rounded-3xl
+                bg-white/5
+                border
+                border-white/10
+                p-5
+                text-white/80
+                leading-relaxed
+                break-words
+              "
+            >
 
-              <textarea
-                value={profile.bio || ""}
-                onChange={(e) =>
-                  setProfile({
-                    ...profile,
-                    bio: e.target.value,
-                  })
-                }
-                className="w-full h-[100px] rounded-2xl bg-[#2a2d31] p-4 outline-none"
-              />
-
-            ) : (
-
-              <div className="opacity-80">
-                {profile.bio || "No bio"}
-              </div>
-
-            )}
-
-          </div>
-
-          {/* DETAILS */}
-
-          <div className="grid md:grid-cols-2 gap-4 mt-6">
-
-            {[
-              "hometown",
-              "birthday",
-              "status",
-              "language",
-              "work",
-              "education",
-              "hobbies",
-            ].map((field) => (
-
-              <div
-                key={field}
-                className="bg-[#2a2d31] rounded-2xl p-4"
-              >
-
-                <div className="text-xs uppercase opacity-50 mb-1">
-                  {field}
-                </div>
-
-                {edit ? (
-
-                  <input
-                    value={profile[field] || ""}
-                    onChange={(e) =>
-                      setProfile({
-                        ...profile,
-                        [field]:
-                          e.target.value,
-                      })
-                    }
-                    className="w-full bg-transparent outline-none"
-                  />
-
-                ) : (
-
-                  <div>
-                    {profile[field] || "-"}
-                  </div>
-
-                )}
-
-              </div>
-
-            ))}
-
-          </div>
-
-          {/* EDIT */}
-
-          {isOwner && (
-
-            <div className="mt-6 flex gap-3">
-
-              {!edit ? (
-
-                <button
-                  onClick={() =>
-                    setEdit(true)
-                  }
-                  className="px-6 h-12 rounded-2xl bg-blue-600 font-bold"
-                >
-
-                  Edit Profile
-
-                </button>
-
-              ) : (
-
-                <button
-                  onClick={saveProfile}
-                  className="px-6 h-12 rounded-2xl bg-green-600 font-bold"
-                >
-
-                  Save Profile
-
-                </button>
-
-              )}
+              {user?.bio || "No bio yet."}
 
             </div>
 
-          )}
+          </div>
+
+          {/* PERSONAL DETAILS */}
+          <div className="mt-7">
+
+            <div className="text-lg font-bold text-white mb-4">
+              Personal Details
+            </div>
+
+            <div
+              className="
+                grid
+                grid-cols-1
+                sm:grid-cols-2
+                gap-4
+              "
+            >
+
+              <InfoCard
+                title="Hometown"
+                value={user?.hometown}
+              />
+
+              <InfoCard
+                title="Birthday"
+                value={user?.birthday}
+              />
+
+              <InfoCard
+                title="Status"
+                value={user?.status}
+              />
+
+              <InfoCard
+                title="Language"
+                value={user?.language}
+              />
+
+              <InfoCard
+                title="Work"
+                value={user?.work}
+              />
+
+              <InfoCard
+                title="Education"
+                value={user?.education}
+              />
+
+              <InfoCard
+                title="Hobbies"
+                value={user?.hobbies}
+              />
+
+            </div>
+
+          </div>
 
         </div>
 
+      </div>
+
+    </div>
+
+  );
+
+}
+
+/* ========================= */
+/* INFO CARD */
+/* ========================= */
+
+function InfoCard({
+  title,
+  value,
+}) {
+
+  return (
+
+    <div
+      className="
+        rounded-3xl
+        bg-white/5
+        border
+        border-white/10
+        p-5
+      "
+    >
+
+      <div
+        className="
+          text-xs
+          uppercase
+          tracking-wider
+          text-white/40
+          mb-2
+        "
+      >
+        {title}
+      </div>
+
+      <div
+        className="
+          text-white
+          font-medium
+          break-words
+        "
+      >
+        {value || "Not set"}
       </div>
 
     </div>
