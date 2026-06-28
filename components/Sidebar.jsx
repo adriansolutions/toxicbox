@@ -630,10 +630,9 @@ export default function Sidebar(props) {
 {openProfile && (
 
   <ProfileModal
-
-    close={() =>
-      setOpenProfile(false)
-    }
+  key={
+    JSON.stringify(props)
+  }
 
     currentUser={{
       username:
