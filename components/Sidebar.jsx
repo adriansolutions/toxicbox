@@ -646,7 +646,7 @@ export default function Sidebar(props) {
               props.avatar,
           }}
 
-          profileUser={{
+          profile={{
             username:
               props.username,
 
@@ -655,9 +655,37 @@ export default function Sidebar(props) {
 
             avatar:
               props.avatar,
-          }}
 
-          friends={friends}
+            banner:
+              props.banner || "",
+
+            bio:
+              props.bio || "",
+
+            hometown:
+              props.hometown || "",
+
+            birthday:
+              props.birthday || "",
+
+            status:
+              props.status || "",
+
+            language:
+              props.language || "",
+
+            work:
+              props.work || "",
+
+            education:
+              props.education || "",
+
+            hobbies:
+              props.hobbies || "",
+
+            friends:
+              friends,
+          }}
 
         />
 
