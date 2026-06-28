@@ -11,66 +11,56 @@ export default function ProfileModal({
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [openEdit, setOpenEdit] = useState(false);
-  const [error, setError] = useState(null);
 
   const isOwnProfile = userId === currentUserId;
 
   useEffect(() => {
+    if (!userId) {
+      setLoading(false);
+      return;
+    }
+
     const loadProfile = async () => {
       try {
-        setLoading(true);
-        setError(null);
-
         const res = await fetch(
-          `/api/get-profile?userId=${userId}`
+          `/api/get-profile?userId=${userId}`,
+          { cache: "no-store" }
         );
 
         const data = await res.json();
 
-        console.log("PROFILE API RESPONSE:", data);
-
-        if (!data?.success || !data?.user) {
-          setError("Profile not found");
-          return;
+        if (data?.success && data?.profile) {
+          setProfile(data.profile);
+        } else {
+          setProfile(null);
         }
-
-        setProfile(data.user);
-
       } catch (err) {
-        console.log("PROFILE LOAD ERROR:", err);
-        setError("Failed to load profile");
+        console.log("Profile load error:", err);
+        setProfile(null);
       } finally {
         setLoading(false);
       }
     };
 
-    if (userId) loadProfile();
+    loadProfile();
   }, [userId]);
 
-  /* =========================
-     LOADING
-  ========================= */
+  // LOADING UI
   if (loading) {
     return (
       <div className="fixed inset-0 z-[99999] bg-black/60 flex items-center justify-center">
-        <div className="text-white text-lg">
-          Loading profile...
-        </div>
+        <div className="text-white">Loading profile...</div>
       </div>
     );
   }
 
-  /* =========================
-     ERROR FIX (IMPORTANT)
-  ========================= */
-  if (error) {
+  // NOT FOUND UI
+  if (!profile) {
     return (
-      <div className="fixed inset-0 z-[99999] bg-black/60 flex items-center justify-center p-4">
-        <div className="bg-[#1e1f22] p-6 rounded-2xl text-white text-center">
-          <p className="text-red-400 font-bold mb-2">
-            {error}
-          </p>
-
+      <div className="fixed inset-0 z-[99999] bg-black/60 flex items-center justify-center">
+        <div className="text-white text-center">
+          Profile not found
+          <br />
           <button
             onClick={close}
             className="mt-3 px-4 py-2 bg-blue-600 rounded-xl"
@@ -82,93 +72,96 @@ export default function ProfileModal({
     );
   }
 
-  /* =========================
-     SAFETY CHECK (FIX BLANK SCREEN)
-  ========================= */
-  if (!profile) {
-    return (
-      <div className="fixed inset-0 z-[99999] bg-black/60 flex items-center justify-center">
-        <div className="text-white">No profile found</div>
-      </div>
-    );
-  }
-
   return (
     <>
-      {/* MAIN MODAL */}
+      {/* MODAL */}
       <div className="fixed inset-0 z-[99999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5">
 
-        <div className="relative w-full max-w-2xl rounded-3xl overflow-hidden bg-[#1e1f22] border border-white/10">
+        <div className="relative w-full max-w-2xl rounded-3xl overflow-hidden bg-[#1e1f22] border border-white/10 shadow-2xl">
 
           {/* CLOSE */}
           <button
             onClick={close}
-            className="absolute top-3 right-3 z-50 w-10 h-10 rounded-full bg-black/60 text-white flex items-center justify-center"
+            className="absolute top-3 right-3 z-50 w-10 h-10 rounded-full bg-black/60 text-white flex items-center justify-center text-xl"
           >
             ✕
           </button>
 
           {/* BANNER */}
-          <div className="h-[200px] w-full">
+          <div className="h-[180px] w-full">
             {profile.banner ? (
               <img
                 src={profile.banner}
                 className="w-full h-full object-cover"
               />
             ) : (
-              <div className="w-full h-full bg-gradient-to-r from-blue-600 to-purple-500" />
+              <div className="w-full h-full bg-gradient-to-r from-blue-600 to-cyan-500" />
             )}
           </div>
 
           {/* CONTENT */}
-          <div className="p-5">
+          <div className="px-5 pb-6">
 
             {/* AVATAR */}
-            <div className="flex items-end gap-4 -mt-14">
+            <div className="-mt-[60px] flex gap-4 items-end">
 
               {profile.avatar ? (
                 <img
                   src={profile.avatar}
-                  className="w-[120px] h-[120px] rounded-full border-4 border-[#1e1f22] object-cover"
+                  className="w-[120px] h-[120px] rounded-full border-4 border-[#1e1f22] object-cover bg-[#2a2b30]"
                 />
               ) : (
-                <div className="w-[120px] h-[120px] rounded-full bg-blue-600 flex items-center justify-center text-white text-4xl font-bold border-4 border-[#1e1f22]">
-                  {profile.username?.charAt(0) || "U"}
+                <div className="w-[120px] h-[120px] rounded-full bg-blue-600 flex items-center justify-center text-white text-4xl font-black border-4 border-[#1e1f22]">
+                  {profile.username?.charAt(0)?.toUpperCase()}
                 </div>
               )}
 
-              <div>
-                <h1 className="text-white text-2xl font-bold">
+              {/* USER INFO */}
+              <div className="pb-2">
+                <div className="text-2xl font-black text-white">
                   {profile.username || "Unknown User"}
-                </h1>
+                </div>
 
-                <p className="text-white/60 text-sm">
+                <div className="text-sm text-white/60">
                   ID: {profile.userId || "Unknown ID"}
-                </p>
+                </div>
 
-                <p className="text-blue-400 text-sm mt-1">
+                <div className="text-sm text-blue-400 font-semibold mt-1">
                   {profile.friends?.length || 0} Friends
-                </p>
+                </div>
               </div>
             </div>
 
             {/* BIO */}
             <div className="mt-5">
-              <h2 className="text-white font-bold mb-2">Bio</h2>
-              <p className="text-white/70">
+              <div className="text-white font-bold mb-2">Bio</div>
+              <div className="text-white/70">
                 {profile.bio || "No bio yet"}
-              </p>
+              </div>
             </div>
 
             {/* EDIT BUTTON */}
             {isOwnProfile && (
               <button
                 onClick={() => setOpenEdit(true)}
-                className="mt-5 w-full bg-blue-600 text-white py-2 rounded-xl font-bold"
+                className="mt-5 w-full sm:w-auto px-5 h-11 rounded-2xl bg-blue-600 text-white font-bold"
               >
                 Edit Profile
               </button>
             )}
+
+            {/* DETAILS */}
+            <div className="mt-6 space-y-3 text-white">
+
+              <Item label="Hometown" value={profile.hometown} />
+              <Item label="Birthday" value={profile.birthday} />
+              <Item label="Status" value={profile.status} />
+              <Item label="Language" value={profile.language} />
+              <Item label="Work" value={profile.work} />
+              <Item label="Education" value={profile.education} />
+              <Item label="Hobbies" value={profile.hobbies} />
+
+            </div>
 
           </div>
         </div>
@@ -179,12 +172,22 @@ export default function ProfileModal({
         <EditProfileModal
           profile={profile}
           close={() => setOpenEdit(false)}
-          onSave={(updated) => {
-            setProfile(updated);
+          refreshProfile={() => {
             setOpenEdit(false);
+            setLoading(true);
+            window.location.reload();
           }}
         />
       )}
     </>
+  );
+}
+
+function Item({ label, value }) {
+  return (
+    <div className="bg-white/5 rounded-2xl p-4">
+      <div className="text-white/50 text-sm">{label}</div>
+      <div className="text-white">{value || "Not set"}</div>
+    </div>
   );
 }
