@@ -31,60 +31,91 @@ useState(false);
 const [openProfile, setOpenProfile] =
 useState(false);
 
-const [userData, setUserData] =
-useState({
-username: props.username,
-userId: props.userId,
-avatar: props.avatar,
-banner: props.banner,
-bio: props.bio,
-hometown: props.hometown,
-birthday: props.birthday,
-status: props.status,
-language: props.language,
-gender: props.gender,
-work: props.work,
-education: props.education,
-hobbies: props.hobbies,
-});
-
 // =========================
 // SYNC PROPS
 // =========================
 
+// =========================
+// LOAD USER DATA
+// =========================
+
 useEffect(() => {
 
-setUserData({
-  username: props.username,
-  userId: props.userId,
-  avatar: props.avatar,
-  banner: props.banner,
-  bio: props.bio,
-  hometown: props.hometown,
-  birthday: props.birthday,
-  status: props.status,
-  language: props.language,
-  gender: props.gender,
-  work: props.work,
-  education: props.education,
-  hobbies: props.hobbies,
-});
+  const localUser =
+    localStorage.getItem(
+      "bluechat-user"
+    );
 
-}, [
-props.username,
-props.userId,
-props.avatar,
-props.banner,
-props.bio,
-props.hometown,
-props.birthday,
-props.status,
-props.language,
-props.gender,
-props.work,
-props.education,
-props.hobbies,
-]);
+  if (localUser) {
+
+    try {
+
+      const parsed =
+        JSON.parse(localUser);
+
+      setUserData({
+        username:
+          parsed.username ||
+          props.username,
+
+        userId:
+          parsed.userId ||
+          props.userId,
+
+        avatar:
+          parsed.avatar ||
+          "",
+
+        banner:
+          parsed.banner ||
+          "",
+
+        bio:
+          parsed.bio ||
+          "",
+
+        hometown:
+          parsed.hometown ||
+          "",
+
+        birthday:
+          parsed.birthday ||
+          "",
+
+        status:
+          parsed.status ||
+          "",
+
+        language:
+          parsed.language ||
+          "",
+
+        gender:
+          parsed.gender ||
+          "",
+
+        work:
+          parsed.work ||
+          "",
+
+        education:
+          parsed.education ||
+          "",
+
+        hobbies:
+          parsed.hobbies ||
+          "",
+      });
+
+    } catch (err) {
+
+      console.log(err);
+
+    }
+
+  }
+
+}, []);
 
 const friends =
 props.friends || [];
@@ -98,593 +129,593 @@ useState(null);
 const holdTimeout =
 useRef(null);
 
-  // =========================
-  // CHANGE CHAT
-  // =========================
+// =========================
+// CHANGE CHAT
+// =========================
 
-  const changeChat =
-    (chat) => {
+const changeChat =
+(chat) => {
 
-      props.setActiveChat(chat);
+props.setActiveChat(chat);  
 
-      setMobileOpen(false);
+  setMobileOpen(false);  
 
-    };
+};
 
-  // =========================
-  // REMOVE FRIEND
-  // =========================
+// =========================
+// REMOVE FRIEND
+// =========================
 
-  const removeFriend =
-    async (friend) => {
+const removeFriend =
+async (friend) => {
 
-      try {
+try {  
 
-        const res =
-          await fetch(
-            "/api/remove-friend",
-            {
-              method: "POST",
+    const res =  
+      await fetch(  
+        "/api/remove-friend",  
+        {  
+          method: "POST",  
 
-              headers: {
-                "Content-Type":
-                  "application/json",
-              },
+          headers: {  
+            "Content-Type":  
+              "application/json",  
+          },  
 
-              body:
-                JSON.stringify({
-                  userId:
-                    props.userId,
-
-                  friendId:
-                    friend.userId,
-                }),
-            }
-          );
-
-        const data =
-          await res.json();
-
-        if (!data.success) {
-
-          alert(
-            data.message ||
-            "Failed to remove friend"
-          );
-
-          return;
-
-        }
-
-        props.setFriends((prev) =>
-          prev.filter(
-            (f) =>
-              f.userId !==
-              friend.userId
-          )
-        );
-
-        if (
-          props.activeChat?.id ===
-          friend.userId
-        ) {
-
-          props.setActiveChat({
-            type: "channel",
-            id: "general",
-            name: "General",
-          });
-
-        }
-
-        setConfirmRemove(null);
-
-      } catch (err) {
-
-        console.log(err);
-
-      }
-
-    };
-
-  return (
-
-    <>
-
-      {/* MOBILE BUTTON */}
-
-      <button
-        onClick={() =>
-          setMobileOpen(
-            !mobileOpen
-          )
-        }
-
-        className="
-          fixed
-          top-4
-          left-4
-          z-[9999]
-          w-[48px]
-          h-[48px]
-          rounded-2xl
-          bg-black/70
-          text-white
-          flex
-          items-center
-          justify-center
-          md:hidden
-          backdrop-blur-xl
-        "
-      >
-
-        {mobileOpen ? (
-          <FiX size={24} />
-        ) : (
-          <FiMenu size={24} />
-        )}
-
-      </button>
-
-      {/* SIDEBAR */}
-
-      <div
-        className={`
-          sidebar-glass
-          fixed
-          md:relative
-          top-0
-          left-0
-          z-[9998]
-          h-screen
-          transition-all
-          duration-300
-          flex
-          flex-col
-          justify-between
-
-          ${
-            mobileOpen
-              ? "translate-x-0"
-              : "-translate-x-full md:translate-x-0"
-          }
-        `}
-      >
-
-        {/* TOP */}
-
-        <div>
-
-          {/* PROFILE */}
-
-          <button
-            onClick={() =>
-              setOpenProfile(true)
-            }
-
-            className="
-              w-full
-              flex
-              items-center
-              gap-3
-              mt-20
-              md:mt-0
-              px-4
-              py-3
-              hover:bg-white/5
-              transition
-            "
-          >
-
-            {userData.avatar ? (
-
-              <img
-                src={userData.avatar}
-                className="
-                  w-14
-                  h-14
-                  rounded-full
-                  object-cover
-                  border-2
-                  border-white/10
-                "
-              />
-
-            ) : (
-
-              <div className="
-                w-14
-                h-14
-                rounded-full
-                bg-blue-600
-                text-white
-                flex
-                items-center
-                justify-center
-                font-bold
-                text-xl
-              ">
-
-                {userData.username
-                  ?.charAt(0)
-                  ?.toUpperCase()}
+          body:  
+            JSON.stringify({  
+              userId:  
+                props.userId,  
+
+              friendId:  
+                friend.userId,  
+            }),  
+        }  
+      );  
+
+    const data =  
+      await res.json();  
+
+    if (!data.success) {  
+
+      alert(  
+        data.message ||  
+        "Failed to remove friend"  
+      );  
+
+      return;  
+
+    }  
+
+    props.setFriends((prev) =>  
+      prev.filter(  
+        (f) =>  
+          f.userId !==  
+          friend.userId  
+      )  
+    );  
+
+    if (  
+      props.activeChat?.id ===  
+      friend.userId  
+    ) {  
+
+      props.setActiveChat({  
+        type: "channel",  
+        id: "general",  
+        name: "General",  
+      });  
+
+    }  
+
+    setConfirmRemove(null);  
+
+  } catch (err) {  
+
+    console.log(err);  
+
+  }  
+
+};
+
+return (
+
+<>  
+
+  {/* MOBILE BUTTON */}  
+
+  <button  
+    onClick={() =>  
+      setMobileOpen(  
+        !mobileOpen  
+      )  
+    }  
+
+    className="  
+      fixed  
+      top-4  
+      left-4  
+      z-[9999]  
+      w-[48px]  
+      h-[48px]  
+      rounded-2xl  
+      bg-black/70  
+      text-white  
+      flex  
+      items-center  
+      justify-center  
+      md:hidden  
+      backdrop-blur-xl  
+    "  
+  >  
+
+    {mobileOpen ? (  
+      <FiX size={24} />  
+    ) : (  
+      <FiMenu size={24} />  
+    )}  
+
+  </button>  
+
+  {/* SIDEBAR */}  
+
+  <div  
+    className={`  
+      sidebar-glass  
+      fixed  
+      md:relative  
+      top-0  
+      left-0  
+      z-[9998]  
+      h-screen  
+      transition-all  
+      duration-300  
+      flex  
+      flex-col  
+      justify-between  
+
+      ${  
+        mobileOpen  
+          ? "translate-x-0"  
+          : "-translate-x-full md:translate-x-0"  
+      }  
+    `}  
+  >  
+
+    {/* TOP */}  
+
+    <div>  
+
+      {/* PROFILE */}  
+
+      <button  
+        onClick={() =>  
+          setOpenProfile(true)  
+        }  
+
+        className="  
+          w-full  
+          flex  
+          items-center  
+          gap-3  
+          mt-20  
+          md:mt-0  
+          px-4  
+          py-3  
+          hover:bg-white/5  
+          transition  
+        "  
+      >  
+
+        {props.avatar ? (  
+
+          <img  
+            src={props.avatar}  
+            className="  
+              w-14  
+              h-14  
+              rounded-full  
+              object-cover  
+              border-2  
+              border-white/10  
+            "  
+          />  
+
+        ) : (  
+
+          <div className="  
+            w-14  
+            h-14  
+            rounded-full  
+            bg-blue-600  
+            text-white  
+            flex  
+            items-center  
+            justify-center  
+            font-bold  
+            text-xl  
+          ">  
+
+            {props.username  
+              ?.charAt(0)  
+              ?.toUpperCase()}  
 
-              </div>
+          </div>  
 
-            )}
+        )}  
 
-            <div className="flex-1 text-left min-w-0">
+        <div className="flex-1 text-left min-w-0">  
 
-              <div className="font-bold truncate">
+          <div className="font-bold truncate">  
 
-                {userData.username}
+            {props.username}  
 
-              </div>
+          </div>  
 
-              <div className="text-xs opacity-60 truncate">
+          <div className="text-xs opacity-60 truncate">  
 
-                {userData.userId}
+            {props.userId}  
 
-              </div>
+          </div>  
 
-            </div>
+        </div>  
 
-          </button>
+      </button>  
 
-          {/* LOGO */}
+      {/* LOGO */}  
 
-          <div className="flex items-center gap-3 px-4 mt-3">
+      <div className="flex items-center gap-3 px-4 mt-3">  
 
-            <div className="logo-circle">
-              B
-            </div>
+        <div className="logo-circle">  
+          B  
+        </div>  
 
-            <div className="channel-name text-xl font-bold">
-              BlueChat
-            </div>
+        <div className="channel-name text-xl font-bold">  
+          BlueChat  
+        </div>  
 
-          </div>
+      </div>  
 
-          {/* CHANNELS */}
+      {/* CHANNELS */}  
 
-          <div className="channels">
+      <div className="channels">  
 
-            <button
-              onClick={() =>
-                changeChat({
-                  type: "channel",
-                  id: "general",
-                  name: "General",
-                })
-              }
+        <button  
+          onClick={() =>  
+            changeChat({  
+              type: "channel",  
+              id: "general",  
+              name: "General",  
+            })  
+          }  
 
-              className={`
-                channel
-                ${
-                  props.activeChat?.id ===
-                  "general"
-                    ? "active"
-                    : ""
-                }
-              `}
-            >
+          className={`  
+            channel  
+            ${  
+              props.activeChat?.id ===  
+              "general"  
+                ? "active"  
+                : ""  
+            }  
+          `}  
+        >  
 
-              <div className="channel-icon">
-                G
-              </div>
-
-              <div className="channel-name">
-                General
-              </div>
+          <div className="channel-icon">  
+            G  
+          </div>  
+
+          <div className="channel-name">  
+            General  
+          </div>  
 
-            </button>
+        </button>  
 
-          </div>
+      </div>  
 
-          {/* FRIENDS */}
+      {/* FRIENDS */}  
 
-          <div className="mt-5 px-3">
+      <div className="mt-5 px-3">  
 
-            <div className="h-[1px] bg-white/10 mb-3 rounded-full" />
+        <div className="h-[1px] bg-white/10 mb-3 rounded-full" />  
 
-            <div className="space-y-2">
+        <div className="space-y-2">  
 
-              {friends.length === 0 && (
+          {friends.length === 0 && (  
 
-                <div className="text-xs opacity-50 px-2 py-2">
+            <div className="text-xs opacity-50 px-2 py-2">  
 
-                  No friends yet
+              No friends yet  
 
-                </div>
+            </div>  
 
-              )}
+          )}  
 
-              {friends.map((friend) => (
+          {friends.map((friend) => (  
 
-                <div
-                  key={friend.userId}
-                  className="relative"
+            <div  
+              key={friend.userId}  
+              className="relative"  
 
-                  onContextMenu={(e) => {
+              onContextMenu={(e) => {  
 
-                    e.preventDefault();
+                e.preventDefault();  
 
-                    setFriendMenu({
-                      x: e.clientX,
-                      y: e.clientY,
-                      friend,
-                    });
+                setFriendMenu({  
+                  x: e.clientX,  
+                  y: e.clientY,  
+                  friend,  
+                });  
 
-                  }}
+              }}  
 
-                  onTouchStart={(e) => {
+              onTouchStart={(e) => {  
 
-                    const touch =
-                      e.touches[0];
+                const touch =  
+                  e.touches[0];  
 
-                    holdTimeout.current =
-                      setTimeout(() => {
+                holdTimeout.current =  
+                  setTimeout(() => {  
 
-                        setFriendMenu({
-                          x: touch.clientX,
-                          y: touch.clientY,
-                          friend,
-                        });
+                    setFriendMenu({  
+                      x: touch.clientX,  
+                      y: touch.clientY,  
+                      friend,  
+                    });  
 
-                      }, 500);
+                  }, 500);  
 
-                  }}
+              }}  
 
-                  onTouchEnd={() => {
+              onTouchEnd={() => {  
 
-                    clearTimeout(
-                      holdTimeout.current
-                    );
+                clearTimeout(  
+                  holdTimeout.current  
+                );  
 
-                  }}
-                >
+              }}  
+            >  
 
-                  <button
-                    onClick={() =>
-                      changeChat({
-                        type: "dm",
-                        id: friend.userId,
-                        user: friend,
-                      })
-                    }
+              <button  
+                onClick={() =>  
+                  changeChat({  
+                    type: "dm",  
+                    id: friend.userId,  
+                    user: friend,  
+                  })  
+                }  
 
-                    className={`
-                      channel
-                      ${
-                        props.activeChat?.id ===
-                        friend.userId
-                          ? "active"
-                          : ""
-                      }
-                    `}
-                  >
+                className={`  
+                  channel  
+                  ${  
+                    props.activeChat?.id ===  
+                    friend.userId  
+                      ? "active"  
+                      : ""  
+                  }  
+                `}  
+              >  
 
-                    {friend.avatar ? (
+                {friend.avatar ? (  
 
-                      <img
-                        src={friend.avatar}
-                        className="
-                          avatar
-                          object-cover
-                        "
-                      />
+                  <img  
+                    src={friend.avatar}  
+                    className="  
+                      avatar  
+                      object-cover  
+                    "  
+                  />  
 
-                    ) : (
+                ) : (  
 
-                      <div className="avatar">
+                  <div className="avatar">  
 
-                        {friend.username
-                          ?.charAt(0)
-                          ?.toUpperCase()}
+                    {friend.username  
+                      ?.charAt(0)  
+                      ?.toUpperCase()}  
 
-                      </div>
+                  </div>  
 
-                    )}
+                )}  
 
-                    <div className="channel-name truncate">
+                <div className="channel-name truncate">  
 
-                      {friend.username}
+                  {friend.username}  
 
-                    </div>
+                </div>  
 
-                  </button>
+              </button>  
 
-                </div>
+            </div>  
 
-              ))}
+          ))}  
 
-            </div>
+        </div>  
 
-          </div>
+      </div>  
 
-        </div>
+    </div>  
 
-        {/* BOTTOM */}
+    {/* BOTTOM */}  
 
-        <div className="flex flex-col items-center gap-3 p-4">
+    <div className="flex flex-col items-center gap-3 p-4">  
 
-          <button
-            onClick={() =>
-              setOpenFriends(true)
-            }
+      <button  
+        onClick={() =>  
+          setOpenFriends(true)  
+        }  
 
-            className="sidebar-btn"
-          >
+        className="sidebar-btn"  
+      >  
 
-            <FiUserPlus size={22} />
+        <FiUserPlus size={22} />  
 
-          </button>
+      </button>  
 
-          <button
-            onClick={() =>
-              setOpenSettings(true)
-            }
+      <button  
+        onClick={() =>  
+          setOpenSettings(true)  
+        }  
 
-            className="sidebar-btn"
-          >
+        className="sidebar-btn"  
+      >  
 
-            <FiSettings size={22} />
+        <FiSettings size={22} />  
 
-          </button>
+      </button>  
 
-        </div>
+    </div>  
 
-      </div>
+  </div>  
 
-      {/* RIGHT CLICK MENU */}
+  {/* RIGHT CLICK MENU */}  
 
-      {friendMenu && (
+  {friendMenu && (  
 
-        <>
+    <>  
 
-          <div
-            onClick={() =>
-              setFriendMenu(null)
-            }
+      <div  
+        onClick={() =>  
+          setFriendMenu(null)  
+        }  
 
-            className="fixed inset-0 z-[9998]"
-          />
+        className="fixed inset-0 z-[9998]"  
+      />  
 
-          <div
-            className="
-              fixed
-              z-[9999]
-              w-[180px]
-              rounded-2xl
-              bg-[#1e1f22]
-              border
-              border-white/10
-              shadow-2xl
-              overflow-hidden
-            "
+      <div  
+        className="  
+          fixed  
+          z-[9999]  
+          w-[180px]  
+          rounded-2xl  
+          bg-[#1e1f22]  
+          border  
+          border-white/10  
+          shadow-2xl  
+          overflow-hidden  
+        "  
 
-            style={{
-              left: friendMenu.x,
-              top: friendMenu.y,
-            }}
-          >
+        style={{  
+          left: friendMenu.x,  
+          top: friendMenu.y,  
+        }}  
+      >  
 
-            <button
-              onClick={() => {
+        <button  
+          onClick={() => {  
 
-                setConfirmRemove(
-                  friendMenu.friend
-                );
+            setConfirmRemove(  
+              friendMenu.friend  
+            );  
 
-                setFriendMenu(null);
+            setFriendMenu(null);  
 
-              }}
+          }}  
 
-              className="
-                w-full
-                px-4
-                py-3
-                text-left
-                hover:bg-red-500/20
-                text-red-400
-                transition
-              "
-            >
+          className="  
+            w-full  
+            px-4  
+            py-3  
+            text-left  
+            hover:bg-red-500/20  
+            text-red-400  
+            transition  
+          "  
+        >  
 
-              Remove Friend
+          Remove Friend  
 
-            </button>
+        </button>  
 
-          </div>
+      </div>  
 
-        </>
+    </>  
 
-      )}
+  )}  
 
-      {/* CONFIRM REMOVE */}
+  {/* CONFIRM REMOVE */}  
 
-      {confirmRemove && (
+  {confirmRemove && (  
 
-        <div className="fixed inset-0 z-[99999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-[99999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">  
 
-          <div className="
-            w-full
-            max-w-sm
-            rounded-3xl
-            bg-white
-            dark:bg-[#1e1f22]
-            border
-            border-white/10
-            p-6
-          ">
+      <div className="  
+        w-full  
+        max-w-sm  
+        rounded-3xl  
+        bg-white  
+        dark:bg-[#1e1f22]  
+        border  
+        border-white/10  
+        p-6  
+      ">  
 
-            <div className="text-xl font-black mb-2">
+        <div className="text-xl font-black mb-2">  
 
-              Remove Friend
+          Remove Friend  
 
-            </div>
+        </div>  
 
-            <div className="opacity-70 text-sm mb-6">
+        <div className="opacity-70 text-sm mb-6">  
 
-              Remove{" "}
-              <strong>
+          Remove{" "}  
+          <strong>  
 
-                {confirmRemove.username}
+            {confirmRemove.username}  
 
-              </strong>{" "}
-              from your friends list?
+          </strong>{" "}  
+          from your friends list?  
 
-            </div>
+        </div>  
 
-            <div className="flex gap-3">
+        <div className="flex gap-3">  
 
-              <button
-                onClick={() =>
-                  setConfirmRemove(null)
-                }
+          <button  
+            onClick={() =>  
+              setConfirmRemove(null)  
+            }  
 
-                className="
-                  flex-1
-                  h-12
-                  rounded-2xl
-                  bg-white/10
-                "
-              >
+            className="  
+              flex-1  
+              h-12  
+              rounded-2xl  
+              bg-white/10  
+            "  
+          >  
 
-                Cancel
+            Cancel  
 
-              </button>
+          </button>  
 
-              <button
-                onClick={() =>
-                  removeFriend(
-                    confirmRemove
-                  )
-                }
+          <button  
+            onClick={() =>  
+              removeFriend(  
+                confirmRemove  
+              )  
+            }  
 
-                className="
-                  flex-1
-                  h-12
-                  rounded-2xl
-                  bg-red-500
-                  text-white
-                  font-bold
-                "
-              >
+            className="  
+              flex-1  
+              h-12  
+              rounded-2xl  
+              bg-red-500  
+              text-white  
+              font-bold  
+            "  
+          >  
 
-                Remove
+            Remove  
 
-              </button>
+          </button>  
 
-            </div>
+        </div>  
 
-          </div>
+      </div>  
 
-        </div>
+    </div>  
 
-      )}
+  )}  
 
-      {/* PROFILE MODAL */}
+  {/* PROFILE MODAL */}
 
 {openProfile && (
 
@@ -692,145 +723,151 @@ useRef(null);
 
 updateProfile={(newData) => {
 
-  setUserData((prev) => ({
-    ...prev,
+  const updated = {
+    ...userData,
     ...newData,
-  }));
+  };
+
+  setUserData(updated);
+
+  localStorage.setItem(
+    "bluechat-user",
+    JSON.stringify(updated)
+  );
 
 }}
 
 close={() =>
-  setOpenProfile(false)
+setOpenProfile(false)
 }
 
 currentUser={{
-  username:
-    userData.username,
+username:
+userData.username,
 
-  userId:
-    userData.userId,
+userId:
+userData.userId,
 
-  avatar:
-    userData.avatar,
+avatar:
+userData.avatar,
 }}
 
 profile={{
-  username:
-    userData.username,
+username:
+userData.username,
 
-  userId:
-    userData.userId,
+userId:
+userData.userId,
 
-  avatar:
-    userData.avatar,
+avatar:
+userData.avatar,
 
-  banner:
-    userData.banner || "",
+banner:
+userData.banner || "",
 
-  bio:
-    userData.bio || "",
+bio:
+userData.bio || "",
 
-  hometown:
-    userData.hometown || "",
+hometown:
+userData.hometown || "",
 
-  birthday:
-    userData.birthday || "",
+birthday:
+userData.birthday || "",
 
-  status:
-    userData.status || "",
+status:
+userData.status || "",
 
-  language:
-    userData.language || "",
+language:
+userData.language || "",
 
-  work:
-    userData.work || "",
+work:
+userData.work || "",
 
-  education:
-    userData.education || "",
+education:
+userData.education || "",
 
-  hobbies:
-    userData.hobbies || "",
+hobbies:
+userData.hobbies || "",
 
-  gender:
-    userData.gender || "",
+gender:
+userData.gender || "",
 
-  friends:
-    friends,
+friends:
+friends,
 }}
 
 />
 
 )}
 
-      {/* MOBILE BG */}
+{/* MOBILE BG */}  
 
-      {mobileOpen && (
+  {mobileOpen && (  
 
-        <div
-          onClick={() =>
-            setMobileOpen(false)
-          }
+    <div  
+      onClick={() =>  
+        setMobileOpen(false)  
+      }  
 
-          className="
-            fixed
-            inset-0
-            bg-black/50
-            z-[9997]
-            md:hidden
-          "
-        />
+      className="  
+        fixed  
+        inset-0  
+        bg-black/50  
+        z-[9997]  
+        md:hidden  
+      "  
+    />  
 
-      )}
+  )}  
 
-      {/* FRIENDS MODAL */}
+  {/* FRIENDS MODAL */}  
 
-      {openFriends && (
+  {openFriends && (  
 
-        <FriendsModal
-          close={() =>
-            setOpenFriends(false)
-          }
+    <FriendsModal  
+      close={() =>  
+        setOpenFriends(false)  
+      }  
 
-          currentUser={{
-            username:
-              props.username,
+      currentUser={{  
+        username:  
+          props.username,  
 
-            userId:
-              props.userId,
+        userId:  
+          props.userId,  
 
-            avatar:
-              props.avatar,
-          }}
+        avatar:  
+          props.avatar,  
+      }}  
 
-          friends={friends}
+      friends={friends}  
 
-          setFriends={
-            props.setFriends
-          }
+      setFriends={  
+        props.setFriends  
+      }  
 
-          setActiveChat={
-            props.setActiveChat
-          }
-        />
+      setActiveChat={  
+        props.setActiveChat  
+      }  
+    />  
 
-      )}
+  )}  
 
-      {/* SETTINGS */}
+  {/* SETTINGS */}  
 
-      {openSettings && (
+  {openSettings && (  
 
-        <SettingsModal
-          {...props}
+    <SettingsModal  
+      {...props}  
 
-          close={() =>
-            setOpenSettings(false)
-          }
-        />
+      close={() =>  
+        setOpenSettings(false)  
+      }  
+    />  
 
-      )}
+  )}  
 
-    </>
+</>
 
-  );
-
+);
 }
