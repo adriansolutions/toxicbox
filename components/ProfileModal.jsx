@@ -136,116 +136,87 @@ export default function ProfileModal({
   // SAVE PROFILE
   // =========================
 
-  const saveProfile =
-    async () => {
+  const saveProfile = async () => {
 
-      try {
+  try {
 
-        setSaving(true);
+    setSaving(true);
 
-        const payload = {
-          userId:
-            currentUser.userId,
+    const payload = {
+      userId: currentUser.userId,
 
-          avatar:
-            form.avatar || "",
-
-          banner:
-            form.banner || "",
-
-          bio:
-            form.bio || "",
-
-          hometown:
-            form.hometown || "",
-
-          birthday:
-            form.birthday || "",
-
-          status:
-            form.status || "",
-
-          language:
-            form.language || "",
-
-          gender:
-            form.gender || "",
-
-          work:
-            typeof form.work === "string"
-              ? form.work
-              : "",
-
-          education:
-            typeof form.education === "string"
-              ? form.education
-              : "",
-
-          hobbies:
-            typeof form.hobbies === "string"
-              ? form.hobbies
-              : "",
-        };
-
-        const res =
-          await fetch(
-            "/api/update-profile",
-            {
-              method: "POST",
-
-              headers: {
-                "Content-Type":
-                  "application/json",
-              },
-
-              body:
-                JSON.stringify(
-                  payload
-                ),
-            }
-          );
-
-        const data =
-          await res.json();
-
-        if (!data.success) {
-
-          alert(
-            data.message ||
-            "Failed to update profile"
-          );
-
-          return;
-
-        }
-
-        // NO RELOAD
-        setEditingField(null);
-
-        setMenuOpen(false);
-
-        alert(
-          "Profile updated!"
-        );
-
-      } catch (err) {
-
-        console.log(
-          "SAVE ERROR:",
-          err
-        );
-
-        alert(
-          "Server error"
-        );
-
-      } finally {
-
-        setSaving(false);
-
-      }
-
+      avatar: form.avatar || "",
+      banner: form.banner || "",
+      bio: form.bio || "",
+      hometown: form.hometown || "",
+      birthday: form.birthday || "",
+      status: form.status || "",
+      language: form.language || "",
+      gender: form.gender || "",
+      work: form.work || "",
+      education: form.education || "",
+      hobbies: form.hobbies || "",
     };
+
+    const res =
+      await fetch(
+        "/api/update-profile",
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+
+          body:
+            JSON.stringify(
+              payload
+            ),
+        }
+      );
+
+    const data =
+      await res.json();
+
+    if (!data.success) {
+
+      alert(
+        data.message ||
+        "Failed to update"
+      );
+
+      return;
+
+    }
+
+    // UPDATE LOCAL PROFILE
+    Object.assign(
+      safeProfile,
+      payload
+    );
+
+    setForm(payload);
+
+    setEditingField(null);
+
+    setMenuOpen(false);
+
+    alert("Profile updated!");
+
+  } catch (err) {
+
+    console.log(err);
+
+    alert("Server error");
+
+  } finally {
+
+    setSaving(false);
+
+  }
+
+};
 
   return (
 
