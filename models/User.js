@@ -27,6 +27,52 @@ const UserSchema =
 
     avatar: String,
 
+    // NEW PROFILE SYSTEM
+    banner: {
+      type: String,
+      default: "",
+    },
+
+    bio: {
+      type: String,
+      default: "",
+    },
+
+    hometown: {
+      type: String,
+      default: "",
+    },
+
+    birthday: {
+      type: String,
+      default: "",
+    },
+
+    status: {
+      type: String,
+      default: "",
+    },
+
+    language: {
+      type: String,
+      default: "",
+    },
+
+    work: {
+      type: String,
+      default: "",
+    },
+
+    education: {
+      type: String,
+      default: "",
+    },
+
+    hobbies: {
+      type: String,
+      default: "",
+    },
+
     online: {
       type: Boolean,
       default: false,
