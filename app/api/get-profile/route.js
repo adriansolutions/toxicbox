@@ -1,8 +1,6 @@
 import connectDB from "../../../lib/mongodb";
 import User from "../../../models/User";
 
-export const dynamic = "force-dynamic";
-
 export async function GET(req) {
 
   try {
@@ -15,33 +13,24 @@ export async function GET(req) {
     const userId =
       searchParams.get("userId");
 
-    if (!userId) {
-
-      return Response.json({
-        success: false,
-        message: "Missing userId",
-      });
-
-    }
-
     const user =
       await User.findOne({
         userId,
-      }).lean();
+      });
 
     if (!user) {
 
       return Response.json({
         success: false,
-        message: "User not found",
       });
 
     }
 
     return Response.json({
-      success: true,
-      user,
-    });
+  success: true,
+  user: user, // optional compatibility
+  profile: user, // keep BOTH safe
+});
 
   } catch (err) {
 
@@ -49,7 +38,6 @@ export async function GET(req) {
 
     return Response.json({
       success: false,
-      message: "Server error",
     });
 
   }
