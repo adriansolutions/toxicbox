@@ -1,188 +1,131 @@
 import mongoose from "mongoose";
 
-const FriendSchema =
-  new mongoose.Schema({
-
+/* =========================
+   FRIENDS
+========================= */
+const FriendSchema = new mongoose.Schema(
+  {
     username: String,
-
     userId: String,
-
     avatar: String,
+  },
+  { _id: false }
+);
 
-  }, {
-    _id: false,
-  });
+/* =========================
+   WORK
+========================= */
+const WorkSchema = new mongoose.Schema(
+  {
+    workplace: { type: String, default: "" },
+    jobTitle: { type: String, default: "" },
+    currentlyWorking: { type: Boolean, default: false },
 
-const WorkSchema =
-  new mongoose.Schema({
+    startMonth: { type: String, default: "" },
+    startYear: { type: String, default: "" },
+    endMonth: { type: String, default: "" },
+    endYear: { type: String, default: "" },
 
-    workplace: {
-      type: String,
-      default: "",
-    },
+    description: { type: String, default: "" },
+  },
+  { _id: false }
+);
 
-    jobTitle: {
-      type: String,
-      default: "",
-    },
+/* =========================
+   EDUCATION
+========================= */
+const EducationSchema = new mongoose.Schema(
+  {
+    school: { type: String, default: "" },
+    type: { type: String, default: "" }, // highschool / college
+  },
+  { _id: false }
+);
 
-    currentlyWorking: {
-      type: Boolean,
-      default: false,
-    },
-
-    startMonth: {
-      type: String,
-      default: "",
-    },
-
-    startYear: {
-      type: String,
-      default: "",
-    },
-
-    endMonth: {
-      type: String,
-      default: "",
-    },
-
-    endYear: {
-      type: String,
-      default: "",
-    },
-
-    description: {
-      type: String,
-      default: "",
-    },
-
-  }, {
-    _id: false,
-  });
-
-const EducationSchema =
-  new mongoose.Schema({
-
-    school: {
-      type: String,
-      default: "",
-    },
-
-    type: {
-      type: String,
-      default: "",
-    },
-
-  }, {
-    _id: false,
-  });
-
-const UserSchema =
-  new mongoose.Schema({
-
+/* =========================
+   USER SCHEMA
+========================= */
+const UserSchema = new mongoose.Schema(
+  {
     username: {
       type: String,
       unique: true,
+      required: true,
+      trim: true,
     },
 
-    userId: String,
-
-    password: String,
-
-    avatar: {
+    userId: {
       type: String,
-      default: "",
+      required: true,
+      index: true,
     },
 
-    banner: {
+    password: {
       type: String,
-      default: "",
+      required: true,
     },
 
-    bio: {
-      type: String,
-      default: "",
-    },
+    /* =========================
+       PROFILE MEDIA
+    ========================= */
+    avatar: { type: String, default: "" },
+    banner: { type: String, default: "" },
 
-    hometown: {
-      type: String,
-      default: "",
-    },
+    /* =========================
+       BASIC PROFILE INFO
+    ========================= */
+    bio: { type: String, default: "" },
+    hometown: { type: String, default: "" },
+    birthday: { type: String, default: "" },
+    status: { type: String, default: "" },
+    language: { type: String, default: "" },
+    gender: { type: String, default: "" },
 
-    birthday: {
-      type: String,
-      default: "",
-    },
+    online: { type: Boolean, default: false },
 
-    status: {
-      type: String,
-      default: "",
-    },
-
-    language: {
-      type: String,
-      default: "",
-    },
-
-    gender: {
-      type: String,
-      default: "",
-    },
-
-    online: {
-      type: Boolean,
-      default: false,
-    },
-
-    // WORK LIST
+    /* =========================
+       DYNAMIC PROFILE DATA
+    ========================= */
     work: {
       type: [WorkSchema],
       default: [],
     },
 
-    // EDUCATION LIST
     education: {
       type: [EducationSchema],
       default: [],
     },
 
-    // HOBBIES LIST
     hobbies: {
       type: [String],
       default: [],
+      validate: {
+        validator: (v) => v.length <= 10,
+        message: "Max 10 hobbies only",
+      },
     },
 
-    // PINNED DETAILS
+    /* =========================
+       PINNED SYSTEM
+    ========================= */
     pinnedDetails: {
-      work: {
-        type: [Number],
-        default: [],
-      },
-
-      education: {
-        type: [Number],
-        default: [],
-      },
-
-      hobbies: {
-        type: [Number],
-        default: [],
-      },
+      work: { type: [Number], default: [] },
+      education: { type: [Number], default: [] },
+      hobbies: { type: [Number], default: [] },
     },
 
-    // FRIENDS
+    /* =========================
+       FRIENDS
+    ========================= */
     friends: {
       type: [FriendSchema],
       default: [],
     },
-
-  }, {
+  },
+  {
     timestamps: true,
-  });
+  }
+);
 
-export default
-  mongoose.models.User ||
-  mongoose.model(
-    "User",
-    UserSchema
-  );
+export default mongoose.models.User ||
+  mongoose.model("User", UserSchema);
