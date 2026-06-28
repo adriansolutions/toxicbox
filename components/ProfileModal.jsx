@@ -1,369 +1,675 @@
 "use client";
 
-import { useEffect, useState } from "react";
-
-import EditProfileModal from "./EditProfileModal";
+import { useState } from "react";
 
 export default function ProfileModal({
   close,
-  userId,
-  currentUserId,
+  profile,
+  currentUser,
 }) {
 
-  const [profile, setProfile] =
-    useState(null);
-
-  const [loading, setLoading] =
-    useState(true);
-
-  const [editOpen, setEditOpen] =
+  const [editing, setEditing] =
     useState(false);
 
-  const isOwnProfile =
-    userId === currentUserId;
+  const [form, setForm] =
+    useState({
 
-  // LOAD PROFILE
-  useEffect(() => {
+      avatar:
+        profile?.avatar || "",
 
-    const loadProfile =
-      async () => {
+      banner:
+        profile?.banner || "",
 
-        try {
+      bio:
+        profile?.bio || "",
 
-          const res =
-            await fetch(
-              `/api/get-profile?userId=${userId}`,
-              {
-                cache: "no-store",
-              }
-            );
+      hometown:
+        profile?.hometown || "",
 
-          const data =
-            await res.json();
+      birthday:
+        profile?.birthday || "",
 
-          if (data.success) {
+      status:
+        profile?.status || "",
 
-            setProfile(
-              data.user
-            );
+      language:
+        profile?.language || "",
 
-          }
+      work:
+        profile?.work || "",
 
-        } catch (err) {
+      education:
+        profile?.education || "",
 
-          console.log(err);
+      hobbies:
+        profile?.hobbies || "",
 
-        } finally {
+    });
 
-          setLoading(false);
+  const isOwner =
+    currentUser?.userId ===
+    profile?.userId;
+
+  // =========================
+  // SAVE PROFILE
+  // =========================
+  const saveProfile =
+    async () => {
+
+      try {
+
+        const res =
+          await fetch(
+            "/api/update-profile",
+            {
+              method:
+                "POST",
+
+              headers: {
+                "Content-Type":
+                  "application/json",
+              },
+
+              body:
+                JSON.stringify({
+
+                  userId:
+                    currentUser.userId,
+
+                  ...form,
+
+                }),
+            }
+          );
+
+        const data =
+          await res.json();
+
+        if (!data.success) {
+
+          alert(
+            data.message ||
+            "Failed to update profile"
+          );
+
+          return;
 
         }
 
-      };
+        alert(
+          "Profile updated"
+        );
 
-    loadProfile();
+        window.location.reload();
 
-  }, [userId]);
+      } catch (err) {
 
-  if (loading) {
+        console.log(err);
 
-    return (
+      }
 
-      <div className="fixed inset-0 z-[99999] bg-black/70 flex items-center justify-center">
-
-        <div className="text-white text-lg">
-          Loading...
-        </div>
-
-      </div>
-
-    );
-
-  }
-
-  if (!profile)
-    return null;
+    };
 
   return (
 
-    <>
+    <div className="fixed inset-0 z-[999999] bg-black/70 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4">
 
       {/* MODAL */}
+
       <div
         className="
-          fixed inset-0 z-[99999]
-          bg-black/70 backdrop-blur-sm
-          flex items-center justify-center
-          p-2 sm:p-4
+          relative
+          w-full
+          max-w-[700px]
+          h-auto
+          max-h-[95vh]
           overflow-y-auto
+          rounded-3xl
+          bg-[#1e1f22]
+          border
+          border-white/10
+          shadow-2xl
         "
       >
 
-        <div
+        {/* CLOSE BUTTON */}
+
+        <button
+          onClick={close}
           className="
-            relative
-            w-full
-            max-w-[850px]
-            rounded-3xl
-            overflow-hidden
-            bg-[#1e1f22]
-            border border-white/10
-            shadow-2xl
+            fixed
+            top-3
+            right-3
+            z-[999999]
+            w-11
+            h-11
+            rounded-full
+            bg-black/70
+            text-white
+            text-xl
+            flex
+            items-center
+            justify-center
           "
         >
 
-          {/* CLOSE BUTTON */}
-          <button
-            onClick={close}
-            className="
-              absolute
-              top-3 right-3
-              z-50
-              w-10 h-10
-              rounded-full
-              bg-black/70
-              text-white
-              flex items-center justify-center
-              text-xl
-            "
-          >
+          ✕
 
-            ✕
+        </button>
 
-          </button>
+        {/* BANNER */}
 
-          {/* BANNER */}
-          <div
-            className="
-              relative
+        <div className="relative w-full h-[170px] sm:h-[220px]">
+
+          {profile?.banner ? (
+
+            <img
+              src={profile.banner}
+              alt="banner"
+              className="
+                w-full
+                h-full
+                object-cover
+              "
+            />
+
+          ) : (
+
+            <div className="
               w-full
-              h-[160px]
-              sm:h-[240px]
-            "
-          >
+              h-full
+              bg-gradient-to-r
+              from-blue-600
+              to-purple-600
+            " />
 
-            {profile.banner ? (
+          )}
+
+          {/* DARK OVERLAY */}
+
+          <div className="
+            absolute
+            inset-0
+            bg-black/30
+          " />
+
+        </div>
+
+        {/* CONTENT */}
+
+        <div className="relative px-4 sm:px-6 pb-6">
+
+          {/* AVATAR */}
+
+          <div className="
+            flex
+            flex-col
+            sm:flex-row
+            sm:items-end
+            gap-4
+            -mt-16
+            relative
+            z-20
+          ">
+
+            {profile?.avatar ? (
 
               <img
-                src={profile.banner}
-                alt="banner"
+                src={profile.avatar}
+                alt="avatar"
                 className="
-                  w-full
-                  h-full
+                  w-[110px]
+                  h-[110px]
+                  sm:w-[130px]
+                  sm:h-[130px]
+                  rounded-full
+                  border-4
+                  border-[#1e1f22]
                   object-cover
+                  bg-[#1e1f22]
+                  shrink-0
                 "
               />
 
             ) : (
 
-              <div
-                className="
-                  w-full
-                  h-full
-                  bg-gradient-to-r
-                  from-blue-600
-                  to-cyan-500
-                "
-              />
+              <div className="
+                w-[110px]
+                h-[110px]
+                sm:w-[130px]
+                sm:h-[130px]
+                rounded-full
+                border-4
+                border-[#1e1f22]
+                bg-blue-600
+                text-white
+                text-5xl
+                font-black
+                flex
+                items-center
+                justify-center
+                shrink-0
+              ">
+
+                {profile?.username
+                  ?.charAt(0)
+                  ?.toUpperCase()}
+
+              </div>
 
             )}
 
+            {/* USER INFO */}
+
+            <div className="
+              min-w-0
+              flex-1
+              pb-2
+            ">
+
+              <div className="
+                text-[24px]
+                sm:text-[32px]
+                font-black
+                text-white
+                break-words
+                leading-tight
+              ">
+
+                {profile?.username}
+
+              </div>
+
+              <div className="
+                text-sm
+                opacity-70
+                break-all
+                text-white
+              ">
+
+                ID:
+                {" "}
+                {profile?.userId}
+
+              </div>
+
+              <div className="
+                mt-2
+                text-sm
+                text-blue-400
+                font-semibold
+              ">
+
+                {profile?.friends?.length || 0}
+                {" "}
+                Friends
+
+              </div>
+
+            </div>
+
           </div>
 
-          {/* CONTENT */}
-          <div className="px-4 sm:px-6 pb-6">
+          {/* BIO */}
 
-            {/* AVATAR + USER */}
-            <div
+          <div className="mt-6">
+
+            <div className="
+              text-lg
+              font-bold
+              text-white
+              mb-2
+            ">
+
+              Bio
+
+            </div>
+
+            <div className="
+              bg-white/5
+              rounded-2xl
+              p-4
+              text-sm
+              text-white/80
+              break-words
+            ">
+
+              {profile?.bio ||
+                "No bio yet"}
+
+            </div>
+
+          </div>
+
+          {/* EDIT PROFILE BUTTON BELOW BIO */}
+
+          {isOwner && (
+
+            <button
+              onClick={() =>
+                setEditing(
+                  !editing
+                )
+              }
               className="
-                relative
-                flex
-                flex-col
-                sm:flex-row
-                sm:items-end
-                gap-4
-                -mt-16
-                sm:-mt-20
+                mt-4
+                w-full
+                h-12
+                rounded-2xl
+                bg-blue-600
+                hover:bg-blue-700
+                text-white
+                font-bold
+                transition
               "
             >
 
-              {/* AVATAR */}
-              {profile.avatar ? (
+              {editing
+                ? "Close Editor"
+                : "Edit Profile"}
 
-                <img
-                  src={profile.avatar}
-                  alt="avatar"
-                  className="
-                    w-28 h-28
-                    sm:w-36 sm:h-36
-                    rounded-full
-                    border-4 border-[#1e1f22]
-                    object-cover
-                    bg-[#2a2b30]
-                    shrink-0
-                  "
-                />
+            </button>
 
-              ) : (
+          )}
 
-                <div
-                  className="
-                    w-28 h-28
-                    sm:w-36 sm:h-36
-                    rounded-full
-                    border-4 border-[#1e1f22]
-                    bg-blue-600
-                    text-white
-                    flex items-center justify-center
-                    text-4xl
-                    font-black
-                    shrink-0
-                  "
-                >
+          {/* EDIT FORM */}
 
-                  {profile.username
-                    ?.charAt(0)
-                    ?.toUpperCase()}
+          {editing && isOwner && (
 
-                </div>
+            <div className="
+              mt-5
+              bg-white/5
+              rounded-3xl
+              p-4
+              space-y-4
+            ">
 
-              )}
-
-              {/* USER INFO */}
-              <div
+              <input
+                value={form.avatar}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    avatar:
+                      e.target.value,
+                  })
+                }
+                placeholder="Avatar URL"
                 className="
-                  min-w-0
-                  flex-1
-                  pb-2
+                  w-full
+                  h-12
+                  rounded-2xl
+                  bg-[#2a2b30]
+                  px-4
+                  text-white
+                  outline-none
                 "
-              >
+              />
 
-                <div
-                  className="
-                    text-2xl
-                    sm:text-4xl
-                    font-black
-                    text-white
-                    break-words
-                    leading-tight
-                  "
-                >
-
-                  {profile.username}
-
-                </div>
-
-                <div
-                  className="
-                    text-sm
-                    text-white/60
-                    break-all
-                  "
-                >
-
-                  {profile.userId}
-
-                </div>
-
-              </div>
-
-            </div>
-
-            {/* FRIENDS */}
-            <div className="mt-5 text-white/70 text-sm">
-
-              {profile.friends?.length || 0}
-              {" "}
-              Friends
-
-            </div>
-
-            {/* BIO */}
-            <div className="mt-4">
-
-              <div className="text-white font-bold mb-2">
-
-                Bio
-
-              </div>
-
-              <div
+              <input
+                value={form.banner}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    banner:
+                      e.target.value,
+                  })
+                }
+                placeholder="Banner URL"
                 className="
-                  text-white/80
-                  whitespace-pre-wrap
-                  break-words
+                  w-full
+                  h-12
+                  rounded-2xl
+                  bg-[#2a2b30]
+                  px-4
+                  text-white
+                  outline-none
                 "
-              >
+              />
 
-                {profile.bio ||
-                  "No bio yet"}
+              <textarea
+                value={form.bio}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    bio:
+                      e.target.value,
+                  })
+                }
+                placeholder="Bio"
+                className="
+                  w-full
+                  min-h-[100px]
+                  rounded-2xl
+                  bg-[#2a2b30]
+                  p-4
+                  text-white
+                  outline-none
+                  resize-none
+                "
+              />
 
-              </div>
+              <input
+                value={form.hometown}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    hometown:
+                      e.target.value,
+                  })
+                }
+                placeholder="Hometown"
+                className="
+                  w-full
+                  h-12
+                  rounded-2xl
+                  bg-[#2a2b30]
+                  px-4
+                  text-white
+                  outline-none
+                "
+              />
 
-            </div>
+              <input
+                value={form.birthday}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    birthday:
+                      e.target.value,
+                  })
+                }
+                placeholder="Birthday"
+                className="
+                  w-full
+                  h-12
+                  rounded-2xl
+                  bg-[#2a2b30]
+                  px-4
+                  text-white
+                  outline-none
+                "
+              />
 
-            {/* EDIT PROFILE BUTTON */}
-            {isOwnProfile && (
+              <input
+                value={form.status}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    status:
+                      e.target.value,
+                  })
+                }
+                placeholder="Status"
+                className="
+                  w-full
+                  h-12
+                  rounded-2xl
+                  bg-[#2a2b30]
+                  px-4
+                  text-white
+                  outline-none
+                "
+              />
+
+              <input
+                value={form.language}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    language:
+                      e.target.value,
+                  })
+                }
+                placeholder="Language"
+                className="
+                  w-full
+                  h-12
+                  rounded-2xl
+                  bg-[#2a2b30]
+                  px-4
+                  text-white
+                  outline-none
+                "
+              />
+
+              <input
+                value={form.work}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    work:
+                      e.target.value,
+                  })
+                }
+                placeholder="Work"
+                className="
+                  w-full
+                  h-12
+                  rounded-2xl
+                  bg-[#2a2b30]
+                  px-4
+                  text-white
+                  outline-none
+                "
+              />
+
+              <input
+                value={form.education}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    education:
+                      e.target.value,
+                  })
+                }
+                placeholder="Education"
+                className="
+                  w-full
+                  h-12
+                  rounded-2xl
+                  bg-[#2a2b30]
+                  px-4
+                  text-white
+                  outline-none
+                "
+              />
+
+              <input
+                value={form.hobbies}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    hobbies:
+                      e.target.value,
+                  })
+                }
+                placeholder="Hobbies"
+                className="
+                  w-full
+                  h-12
+                  rounded-2xl
+                  bg-[#2a2b30]
+                  px-4
+                  text-white
+                  outline-none
+                "
+              />
 
               <button
-                onClick={() =>
-                  setEditOpen(true)
-                }
+                onClick={saveProfile}
                 className="
-                  mt-4
                   w-full
-                  sm:w-auto
-                  h-11
-                  px-5
+                  h-12
                   rounded-2xl
-                  bg-blue-600
+                  bg-green-600
                   text-white
                   font-bold
                 "
               >
 
-                Edit Profile
+                Save Profile
 
               </button>
 
-            )}
+            </div>
 
-            {/* DETAILS */}
-            <div className="mt-6 space-y-3">
+          )}
 
-              <ProfileItem
+          {/* DETAILS */}
+
+          <div className="mt-6">
+
+            <div className="
+              text-lg
+              font-bold
+              text-white
+              mb-3
+            ">
+
+              Personal Information
+
+            </div>
+
+            <div className="
+              grid
+              grid-cols-1
+              sm:grid-cols-2
+              gap-3
+            ">
+
+              <Info
                 label="Hometown"
-                value={profile.hometown}
+                value={profile?.hometown}
               />
 
-              <ProfileItem
+              <Info
                 label="Birthday"
-                value={profile.birthday}
+                value={profile?.birthday}
               />
 
-              <ProfileItem
+              <Info
                 label="Status"
-                value={profile.status}
+                value={profile?.status}
               />
 
-              <ProfileItem
+              <Info
                 label="Language"
-                value={profile.language}
+                value={profile?.language}
               />
 
-              <ProfileItem
+              <Info
                 label="Work"
-                value={profile.work}
+                value={profile?.work}
               />
 
-              <ProfileItem
+              <Info
                 label="Education"
-                value={profile.education}
+                value={profile?.education}
               />
 
-              <ProfileItem
+              <Info
                 label="Hobbies"
-                value={profile.hobbies}
+                value={profile?.hobbies}
               />
 
             </div>
@@ -374,55 +680,46 @@ export default function ProfileModal({
 
       </div>
 
-      {/* EDIT PROFILE MODAL */}
-      {editOpen && (
-
-        <EditProfileModal
-          profile={profile}
-          close={() =>
-            setEditOpen(false)
-          }
-          refreshProfile={() =>
-            window.location.reload()
-          }
-        />
-
-      )}
-
-    </>
+    </div>
 
   );
 
 }
 
-// PROFILE ITEM
-function ProfileItem({
+// =========================
+// INFO CARD
+// =========================
+
+function Info({
   label,
   value,
 }) {
 
   return (
 
-    <div
-      className="
-        bg-white/5
-        rounded-2xl
-        p-4
-      "
-    >
+    <div className="
+      bg-white/5
+      rounded-2xl
+      p-4
+    ">
 
-      <div className="text-white/50 text-sm">
+      <div className="
+        text-xs
+        uppercase
+        opacity-50
+        mb-1
+        text-white
+      ">
 
         {label}
 
       </div>
 
-      <div
-        className="
-          text-white
-          break-words
-        "
-      >
+      <div className="
+        text-sm
+        break-words
+        text-white
+      ">
 
         {value || "Not set"}
 
