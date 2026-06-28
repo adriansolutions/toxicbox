@@ -673,6 +673,73 @@ friends,
 
 )}
 
+{/* MOBILE BG */}
+
+{mobileOpen && (
+
+  <div
+    onClick={() =>
+      setMobileOpen(false)
+    }
+
+    className="
+      fixed
+      inset-0
+      bg-black/50
+      z-[9997]
+      md:hidden
+    "
+  />
+
+)}
+
+{/* FRIENDS MODAL */}
+
+{openFriends && (
+
+  <FriendsModal
+    close={() =>
+      setOpenFriends(false)
+    }
+
+    currentUser={{
+      username:
+        props.username,
+
+      userId:
+        props.userId,
+
+      avatar:
+        props.avatar,
+    }}
+
+    friends={friends}
+
+    setFriends={
+      props.setFriends
+    }
+
+    setActiveChat={
+      props.setActiveChat
+    }
+  />
+
+)}
+
+{/* SETTINGS */}
+
+{openSettings && (
+
+  <SettingsModal
+    {...props}
+
+    close={() =>
+      setOpenSettings(false)
+    }
+  />
+
+)}
+
 </>
 
 );
