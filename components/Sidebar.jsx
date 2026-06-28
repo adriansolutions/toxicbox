@@ -723,17 +723,45 @@ return (
 
 updateProfile={(newData) => {
 
-  const updated = {
-    ...userData,
+  // UPDATE SIDEBAR
+  setUserData((prev) => ({
+    ...prev,
     ...newData,
-  };
+  }));
 
-  setUserData(updated);
+  // UPDATE MAIN USER
+  if (props.setCurrentUser) {
 
-  localStorage.setItem(
-    "bluechat-user",
-    JSON.stringify(updated)
-  );
+    props.setCurrentUser((prev) => ({
+      ...prev,
+      ...newData,
+    }));
+
+  }
+
+  // UPDATE LOCAL CACHE
+  try {
+
+    const oldUser =
+      JSON.parse(
+        localStorage.getItem(
+          "bluechat-user"
+        ) || "{}"
+      );
+
+    localStorage.setItem(
+      "bluechat-user",
+      JSON.stringify({
+        ...oldUser,
+        ...newData,
+      })
+    );
+
+  } catch (err) {
+
+    console.log(err);
+
+  }
 
 }}
 
@@ -870,4 +898,5 @@ friends,
 </>
 
 );
+
 }
