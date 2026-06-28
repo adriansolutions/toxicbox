@@ -1,9 +1,6 @@
 import connectDB from "../../../lib/mongodb";
 import User from "../../../models/User";
 
-export const dynamic = "force-dynamic"; 
-// 👈 THIS FIXES VERCEL STATIC ERROR
-
 export async function GET(req) {
   try {
     await connectDB();
@@ -29,7 +26,7 @@ export async function GET(req) {
 
     return Response.json({
       success: true,
-      profile: user,
+      user,
     });
 
   } catch (err) {
