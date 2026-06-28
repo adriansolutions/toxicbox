@@ -5,8 +5,9 @@ export async function GET(req) {
   try {
     await connectDB();
 
-    // SAFE WAY (Next.js App Router compatible)
-    const userId = req.nextUrl.searchParams.get("userId");
+    // ✅ SAFE FOR VERCEL + STATIC EXPORT
+    const url = new URL(req.url);
+    const userId = url.searchParams.get("userId");
 
     if (!userId) {
       return Response.json({
