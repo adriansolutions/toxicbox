@@ -37,7 +37,7 @@ const WorkSchema = new mongoose.Schema(
 const EducationSchema = new mongoose.Schema(
   {
     school: { type: String, default: "" },
-    type: { type: String, default: "" }, // highschool / college
+    type: { type: String, default: "" },
   },
   { _id: false }
 );
@@ -100,7 +100,9 @@ const UserSchema = new mongoose.Schema(
       type: [String],
       default: [],
       validate: {
-        validator: (v) => v.length <= 10,
+        validator: function (v) {
+          return Array.isArray(v) && v.length <= 10;
+        },
         message: "Max 10 hobbies only",
       },
     },
@@ -126,6 +128,17 @@ const UserSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
+
+/* =========================
+   SAFETY FIX (PREVENT CRASHES)
+========================= */
+UserSchema.pre("save", function (next) {
+  if (!Array.isArray(this.hobbies)) this.hobbies = [];
+  if (!Array.isArray(this.work)) this.work = [];
+  if (!Array.isArray(this.education)) this.education = [];
+
+  next();
+});
 
 export default mongoose.models.User ||
   mongoose.model("User", UserSchema);
