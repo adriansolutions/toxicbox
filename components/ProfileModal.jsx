@@ -1,49 +1,56 @@
 "use client";
 
 import { useState } from "react";
-import { FiX, FiEdit2 } from "react-icons/fi";
+
+import {
+  FiX,
+  FiEdit2,
+} from "react-icons/fi";
 
 export default function ProfileModal({
   close,
-  user,
+  profileUser,
   currentUser,
 }) {
+
+  const isOwner =
+    currentUser?.userId ===
+    profileUser?.userId;
 
   const [editing, setEditing] =
     useState(false);
 
-  const isOwner =
-    currentUser?.userId ===
-    user?.userId;
-
   return (
 
-    <div className="
-      fixed
-      inset-0
-      z-[999999]
-      bg-black/70
-      backdrop-blur-sm
-      flex
-      items-center
-      justify-center
-      p-3
-      overflow-y-auto
-    ">
-
-      <div className="
-        relative
-        w-full
-        max-w-[420px]
-        rounded-3xl
-        overflow-hidden
-        bg-[#1e1f22]
-        border
-        border-white/10
-        shadow-2xl
+    <div
+      className="
+        fixed
+        inset-0
+        z-[999999]
+        bg-black/70
+        backdrop-blur-sm
         flex
-        flex-col
-      ">
+        items-center
+        justify-center
+        p-2
+        sm:p-5
+        overflow-y-auto
+      "
+    >
+
+      <div
+        className="
+          relative
+          w-full
+          max-w-[430px]
+          rounded-[28px]
+          bg-[#1e1f22]
+          border
+          border-white/10
+          overflow-hidden
+          shadow-2xl
+        "
+      >
 
         {/* CLOSE BUTTON */}
 
@@ -53,7 +60,7 @@ export default function ProfileModal({
             absolute
             top-3
             right-3
-            z-50
+            z-[999999]
             w-10
             h-10
             rounded-full
@@ -72,22 +79,37 @@ export default function ProfileModal({
 
         {/* BANNER */}
 
-        <div className="
-          relative
-          w-full
-          h-[160px]
-          bg-[#2d3138]
-        ">
+        <div
+          className="
+            relative
+            w-full
+            h-[170px]
+            bg-[#2f3136]
+            overflow-hidden
+          "
+        >
 
-          {user?.banner && (
+          {profileUser?.banner ? (
 
             <img
-              src={user.banner}
+              src={profileUser.banner}
               alt="banner"
               className="
                 w-full
                 h-full
                 object-cover
+              "
+            />
+
+          ) : (
+
+            <div
+              className="
+                w-full
+                h-full
+                bg-gradient-to-r
+                from-blue-600
+                to-cyan-500
               "
             />
 
@@ -97,37 +119,42 @@ export default function ProfileModal({
 
         {/* CONTENT */}
 
-        <div className="
-          relative
-          px-5
-          pb-6
-          pt-16
-          flex
-          flex-col
-          items-center
-        ">
+        <div
+          className="
+            relative
+            px-4
+            sm:px-6
+            pb-6
+            pt-[70px]
+            flex
+            flex-col
+            items-center
+          "
+        >
 
           {/* AVATAR */}
 
-          <div className="
-            absolute
-            -top-[55px]
-            left-1/2
-            -translate-x-1/2
-            w-[110px]
-            h-[110px]
-            rounded-full
-            border-[5px]
-            border-[#1e1f22]
-            overflow-hidden
-            bg-[#5865f2]
-            shadow-xl
-          ">
+          <div
+            className="
+              absolute
+              -top-[60px]
+              left-1/2
+              -translate-x-1/2
+              w-[120px]
+              h-[120px]
+              rounded-full
+              overflow-hidden
+              border-[5px]
+              border-[#1e1f22]
+              bg-[#5865f2]
+              shadow-2xl
+            "
+          >
 
-            {user?.avatar ? (
+            {profileUser?.avatar ? (
 
               <img
-                src={user.avatar}
+                src={profileUser.avatar}
                 alt="avatar"
                 className="
                   w-full
@@ -138,18 +165,20 @@ export default function ProfileModal({
 
             ) : (
 
-              <div className="
-                w-full
-                h-full
-                flex
-                items-center
-                justify-center
-                text-white
-                text-4xl
-                font-black
-              ">
+              <div
+                className="
+                  w-full
+                  h-full
+                  flex
+                  items-center
+                  justify-center
+                  text-white
+                  text-5xl
+                  font-black
+                "
+              >
 
-                {user?.username
+                {profileUser?.username
                   ?.charAt(0)
                   ?.toUpperCase()}
 
@@ -161,46 +190,54 @@ export default function ProfileModal({
 
           {/* USERNAME */}
 
-          <div className="
-            w-full
-            text-center
-            mt-1
-          ">
+          <div
+            className="
+              w-full
+              text-center
+              mt-2
+            "
+          >
 
-            <div className="
-              text-[24px]
-              font-black
-              text-white
-              break-words
-              leading-tight
-            ">
+            <div
+              className="
+                text-[26px]
+                font-black
+                text-white
+                leading-tight
+                break-words
+              "
+            >
 
-              {user?.username}
+              {profileUser?.username}
 
             </div>
 
-            <div className="
-              text-sm
-              opacity-60
-              mt-1
-              break-all
-            ">
+            <div
+              className="
+                text-sm
+                opacity-60
+                break-all
+                mt-1
+              "
+            >
 
-              {user?.userId}
+              {profileUser?.userId}
 
             </div>
 
           </div>
 
-          {/* FRIENDS */}
+          {/* FRIEND COUNT */}
 
-          <div className="
-            mt-4
-            text-sm
-            opacity-80
-          ">
+          <div
+            className="
+              mt-4
+              text-sm
+              opacity-80
+            "
+          >
 
-            {user?.friends?.length || 0}
+            {profileUser?.friends?.length || 0}
             {" "}
             Friends
 
@@ -208,30 +245,34 @@ export default function ProfileModal({
 
           {/* BIO */}
 
-          <div className="
-            mt-4
-            w-full
-            rounded-2xl
-            bg-white/5
-            p-4
-            text-center
-            text-sm
-            leading-relaxed
-            break-words
-          ">
+          <div
+            className="
+              mt-4
+              w-full
+              rounded-2xl
+              bg-white/5
+              p-4
+              text-center
+              text-sm
+              leading-relaxed
+              break-words
+            "
+          >
 
-            {user?.bio ||
+            {profileUser?.bio ||
               "No bio yet."}
 
           </div>
 
-          {/* EDIT PROFILE BUTTON */}
+          {/* EDIT BUTTON */}
 
           {isOwner && (
 
             <button
               onClick={() =>
-                setEditing(true)
+                setEditing(
+                  !editing
+                )
               }
               className="
                 mt-4
@@ -252,30 +293,96 @@ export default function ProfileModal({
 
               <FiEdit2 />
 
-              Edit Profile
+              {editing
+                ? "Close Edit"
+                : "Edit Profile"}
 
             </button>
 
           )}
 
+          {/* EDIT PANEL */}
+
+          {editing && (
+
+            <div
+              className="
+                mt-4
+                w-full
+                space-y-3
+              "
+            >
+
+              <input
+                placeholder="Avatar URL"
+                defaultValue={
+                  profileUser?.avatar
+                }
+                className="
+                  w-full
+                  h-12
+                  px-4
+                  rounded-2xl
+                  bg-white/10
+                  outline-none
+                "
+              />
+
+              <input
+                placeholder="Banner URL"
+                defaultValue={
+                  profileUser?.banner
+                }
+                className="
+                  w-full
+                  h-12
+                  px-4
+                  rounded-2xl
+                  bg-white/10
+                  outline-none
+                "
+              />
+
+              <textarea
+                placeholder="Bio"
+                defaultValue={
+                  profileUser?.bio
+                }
+                className="
+                  w-full
+                  h-24
+                  p-4
+                  rounded-2xl
+                  bg-white/10
+                  outline-none
+                  resize-none
+                "
+              />
+
+            </div>
+
+          )}
+
           {/* DETAILS */}
 
-          <div className="
-            mt-5
-            w-full
-            rounded-2xl
-            bg-white/5
-            p-4
-            space-y-3
-            text-sm
-          ">
+          <div
+            className="
+              mt-5
+              w-full
+              rounded-2xl
+              bg-white/5
+              p-4
+              space-y-3
+              text-sm
+            "
+          >
 
             <div>
               <strong>
                 Hometown:
               </strong>
               {" "}
-              {user?.hometown || "—"}
+              {profileUser?.hometown || "—"}
             </div>
 
             <div>
@@ -283,7 +390,7 @@ export default function ProfileModal({
                 Birthday:
               </strong>
               {" "}
-              {user?.birthday || "—"}
+              {profileUser?.birthday || "—"}
             </div>
 
             <div>
@@ -291,7 +398,7 @@ export default function ProfileModal({
                 Status:
               </strong>
               {" "}
-              {user?.status || "—"}
+              {profileUser?.status || "—"}
             </div>
 
             <div>
@@ -299,7 +406,7 @@ export default function ProfileModal({
                 Language:
               </strong>
               {" "}
-              {user?.language || "—"}
+              {profileUser?.language || "—"}
             </div>
 
             <div>
@@ -307,7 +414,7 @@ export default function ProfileModal({
                 Work:
               </strong>
               {" "}
-              {user?.work || "—"}
+              {profileUser?.work || "—"}
             </div>
 
             <div>
@@ -315,7 +422,7 @@ export default function ProfileModal({
                 Education:
               </strong>
               {" "}
-              {user?.education || "—"}
+              {profileUser?.education || "—"}
             </div>
 
             <div>
@@ -323,7 +430,7 @@ export default function ProfileModal({
                 Hobbies:
               </strong>
               {" "}
-              {user?.hobbies || "—"}
+              {profileUser?.hobbies || "—"}
             </div>
 
           </div>
