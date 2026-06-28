@@ -27,8 +27,24 @@ export default function Sidebar(props) {
   const [openProfile, setOpenProfile] =
     useState(false);
 
-  const friends =
-    props.friends || [];
+  const [userData, setUserData] = useState({
+username: props.username,
+userId: props.userId,
+avatar: props.avatar,
+banner: props.banner,
+bio: props.bio,
+hometown: props.hometown,
+birthday: props.birthday,
+status: props.status,
+language: props.language,
+gender: props.gender,
+work: props.work,
+education: props.education,
+hobbies: props.hobbies,
+});
+
+const friends =
+props.friends || [];
 
   const [friendMenu, setFriendMenu] =
     useState(null);
@@ -217,10 +233,10 @@ export default function Sidebar(props) {
             "
           >
 
-            {props.avatar ? (
+            {userData.avatar ? (
 
               <img
-                src={props.avatar}
+                src={userData.avatar}
                 className="
                   w-14
                   h-14
@@ -246,7 +262,7 @@ export default function Sidebar(props) {
                 text-xl
               ">
 
-                {props.username
+                {userData.username
                   ?.charAt(0)
                   ?.toUpperCase()}
 
@@ -258,13 +274,13 @@ export default function Sidebar(props) {
 
               <div className="font-bold truncate">
 
-                {props.username}
+                {userData.username}
 
               </div>
 
               <div className="text-xs opacity-60 truncate">
 
-                {props.userId}
+                {userData.userId}
 
               </div>
 
@@ -629,90 +645,77 @@ export default function Sidebar(props) {
 
 {openProfile && (
 
-  <ProfileModal
-    key={JSON.stringify({
-      avatar: props.avatar,
-      banner: props.banner,
-      bio: props.bio,
-      hometown: props.hometown,
-      birthday: props.birthday,
-      status: props.status,
-      language: props.language,
-      gender: props.gender,
-      work: props.work,
-      education: props.education,
-      hobbies: props.hobbies,
-    })}
-    
-    updateProfile={(newData) => {
+<ProfileModal
 
-  props.setUserData?.((prev) => ({
+updateProfile={(newData) => {
+
+  setUserData((prev) => ({
     ...prev,
     ...newData,
   }));
 
 }}
 
-    close={() =>
-      setOpenProfile(false)
-    }
+close={() =>
+  setOpenProfile(false)
+}
 
-    currentUser={{
-      username:
-        props.username,
+currentUser={{
+  username:
+    userData.username,
 
-      userId:
-        props.userId,
+  userId:
+    userData.userId,
 
-      avatar:
-        props.avatar,
-    }}
+  avatar:
+    userData.avatar,
+}}
 
-    profile={{
-      username:
-        props.username,
+profile={{
+  username:
+    userData.username,
 
-      userId:
-        props.userId,
+  userId:
+    userData.userId,
 
-      avatar:
-        props.avatar,
+  avatar:
+    userData.avatar,
 
-      banner:
-        props.banner || "",
+  banner:
+    userData.banner || "",
 
-      bio:
-        props.bio || "",
+  bio:
+    userData.bio || "",
 
-      hometown:
-        props.hometown || "",
+  hometown:
+    userData.hometown || "",
 
-      birthday:
-        props.birthday || "",
+  birthday:
+    userData.birthday || "",
 
-      status:
-        props.status || "",
+  status:
+    userData.status || "",
 
-      language:
-        props.language || "",
+  language:
+    userData.language || "",
 
-      work:
-        props.work || "",
+  work:
+    userData.work || "",
 
-      education:
-        props.education || "",
+  education:
+    userData.education || "",
 
-      hobbies:
-        props.hobbies || "",
+  hobbies:
+    userData.hobbies || "",
 
-      gender:
-        props.gender || "",
+  gender:
+    userData.gender || "",
 
-      friends:
-        friends,
-    }}
+  friends:
+    friends,
+}}
 
-  />
+/>
 
 )}
 
