@@ -1,21 +1,11 @@
 import connectDB from "../../../lib/mongodb";
 import User from "../../../models/User";
-
+export const dynamic = "force-dynamic";
 export async function POST(req) {
   try {
     await connectDB();
 
-    let data;
-
-    // ✅ SAFE JSON PARSE (prevents crash)
-    try {
-      data = await req.json();
-    } catch (err) {
-      return Response.json({
-        success: false,
-        message: "Invalid JSON body",
-      });
-    }
+    const data = await req.json();
 
     if (!data?.userId) {
       return Response.json({
@@ -33,27 +23,26 @@ export async function POST(req) {
       });
     }
 
-    // =========================
-    // SAFE FIELD UPDATE (NO CRASH)
-    // =========================
+    // SAFE UPDATE
+    const fields = [
+      "avatar",
+      "banner",
+      "bio",
+      "hometown",
+      "birthday",
+      "status",
+      "language",
+      "gender",
+    ];
 
-    const safeUpdate = (field) => {
-      if (data[field] !== undefined && data[field] !== null) {
-        user[field] = data[field];
-      }
-    };
+    fields.forEach((f) => {
+      if (data[f] !== undefined) user[f] = data[f];
+    });
 
-    safeUpdate("avatar");
-    safeUpdate("banner");
-    safeUpdate("bio");
-    safeUpdate("hometown");
-    safeUpdate("birthday");
-    safeUpdate("status");
-    safeUpdate("language");
-    safeUpdate("gender");
-    safeUpdate("work");
-    safeUpdate("education");
-    safeUpdate("hobbies");
+    // ⚠️ FIX ARRAY FIELDS
+    if (Array.isArray(data.work)) user.work = data.work;
+    if (Array.isArray(data.education)) user.education = data.education;
+    if (Array.isArray(data.hobbies)) user.hobbies = data.hobbies;
 
     await user.save();
 
@@ -63,7 +52,7 @@ export async function POST(req) {
     });
 
   } catch (err) {
-    console.log("UPDATE PROFILE ERROR:", err);
+    console.log("UPDATE ERROR:", err);
 
     return Response.json({
       success: false,
