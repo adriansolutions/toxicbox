@@ -13,6 +13,70 @@ const FriendSchema =
     _id: false,
   });
 
+const WorkSchema =
+  new mongoose.Schema({
+
+    workplace: {
+      type: String,
+      default: "",
+    },
+
+    jobTitle: {
+      type: String,
+      default: "",
+    },
+
+    currentlyWorking: {
+      type: Boolean,
+      default: false,
+    },
+
+    startMonth: {
+      type: String,
+      default: "",
+    },
+
+    startYear: {
+      type: String,
+      default: "",
+    },
+
+    endMonth: {
+      type: String,
+      default: "",
+    },
+
+    endYear: {
+      type: String,
+      default: "",
+    },
+
+    description: {
+      type: String,
+      default: "",
+    },
+
+  }, {
+    _id: false,
+  });
+
+const EducationSchema =
+  new mongoose.Schema({
+
+    school: {
+      type: String,
+      default: "",
+    },
+
+    type: {
+      type: String,
+      default: "",
+    },
+
+  }, {
+    _id: false,
+  });
+
 const UserSchema =
   new mongoose.Schema({
 
@@ -25,9 +89,11 @@ const UserSchema =
 
     password: String,
 
-    avatar: String,
+    avatar: {
+      type: String,
+      default: "",
+    },
 
-    // NEW PROFILE SYSTEM
     banner: {
       type: String,
       default: "",
@@ -58,17 +124,7 @@ const UserSchema =
       default: "",
     },
 
-    work: {
-      type: String,
-      default: "",
-    },
-
-    education: {
-      type: String,
-      default: "",
-    },
-
-    hobbies: {
+    gender: {
       type: String,
       default: "",
     },
@@ -78,12 +134,50 @@ const UserSchema =
       default: false,
     },
 
-    // IMPORTANT FIX
+    // WORK LIST
+    work: {
+      type: [WorkSchema],
+      default: [],
+    },
+
+    // EDUCATION LIST
+    education: {
+      type: [EducationSchema],
+      default: [],
+    },
+
+    // HOBBIES LIST
+    hobbies: {
+      type: [String],
+      default: [],
+    },
+
+    // PINNED DETAILS
+    pinnedDetails: {
+      work: {
+        type: [Number],
+        default: [],
+      },
+
+      education: {
+        type: [Number],
+        default: [],
+      },
+
+      hobbies: {
+        type: [Number],
+        default: [],
+      },
+    },
+
+    // FRIENDS
     friends: {
       type: [FriendSchema],
       default: [],
     },
 
+  }, {
+    timestamps: true,
   });
 
 export default
