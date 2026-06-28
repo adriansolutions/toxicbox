@@ -717,44 +717,80 @@ className="sidebar-btn"
 
 <ProfileModal
 
-updateProfile={(newData) => {
+updateProfile={async (newData) => {
 
-setUserData((prev) => ({
-...prev,
-...newData,
-}));
+  // UPDATE SIDEBAR
+  setUserData((prev) => ({
+    ...prev,
+    ...newData,
+  }));
 
-if (props.setCurrentUser) {
+  // UPDATE MAIN USER
+  if (props.setCurrentUser) {
 
-props.setCurrentUser((prev) => ({
-...prev,
-...newData,
-}));
+    props.setCurrentUser((prev) => ({
+      ...prev,
+      ...newData,
+    }));
 
-}
+  }
 
-try {
+  // UPDATE LOCAL STORAGE
+  try {
 
-const oldUser =
-JSON.parse(
-localStorage.getItem(
-"bluechat-user"
-) || "{}"
-);
+    const oldUser =
+      JSON.parse(
+        localStorage.getItem(
+          "bluechat-user"
+        ) || "{}"
+      );
 
-localStorage.setItem(
-"bluechat-user",
-JSON.stringify({
-...oldUser,
-...newData,
-})
-);
+    const updatedUser = {
+      ...oldUser,
+      ...newData,
+    };
 
-} catch (err) {
+    localStorage.setItem(
+      "bluechat-user",
+      JSON.stringify(updatedUser)
+    );
 
-console.log(err);
+  } catch (err) {
 
-}
+    console.log(err);
+
+  }
+
+  // SAVE TO DATABASE
+  try {
+
+    await fetch(
+      "/api/update-profile",
+      {
+        method: "POST",
+
+        headers: {
+          "Content-Type":
+            "application/json",
+        },
+
+        body: JSON.stringify({
+          userId:
+            props.userId,
+
+          ...newData,
+        }),
+      }
+    );
+
+  } catch (err) {
+
+    console.log(
+      "PROFILE SAVE ERROR:",
+      err
+    );
+
+  }
 
 }}
 
