@@ -9,26 +9,43 @@ export default function ProfileModal({
 }) {
 
   const safeProfile = {
-    username: profile?.username || currentUser?.username || "Unknown User",
-    userId: profile?.userId || currentUser?.userId || "Unknown ID",
-    avatar: profile?.avatar || "",
+    username:
+      profile?.username ||
+      currentUser?.username ||
+      "Unknown User",
+
+    userId:
+      profile?.userId ||
+      currentUser?.userId ||
+      "Unknown ID",
+
+    avatar:
+      profile?.avatar ||
+      currentUser?.avatar ||
+      "",
+
     banner: profile?.banner || "",
     bio: profile?.bio || "",
     hometown: profile?.hometown || "",
     birthday: profile?.birthday || "",
     status: profile?.status || "",
     language: profile?.language || "",
-    work: profile?.work || "",
-    education: profile?.education || "",
-    hobbies: profile?.hobbies || "",
+    work: profile?.work || [],
+    education: profile?.education || [],
+    hobbies: profile?.hobbies || [],
     gender: profile?.gender || "",
     friends: profile?.friends || [],
   };
 
-  const isOwner = currentUser?.userId === safeProfile?.userId;
+  const isOwner =
+    currentUser?.userId ===
+    safeProfile?.userId;
 
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [editingField, setEditingField] = useState(null);
+  const [menuOpen, setMenuOpen] =
+    useState(false);
+
+  const [editingField, setEditingField] =
+    useState(null);
 
   const [form, setForm] = useState({
     avatar: safeProfile.avatar,
@@ -44,163 +61,303 @@ export default function ProfileModal({
     gender: safeProfile.gender,
   });
 
-  // =========================
-  // IMAGE CONVERTER (NO CLOUDINARY)
-  // =========================
-  const toBase64 = (file) =>
-    new Promise((resolve, reject) => {
-      const reader = new FileReader();
+  /* =========================
+     IMAGE UPLOAD
+  ========================= */
+
+  const handleImageUpload = (
+    file,
+    field
+  ) => {
+
+    const reader =
+      new FileReader();
+
+    reader.onloadend = () => {
+
+      setForm((prev) => ({
+        ...prev,
+        [field]:
+          reader.result,
+      }));
+
+    };
+
+    if (file) {
       reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = reject;
-    });
+    }
 
-  const handleImage = async (e, field) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const base64 = await toBase64(file);
-
-    setForm((prev) => ({
-      ...prev,
-      [field]: base64,
-    }));
   };
 
-  // =========================
-  // SAVE
-  // =========================
-  const saveProfile = async () => {
-    try {
-      const res = await fetch("/api/update-profile", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          userId: currentUser.userId,
-          ...form,
-        }),
-      });
+  /* =========================
+     SAVE PROFILE
+  ========================= */
 
-      const data = await res.json();
+  const saveProfile = async (
+    e
+  ) => {
+
+    if (e)
+      e.preventDefault();
+
+    try {
+
+      const payload = {
+
+        userId:
+          currentUser?.userId ||
+          "",
+
+        avatar:
+          form.avatar || "",
+
+        banner:
+          form.banner || "",
+
+        bio:
+          form.bio || "",
+
+        hometown:
+          form.hometown || "",
+
+        birthday:
+          form.birthday || "",
+
+        status:
+          form.status || "",
+
+        language:
+          form.language || "",
+
+        gender:
+          form.gender || "",
+
+        work:
+          Array.isArray(
+            form.work
+          )
+            ? form.work
+            : [],
+
+        education:
+          Array.isArray(
+            form.education
+          )
+            ? form.education
+            : [],
+
+        hobbies:
+          Array.isArray(
+            form.hobbies
+          )
+            ? form.hobbies
+            : [],
+      };
+
+      console.log(
+        "SENDING:",
+        payload
+      );
+
+      const res =
+        await fetch(
+          "/api/update-profile",
+          {
+            method: "POST",
+
+            headers: {
+              "Content-Type":
+                "application/json",
+            },
+
+            body:
+              JSON.stringify(
+                payload
+              ),
+          }
+        );
+
+      const data =
+        await res.json();
+
+      console.log(
+        "SERVER RESPONSE:",
+        data
+      );
 
       if (!data.success) {
-        alert(data.message || "Failed to update");
+
+        alert(
+          data.message ||
+          "Failed to update"
+        );
+
         return;
+
       }
 
-      window.location.reload();
+      alert(
+        "Profile updated!"
+      );
+
+      setEditingField(
+        null
+      );
+
+      setMenuOpen(false);
 
     } catch (err) {
-      console.log(err);
+
+      console.log(
+        "SAVE ERROR:",
+        err
+      );
+
+      alert(
+        "Server error"
+      );
+
     }
+
   };
 
   return (
-    <div className="fixed inset-0 z-[999999] bg-black/70 flex items-center justify-center p-3">
+    <div className="fixed inset-0 z-[999999] bg-black/70 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4">
 
-      <div className="relative w-full max-w-2xl bg-[#1e1f22] rounded-3xl overflow-hidden border border-white/10">
+      <div className="relative w-full max-w-[760px] max-h-[95vh] overflow-y-auto rounded-[28px] bg-[#1e1f22] border border-white/10 shadow-2xl">
 
         {/* CLOSE */}
         <button
           onClick={close}
-          className="absolute top-3 right-3 z-50 w-10 h-10 bg-black/70 text-white rounded-full"
+          className="fixed top-3 right-3 z-[999999] w-11 h-11 rounded-full bg-black/70 text-white flex items-center justify-center text-xl"
         >
           ✕
         </button>
 
-        {/* MENU */}
-        {isOwner && (
-          <div className="absolute top-4 left-4 z-50">
-
-            <button
-              onClick={() => setMenuOpen(!menuOpen)}
-              className="w-10 h-10 bg-black/60 text-white rounded-full"
-            >
-              ⋮
-            </button>
-
-            {menuOpen && (
-              <div className="mt-2 bg-[#2a2b30] rounded-xl overflow-hidden">
-
-                {/* AVATAR UPLOAD */}
-                <label className="block px-4 py-3 text-white cursor-pointer hover:bg-white/10">
-                  Upload Avatar
-                  <input
-                    type="file"
-                    hidden
-                    accept="image/*"
-                    onChange={(e) => handleImage(e, "avatar")}
-                  />
-                </label>
-
-                {/* BANNER UPLOAD */}
-                <label className="block px-4 py-3 text-white cursor-pointer hover:bg-white/10">
-                  Upload Banner
-                  <input
-                    type="file"
-                    hidden
-                    accept="image/*"
-                    onChange={(e) => handleImage(e, "banner")}
-                  />
-                </label>
-
-              </div>
-            )}
-
-          </div>
-        )}
-
         {/* BANNER */}
-        <div className="h-[220px]">
+        <div className="relative h-[190px] sm:h-[260px] overflow-hidden">
+
           {form.banner ? (
-            <img src={form.banner} className="w-full h-full object-cover" />
+            <img
+              src={form.banner}
+              className="w-full h-full object-cover"
+            />
           ) : (
             <div className="w-full h-full bg-gradient-to-r from-blue-600 to-purple-600" />
           )}
-        </div>
 
-        {/* AVATAR */}
-        <div className="-mt-16 px-6">
-          {form.avatar ? (
-            <img
-              src={form.avatar}
-              className="w-32 h-32 rounded-full border-4 border-[#1e1f22]"
+          {isOwner && (
+            <input
+              type="file"
+              accept="image/*"
+              className="absolute inset-0 opacity-0 cursor-pointer"
+              onChange={(e) =>
+                handleImageUpload(
+                  e.target.files[0],
+                  "banner"
+                )
+              }
             />
-          ) : (
-            <div className="w-32 h-32 rounded-full bg-blue-600 text-white flex items-center justify-center text-4xl font-bold">
-              {safeProfile.username.charAt(0)}
-            </div>
           )}
 
-          <div className="text-white text-2xl font-bold mt-2">
-            {safeProfile.username}
-          </div>
-
-          <div className="text-white/60">{safeProfile.userId}</div>
         </div>
 
-        {/* BIO */}
-        <div className="p-6">
-          <textarea
-            value={form.bio}
-            onChange={(e) =>
-              setForm({ ...form, bio: e.target.value })
-            }
-            className="w-full p-3 rounded-xl bg-[#2a2b30] text-white"
-            placeholder="Write bio..."
-          />
+        {/* CONTENT */}
+        <div className="relative px-4 sm:px-7 pb-8">
 
+          {/* AVATAR */}
+          <div className="relative -mt-16 flex gap-4 items-end">
+
+            <div className="relative">
+
+              {form.avatar ? (
+                <img
+                  src={form.avatar}
+                  className="w-[115px] h-[115px] sm:w-[140px] sm:h-[140px] rounded-full object-cover border-[5px] border-[#1e1f22]"
+                />
+              ) : (
+                <div className="w-[115px] h-[115px] sm:w-[140px] sm:h-[140px] rounded-full bg-blue-600 flex items-center justify-center text-white text-5xl font-black border-[5px] border-[#1e1f22]">
+
+                  {safeProfile.username
+                    ?.charAt(0)
+                    ?.toUpperCase()}
+
+                </div>
+              )}
+
+              {isOwner && (
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="absolute inset-0 opacity-0 cursor-pointer rounded-full"
+                  onChange={(e) =>
+                    handleImageUpload(
+                      e.target.files[0],
+                      "avatar"
+                    )
+                  }
+                />
+              )}
+
+            </div>
+
+            {/* NAME */}
+            <div className="pb-2">
+
+              <div className="text-3xl font-black text-white">
+
+                {safeProfile.username}
+
+              </div>
+
+              <div className="text-white/60 text-sm">
+
+                {safeProfile.userId}
+
+              </div>
+
+            </div>
+
+          </div>
+
+          {/* BIO */}
+          <div className="mt-6">
+
+            <div className="text-white font-bold mb-2">
+
+              Bio
+
+            </div>
+
+            <textarea
+              className="w-full min-h-[120px] bg-[#2a2b30] text-white p-3 rounded-xl"
+              value={form.bio}
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  bio:
+                    e.target.value,
+                })
+              }
+            />
+
+          </div>
+
+          {/* SAVE */}
           <button
-            onClick={saveProfile}
-            className="mt-4 w-full bg-blue-600 text-white py-3 rounded-xl font-bold"
+            type="button"
+            onClick={(e) =>
+              saveProfile(e)
+            }
+            className="mt-5 w-full h-12 bg-blue-600 text-white rounded-xl font-bold"
           >
-            Save Profile
+            Save
           </button>
+
         </div>
 
       </div>
+
     </div>
   );
 }
