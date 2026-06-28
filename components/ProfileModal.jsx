@@ -1,666 +1,331 @@
 "use client";
 
 import { useState } from "react";
+import { FiX, FiEdit2 } from "react-icons/fi";
 
 export default function ProfileModal({
-close,
-profileUser,
-currentUser,
-refreshUser,
+  close,
+  user,
+  currentUser,
 }) {
 
-const isOwner =
-currentUser?.userId ===
-profileUser?.userId;
+  const [editing, setEditing] =
+    useState(false);
 
-const [editing, setEditing] =
-useState(false);
+  const isOwner =
+    currentUser?.userId ===
+    user?.userId;
 
-const [saving, setSaving] =
-useState(false);
+  return (
 
-const [form, setForm] =
-useState({
-
-  username:
-    profileUser?.username || "",
-
-  bio:
-    profileUser?.bio || "",
-
-  avatar:
-    profileUser?.avatar || "",
-
-  banner:
-    profileUser?.banner || "",
-
-  hometown:
-    profileUser?.hometown || "",
-
-  birthday:
-    profileUser?.birthday || "",
-
-  status:
-    profileUser?.status || "",
-
-  language:
-    profileUser?.language || "",
-
-  work:
-    profileUser?.work || "",
-
-  education:
-    profileUser?.education || "",
-
-  hobbies:
-    profileUser?.hobbies || "",
-
-});
-
-// =========================
-// SAVE PROFILE
-// =========================
-const saveProfile = async () => {
-
-try {
-
-  setSaving(true);
-
-  const res =
-    await fetch(
-      "/api/update-profile",
-      {
-        method: "POST",
-
-        headers: {
-          "Content-Type":
-            "application/json",
-        },
-
-        body:
-          JSON.stringify({
-
-            userId:
-              currentUser.userId,
-
-            ...form,
-
-          }),
-      }
-    );
-
-  const data =
-    await res.json();
-
-  if (!data.success) {
-
-    alert(
-      data.message ||
-      "Failed to update"
-    );
-
-    return;
-
-  }
-
-  alert(
-    "Profile updated"
-  );
-
-  setEditing(false);
-
-  if (refreshUser) {
-    refreshUser();
-  }
-
-} catch (err) {
-
-  console.log(err);
-
-  alert(
-    "Server error"
-  );
-
-} finally {
-
-  setSaving(false);
-
-}
-
-};
-
-return (
-
-<div className="fixed inset-0 z-[99999] bg-black/70 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5">
-
-  <div
-    className="
-      relative
-      w-full
-      max-w-2xl
-      max-h-[95vh]
+    <div className="
+      fixed
+      inset-0
+      z-[999999]
+      bg-black/70
+      backdrop-blur-sm
+      flex
+      items-center
+      justify-center
+      p-3
       overflow-y-auto
-      rounded-[28px]
-      bg-[#1e1f22]
-      border
-      border-white/10
-      shadow-2xl
-    "
-  >
+    ">
 
-    {/* CLOSE BUTTON */}
-
-    <button
-      onClick={close}
-      className="
-        fixed
-        sm:absolute
-        top-4
-        right-4
-        z-[999999]
-        w-11
-        h-11
-        rounded-full
-        bg-black/70
-        text-white
+      <div className="
+        relative
+        w-full
+        max-w-[420px]
+        rounded-3xl
+        overflow-hidden
+        bg-[#1e1f22]
+        border
+        border-white/10
+        shadow-2xl
         flex
-        items-center
-        justify-center
-        text-xl
-        backdrop-blur-xl
-      "
-    >
+        flex-col
+      ">
 
-      ✕
-
-    </button>
-
-    {/* BANNER */}
-
-    <div className="relative h-[180px] sm:h-[240px] w-full overflow-hidden rounded-t-[28px]">
-
-      {form.banner ? (
-
-        <img
-          src={form.banner}
-          alt="banner"
-          className="
-            absolute
-            inset-0
-            w-full
-            h-full
-            object-cover
-          "
-        />
-
-      ) : (
-
-        <div
-          className="
-            absolute
-            inset-0
-            bg-gradient-to-r
-            from-blue-600
-            to-cyan-500
-          "
-        />
-
-      )}
-
-      {/* DARK OVERLAY */}
-
-      <div className="absolute inset-0 bg-black/30" />
-
-    </div>
-
-    {/* PROFILE SECTION */}
-
-    <div className="relative px-4 sm:px-7 pb-7">
-
-      {/* AVATAR */}
-
-      <div
-        className="
-          -mt-[60px]
-          sm:-mt-[75px]
-          relative
-          z-20
-          flex
-          flex-col
-          items-start
-        "
-      >
-
-        {form.avatar ? (
-
-          <img
-            src={form.avatar}
-            alt="avatar"
-            className="
-              w-[110px]
-              h-[110px]
-              sm:w-[140px]
-              sm:h-[140px]
-              rounded-full
-              object-cover
-              border-[5px]
-              border-[#1e1f22]
-              bg-[#1e1f22]
-              shadow-2xl
-            "
-          />
-
-        ) : (
-
-          <div
-            className="
-              w-[110px]
-              h-[110px]
-              sm:w-[140px]
-              sm:h-[140px]
-              rounded-full
-              bg-blue-600
-              border-[5px]
-              border-[#1e1f22]
-              flex
-              items-center
-              justify-center
-              text-white
-              text-5xl
-              font-black
-            "
-          >
-
-            {form.username
-              ?.charAt(0)
-              ?.toUpperCase()}
-
-          </div>
-
-        )}
-
-      </div>
-
-      {/* USER INFO */}
-
-      <div className="mt-4">
-
-        <div
-          className="
-            text-[26px]
-            sm:text-[34px]
-            font-black
-            break-words
-            leading-tight
-          "
-        >
-
-          {form.username}
-
-        </div>
-
-        <div
-          className="
-            opacity-60
-            text-sm
-            sm:text-base
-            break-all
-            mt-1
-          "
-        >
-
-          ID:
-          {" "}
-          {profileUser?.userId}
-
-        </div>
-
-      </div>
-
-      {/* FRIENDS */}
-
-      <div className="mt-5 text-sm opacity-80">
-
-        Friends:
-        {" "}
-        <strong>
-
-          {profileUser?.friends?.length || 0}
-
-        </strong>
-
-      </div>
-
-      {/* BIO */}
-
-      <div
-        className="
-          mt-5
-          p-4
-          rounded-2xl
-          bg-white/5
-          text-sm
-          leading-relaxed
-          break-words
-        "
-      >
-
-        {form.bio ||
-          "No bio yet."}
-
-      </div>
-
-      {/* EDIT BUTTON BELOW BIO */}
-
-      {isOwner && (
+        {/* CLOSE BUTTON */}
 
         <button
-          onClick={() =>
-            setEditing(
-              !editing
-            )
-          }
+          onClick={close}
           className="
-            mt-4
-            w-full
-            h-12
-            rounded-2xl
-            bg-blue-600
+            absolute
+            top-3
+            right-3
+            z-50
+            w-10
+            h-10
+            rounded-full
+            bg-black/60
             text-white
-            font-bold
-            text-sm
-            sm:text-base
+            flex
+            items-center
+            justify-center
+            backdrop-blur-xl
           "
         >
 
-          {editing
-            ? "Close Edit"
-            : "Edit Profile"}
+          <FiX size={22} />
 
         </button>
 
-      )}
+        {/* BANNER */}
 
-      {/* EDIT FORM */}
+        <div className="
+          relative
+          w-full
+          h-[160px]
+          bg-[#2d3138]
+        ">
 
-      {editing && (
+          {user?.banner && (
 
-        <div className="mt-5 space-y-3">
+            <img
+              src={user.banner}
+              alt="banner"
+              className="
+                w-full
+                h-full
+                object-cover
+              "
+            />
 
-          <input
-            value={form.avatar}
-            onChange={(e) =>
-              setForm({
-                ...form,
-                avatar:
-                  e.target.value,
-              })
-            }
-            placeholder="Avatar URL"
-            className="
-              w-full
-              h-12
-              px-4
-              rounded-2xl
-              bg-white/10
-              outline-none
-            "
-          />
+          )}
 
-          <input
-            value={form.banner}
-            onChange={(e) =>
-              setForm({
-                ...form,
-                banner:
-                  e.target.value,
-              })
-            }
-            placeholder="Banner URL"
-            className="
-              w-full
-              h-12
-              px-4
-              rounded-2xl
-              bg-white/10
-              outline-none
-            "
-          />
+        </div>
 
-          <textarea
-            value={form.bio}
-            onChange={(e) =>
-              setForm({
-                ...form,
-                bio:
-                  e.target.value,
-              })
-            }
-            placeholder="Bio"
-            className="
-              w-full
-              h-28
-              p-4
-              rounded-2xl
-              bg-white/10
-              outline-none
-              resize-none
-            "
-          />
+        {/* CONTENT */}
 
-          <input
-            value={form.hometown}
-            onChange={(e) =>
-              setForm({
-                ...form,
-                hometown:
-                  e.target.value,
-              })
-            }
-            placeholder="Hometown"
-            className="
-              w-full
-              h-12
-              px-4
-              rounded-2xl
-              bg-white/10
-              outline-none
-            "
-          />
+        <div className="
+          relative
+          px-5
+          pb-6
+          pt-16
+          flex
+          flex-col
+          items-center
+        ">
 
-          <input
-            value={form.birthday}
-            onChange={(e) =>
-              setForm({
-                ...form,
-                birthday:
-                  e.target.value,
-              })
-            }
-            placeholder="Birthday"
-            className="
-              w-full
-              h-12
-              px-4
-              rounded-2xl
-              bg-white/10
-              outline-none
-            "
-          />
+          {/* AVATAR */}
 
-          <input
-            value={form.status}
-            onChange={(e) =>
-              setForm({
-                ...form,
-                status:
-                  e.target.value,
-              })
-            }
-            placeholder="Relationship Status"
-            className="
-              w-full
-              h-12
-              px-4
-              rounded-2xl
-              bg-white/10
-              outline-none
-            "
-          />
+          <div className="
+            absolute
+            -top-[55px]
+            left-1/2
+            -translate-x-1/2
+            w-[110px]
+            h-[110px]
+            rounded-full
+            border-[5px]
+            border-[#1e1f22]
+            overflow-hidden
+            bg-[#5865f2]
+            shadow-xl
+          ">
 
-          <input
-            value={form.language}
-            onChange={(e) =>
-              setForm({
-                ...form,
-                language:
-                  e.target.value,
-              })
-            }
-            placeholder="Language"
-            className="
-              w-full
-              h-12
-              px-4
-              rounded-2xl
-              bg-white/10
-              outline-none
-            "
-          />
+            {user?.avatar ? (
 
-          <input
-            value={form.work}
-            onChange={(e) =>
-              setForm({
-                ...form,
-                work:
-                  e.target.value,
-              })
-            }
-            placeholder="Work"
-            className="
-              w-full
-              h-12
-              px-4
-              rounded-2xl
-              bg-white/10
-              outline-none
-            "
-          />
+              <img
+                src={user.avatar}
+                alt="avatar"
+                className="
+                  w-full
+                  h-full
+                  object-cover
+                "
+              />
 
-          <input
-            value={form.education}
-            onChange={(e) =>
-              setForm({
-                ...form,
-                education:
-                  e.target.value,
-              })
-            }
-            placeholder="Education"
-            className="
-              w-full
-              h-12
-              px-4
-              rounded-2xl
-              bg-white/10
-              outline-none
-            "
-          />
+            ) : (
 
-          <input
-            value={form.hobbies}
-            onChange={(e) =>
-              setForm({
-                ...form,
-                hobbies:
-                  e.target.value,
-              })
-            }
-            placeholder="Hobbies"
-            className="
-              w-full
-              h-12
-              px-4
-              rounded-2xl
-              bg-white/10
-              outline-none
-            "
-          />
+              <div className="
+                w-full
+                h-full
+                flex
+                items-center
+                justify-center
+                text-white
+                text-4xl
+                font-black
+              ">
 
-          <button
-            onClick={saveProfile}
-            disabled={saving}
-            className="
-              w-full
-              h-12
-              rounded-2xl
-              bg-green-600
+                {user?.username
+                  ?.charAt(0)
+                  ?.toUpperCase()}
+
+              </div>
+
+            )}
+
+          </div>
+
+          {/* USERNAME */}
+
+          <div className="
+            w-full
+            text-center
+            mt-1
+          ">
+
+            <div className="
+              text-[24px]
+              font-black
               text-white
-              font-bold
-            "
-          >
+              break-words
+              leading-tight
+            ">
 
-            {saving
-              ? "Saving..."
-              : "Save Profile"}
+              {user?.username}
 
-          </button>
+            </div>
 
-        </div>
+            <div className="
+              text-sm
+              opacity-60
+              mt-1
+              break-all
+            ">
 
-      )}
+              {user?.userId}
 
-      {/* DETAILS */}
+            </div>
 
-      <div className="mt-7 space-y-3">
-
-        <div className="font-black text-lg">
-          Personal Details
-        </div>
-
-        <div className="grid gap-3">
-
-          <div className="rounded-2xl bg-white/5 p-4">
-            🏠 Hometown:
-            {" "}
-            {form.hometown || "N/A"}
           </div>
 
-          <div className="rounded-2xl bg-white/5 p-4">
-            🎂 Birthday:
+          {/* FRIENDS */}
+
+          <div className="
+            mt-4
+            text-sm
+            opacity-80
+          ">
+
+            {user?.friends?.length || 0}
             {" "}
-            {form.birthday || "N/A"}
+            Friends
+
           </div>
 
-          <div className="rounded-2xl bg-white/5 p-4">
-            ❤️ Status:
-            {" "}
-            {form.status || "N/A"}
+          {/* BIO */}
+
+          <div className="
+            mt-4
+            w-full
+            rounded-2xl
+            bg-white/5
+            p-4
+            text-center
+            text-sm
+            leading-relaxed
+            break-words
+          ">
+
+            {user?.bio ||
+              "No bio yet."}
+
           </div>
 
-          <div className="rounded-2xl bg-white/5 p-4">
-            🌐 Language:
-            {" "}
-            {form.language || "N/A"}
-          </div>
+          {/* EDIT PROFILE BUTTON */}
 
-          <div className="rounded-2xl bg-white/5 p-4">
-            💼 Work:
-            {" "}
-            {form.work || "N/A"}
-          </div>
+          {isOwner && (
 
-          <div className="rounded-2xl bg-white/5 p-4">
-            🎓 Education:
-            {" "}
-            {form.education || "N/A"}
-          </div>
+            <button
+              onClick={() =>
+                setEditing(true)
+              }
+              className="
+                mt-4
+                w-full
+                h-12
+                rounded-2xl
+                bg-blue-600
+                hover:bg-blue-700
+                transition
+                text-white
+                font-bold
+                flex
+                items-center
+                justify-center
+                gap-2
+              "
+            >
 
-          <div className="rounded-2xl bg-white/5 p-4">
-            🎮 Hobbies:
-            {" "}
-            {form.hobbies || "N/A"}
+              <FiEdit2 />
+
+              Edit Profile
+
+            </button>
+
+          )}
+
+          {/* DETAILS */}
+
+          <div className="
+            mt-5
+            w-full
+            rounded-2xl
+            bg-white/5
+            p-4
+            space-y-3
+            text-sm
+          ">
+
+            <div>
+              <strong>
+                Hometown:
+              </strong>
+              {" "}
+              {user?.hometown || "—"}
+            </div>
+
+            <div>
+              <strong>
+                Birthday:
+              </strong>
+              {" "}
+              {user?.birthday || "—"}
+            </div>
+
+            <div>
+              <strong>
+                Status:
+              </strong>
+              {" "}
+              {user?.status || "—"}
+            </div>
+
+            <div>
+              <strong>
+                Language:
+              </strong>
+              {" "}
+              {user?.language || "—"}
+            </div>
+
+            <div>
+              <strong>
+                Work:
+              </strong>
+              {" "}
+              {user?.work || "—"}
+            </div>
+
+            <div>
+              <strong>
+                Education:
+              </strong>
+              {" "}
+              {user?.education || "—"}
+            </div>
+
+            <div>
+              <strong>
+                Hobbies:
+              </strong>
+              {" "}
+              {user?.hobbies || "—"}
+            </div>
+
           </div>
 
         </div>
@@ -669,10 +334,6 @@ return (
 
     </div>
 
-  </div>
-
-</div>
-
-);
+  );
 
 }
