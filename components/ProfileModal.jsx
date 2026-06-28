@@ -1,379 +1,910 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 export default function ProfileModal({
-  close,
-  userId,
-  currentUserId,
+close,
+profile,
+currentUser,
 }) {
-  const [profile, setProfile] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [editingField, setEditingField] = useState(null);
-  const [menuOpen, setMenuOpen] = useState(false);
 
-  const isOwnProfile = userId === currentUserId;
+const safeProfile = {
+username:
+profile?.username ||
+currentUser?.username ||
+"Unknown User",
 
-  const [form, setForm] = useState({
-    avatar: "",
-    banner: "",
-    bio: "",
-    hometown: "",
-    birthday: "",
-    status: "",
-    language: "",
-    work: "",
-    education: "",
-    hobbies: "",
-    gender: "",
-  });
+userId:
+profile?.userId ||
+currentUser?.userId ||
+"Unknown ID",
 
-  // =========================
-  // LOAD PROFILE
-  // =========================
-  useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const res = await fetch(`/api/get-profile?userId=${userId}`, {
-          cache: "no-store",
-        });
+avatar:
+profile?.avatar ||
+currentUser?.avatar ||
+"",
 
-        const data = await res.json();
+banner:
+profile?.banner || "",
 
-        if (data.success) {
-          setProfile(data.profile);
+bio:
+profile?.bio || "",
 
-          setForm({
-            avatar: data.profile.avatar || "",
-            banner: data.profile.banner || "",
-            bio: data.profile.bio || "",
-            hometown: data.profile.hometown || "",
-            birthday: data.profile.birthday || "",
-            status: data.profile.status || "",
-            language: data.profile.language || "",
-            work: data.profile.work || "",
-            education: data.profile.education || "",
-            hobbies: data.profile.hobbies || "",
-            gender: data.profile.gender || "",
-          });
+hometown:
+profile?.hometown || "",
+
+birthday:
+profile?.birthday || "",
+
+status:
+profile?.status || "",
+
+language:
+profile?.language || "",
+
+work:
+profile?.work || "",
+
+education:
+profile?.education || "",
+
+hobbies:
+profile?.hobbies || "",
+
+gender:
+profile?.gender || "",
+
+friends:
+profile?.friends || [],
+
+};
+
+const isOwner =
+currentUser?.userId ===
+safeProfile?.userId;
+
+const [menuOpen, setMenuOpen] =
+useState(false);
+
+const [editingField, setEditingField] =
+useState(null);
+
+const [form, setForm] =
+useState({
+
+avatar:
+safeProfile.avatar,
+
+banner:
+safeProfile.banner,
+
+bio:
+safeProfile.bio,
+
+hometown:
+safeProfile.hometown,
+
+birthday:
+safeProfile.birthday,
+
+status:
+safeProfile.status,
+
+language:
+safeProfile.language,
+
+work:
+safeProfile.work,
+
+education:
+safeProfile.education,
+
+hobbies:
+safeProfile.hobbies,
+
+gender:
+safeProfile.gender,
+});
+
+// =========================
+// SAVE
+// =========================
+
+const saveProfile =
+async () => {
+
+try {
+
+const res =    
+  await fetch(    
+    "/api/update-profile",    
+    {    
+      method: "POST",    
+
+      headers: {    
+        "Content-Type":    
+          "application/json",    
+      },    
+
+      body:    
+        JSON.stringify({    
+
+          userId:    
+            currentUser.userId,    
+
+          ...form,    
+
+        }),    
+    }    
+  );    
+
+const data =    
+  await res.json();    
+
+if (!data.success) {    
+
+  alert(    
+    data.message ||    
+    "Failed to update"    
+  );    
+
+  return;    
+
+}    
+
+window.location.reload();
+
+} catch (err) {
+
+console.log(err);
+
+}
+
+};
+
+return (
+
+<div className="fixed inset-0 z-[999999] bg-black/70 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4">    {/* MODAL */}
+
+  <div    
+    className="    
+      relative    
+      w-full    
+      max-w-[760px]    
+      max-h-[95vh]    
+      overflow-y-auto    
+      rounded-[28px]    
+      bg-[#1e1f22]    
+      border    
+      border-white/10    
+      shadow-2xl    
+    "    
+  >    {/* CLOSE */}    
+
+<button    
+  onClick={close}    
+  className="    
+    fixed    
+    top-3    
+    right-3    
+    z-[999999]    
+    w-11    
+    h-11    
+    rounded-full    
+    bg-black/70    
+    text-white    
+    text-xl    
+    flex    
+    items-center    
+    justify-center    
+  "    
+>    
+
+  ✕    
+
+</button>    
+
+{/* TOP RIGHT MENU */}    
+
+{isOwner && (    
+
+  <div className="absolute top-4 left-4 z-50">    
+
+    <button    
+      onClick={() =>    
+        setMenuOpen(    
+          !menuOpen    
+        )    
+      }    
+      className="    
+        w-11    
+        h-11    
+        rounded-full    
+        bg-black/60    
+        text-white    
+        text-2xl    
+      "    
+    >    
+
+      ⋮    
+
+    </button>    
+
+    {menuOpen && (    
+
+      <div    
+        className="    
+          mt-2    
+          w-[180px]    
+          rounded-2xl    
+          bg-[#2a2b30]    
+          border    
+          border-white/10    
+          overflow-hidden    
+        "    
+      >    
+
+        <button    
+          onClick={() => {    
+
+            setEditingField(    
+              "avatar"    
+            );    
+
+            setMenuOpen(    
+              false    
+            );    
+
+          }}    
+
+          className="    
+            w-full    
+            text-left    
+            px-4    
+            py-3    
+            hover:bg-white/10    
+            text-white    
+          "    
+        >    
+
+          Change Avatar    
+
+        </button>    
+
+        <button    
+          onClick={() => {    
+
+            setEditingField(    
+              "banner"    
+            );    
+
+            setMenuOpen(    
+              false    
+            );    
+
+          }}    
+
+          className="    
+            w-full    
+            text-left    
+            px-4    
+            py-3    
+            hover:bg-white/10    
+            text-white    
+          "    
+        >    
+
+          Change Banner    
+
+        </button>    
+
+      </div>    
+
+    )}    
+
+  </div>    
+
+)}    
+
+{/* BANNER */}    
+
+<div className="relative h-[190px] sm:h-[260px] overflow-hidden">    
+
+  {form.banner ? (    
+
+    <img    
+      src={form.banner}    
+      className="    
+        w-full    
+        h-full    
+        object-cover    
+      "    
+    />    
+
+  ) : (    
+
+    <div    
+      className="    
+        w-full    
+        h-full    
+        bg-gradient-to-r    
+        from-blue-600    
+        to-purple-600    
+      "    
+    />    
+
+  )}    
+
+  <div className="absolute inset-0 bg-black/30" />    
+
+</div>    
+
+{/* PROFILE SECTION */}    
+
+<div className="relative px-4 sm:px-7 pb-8">    
+
+  {/* AVATAR + NAME */}    
+
+  <div    
+    className="    
+      relative    
+      z-20    
+      flex    
+      flex-col    
+      sm:flex-row    
+      gap-4    
+      items-start    
+      sm:items-end    
+      -mt-16    
+    "    
+  >    
+
+    {/* AVATAR */}    
+
+    <div className="shrink-0">    
+
+      {form.avatar ? (    
+
+        <img    
+          src={form.avatar}    
+          className="    
+            w-[115px]    
+            h-[115px]    
+            sm:w-[140px]    
+            sm:h-[140px]    
+            rounded-full    
+            object-cover    
+            border-[5px]    
+            border-[#1e1f22]    
+            bg-[#1e1f22]    
+          "    
+        />    
+
+      ) : (    
+
+        <div    
+          className="    
+            w-[115px]    
+            h-[115px]    
+            sm:w-[140px]    
+            sm:h-[140px]    
+            rounded-full    
+            bg-blue-600    
+            text-white    
+            text-5xl    
+            font-black    
+            flex    
+            items-center    
+            justify-center    
+            border-[5px]    
+            border-[#1e1f22]    
+          "    
+        >    
+
+          {safeProfile.username    
+            ?.charAt(0)    
+            ?.toUpperCase()}    
+
+        </div>    
+
+      )}    
+
+    </div>    
+
+    {/* INFO */}    
+
+    <div className="min-w-0 flex-1 pb-2">    
+
+      <div    
+        className="    
+          text-[28px]    
+          sm:text-[36px]    
+          font-black    
+          text-white    
+          leading-tight    
+          break-words    
+        "    
+      >    
+
+        {safeProfile.username}    
+
+      </div>    
+
+      <div    
+        className="    
+          text-sm    
+          text-white/60    
+          break-all    
+        "    
+      >    
+
+        {safeProfile.userId}    
+
+      </div>    
+
+      <div    
+        className="    
+          mt-2    
+          text-blue-400    
+          font-semibold    
+          text-sm    
+        "    
+      >    
+
+        {    
+          safeProfile    
+            ?.friends    
+            ?.length || 0    
+        }    
+        {" "}    
+        Friends    
+
+      </div>    
+
+    </div>    
+
+  </div>    
+
+  {/* BIO */}    
+
+  <div className="mt-6">    
+
+    <div className="flex items-center justify-between mb-2">    
+
+      <div className="text-lg font-bold text-white">    
+
+        Bio    
+
+      </div>    
+
+      {isOwner && (    
+
+        <button    
+          onClick={() =>    
+            setEditingField(    
+              "bio"    
+            )    
+          }    
+          className="text-white/60 text-xl"    
+        >    
+
+          ✎    
+
+        </button>    
+
+      )}    
+
+    </div>    
+
+    <div    
+      className="    
+        bg-white/5    
+        rounded-2xl    
+        p-4    
+        text-white/80    
+        text-sm    
+        break-words    
+      "    
+    >    
+
+      {form.bio ||    
+        "No bio yet"}    
+
+    </div>    
+
+  </div>    
+
+  {/* DETAILS */}    
+
+  <div className="mt-6">    
+
+    <div className="text-lg font-bold text-white mb-3">    
+
+      Personal Information    
+
+    </div>    
+
+    <div    
+      className="    
+        grid    
+        grid-cols-1    
+        sm:grid-cols-2    
+        gap-3    
+      "    
+    >    
+
+      <Info    
+        label="Gender"    
+        value={form.gender}    
+        edit={() =>    
+          setEditingField(    
+            "gender"    
+          )    
+        }    
+        isOwner={isOwner}    
+      />    
+
+      <Info    
+        label="Hometown"    
+        value={form.hometown}    
+        edit={() =>    
+          setEditingField(    
+            "hometown"    
+          )    
+        }    
+        isOwner={isOwner}    
+      />    
+
+      <Info    
+        label="Birthday"    
+        value={form.birthday}    
+        edit={() =>    
+          setEditingField(    
+            "birthday"    
+          )    
+        }    
+        isOwner={isOwner}    
+      />    
+
+      <Info    
+        label="Status"    
+        value={form.status}    
+        edit={() =>    
+          setEditingField(    
+            "status"    
+          )    
+        }    
+        isOwner={isOwner}    
+      />    
+
+      <Info    
+        label="Language"    
+        value={form.language}    
+        edit={() =>    
+          setEditingField(    
+            "language"    
+          )    
+        }    
+        isOwner={isOwner}    
+      />    
+
+      <Info    
+        label="Work"    
+        value={form.work}    
+        edit={() =>    
+          setEditingField(    
+            "work"    
+          )    
+        }    
+        isOwner={isOwner}    
+      />    
+
+      <Info    
+        label="Education"    
+        value={form.education}    
+        edit={() =>    
+          setEditingField(    
+            "education"    
+          )    
+        }    
+        isOwner={isOwner}    
+      />    
+
+      <Info    
+        label="Hobbies"    
+        value={form.hobbies}    
+        edit={() =>    
+          setEditingField(    
+            "hobbies"    
+          )    
+        }    
+        isOwner={isOwner}    
+      />    
+
+    </div>    
+
+  </div>    
+
+</div>
+
+  </div>    {/* EDIT MODAL */}
+
+{editingField && (
+
+<div className="fixed inset-0 z-[9999999] bg-black/80 flex items-center justify-center p-4">    
+
+  <div    
+    className="    
+      w-full    
+      max-w-md    
+      rounded-3xl    
+      bg-[#1e1f22]    
+      border    
+      border-white/10    
+      p-6    
+    "    
+  >    
+
+    <div className="flex items-center justify-between mb-5">    
+
+      <div className="text-2xl font-black text-white capitalize">    
+
+        Edit {editingField}    
+
+      </div>    
+
+      <button    
+        onClick={() =>    
+          setEditingField(    
+            null    
+          )    
+        }    
+        className="text-white text-2xl"    
+      >    
+
+        ✕    
+
+      </button>    
+
+    </div>    
+
+    {/* INPUT */}    
+
+    {editingField ===    
+    "status" ? (    
+
+      <select    
+        value={    
+          form.status    
+        }    
+        onChange={(e) =>    
+          setForm({    
+            ...form,    
+            status:    
+              e.target.value,    
+          })    
+        }    
+        className="    
+          w-full    
+          h-12    
+          rounded-2xl    
+          bg-[#2a2b30]    
+          px-4    
+          text-white    
+        "    
+      >    
+
+        <option value="">    
+          Select Status    
+        </option>    
+
+        <option>    
+          Single    
+        </option>    
+
+        <option>    
+          In a relationship    
+        </option>    
+
+        <option>    
+          Engaged    
+        </option>    
+
+        <option>    
+          Married    
+        </option>    
+
+        <option>    
+          Divorced    
+        </option>    
+
+      </select>    
+
+    ) : editingField ===    
+      "gender" ? (    
+
+      <select    
+        value={    
+          form.gender    
+        }    
+        onChange={(e) =>    
+          setForm({    
+            ...form,    
+            gender:    
+              e.target.value,    
+          })    
+        }    
+        className="    
+          w-full    
+          h-12    
+          rounded-2xl    
+          bg-[#2a2b30]    
+          px-4    
+          text-white    
+        "    
+      >    
+
+        <option value="">    
+          Select Gender    
+        </option>    
+
+        <option>    
+          Male    
+        </option>    
+
+        <option>    
+          Female    
+        </option>    
+
+      </select>    
+
+    ) : editingField ===    
+      "bio" ? (    
+
+      <textarea    
+        value={    
+          form.bio    
+        }    
+        onChange={(e) =>    
+          setForm({    
+            ...form,    
+            bio:    
+              e.target.value,    
+          })    
+        }    
+        placeholder="Introduce yourself"    
+        className="    
+          w-full    
+          min-h-[140px]    
+          rounded-2xl    
+          bg-[#2a2b30]    
+          p-4    
+          text-white    
+          resize-none    
+        "    
+      />    
+
+    ) : (    
+
+      <input    
+        value={    
+          form[    
+            editingField    
+          ]    
+        }    
+        onChange={(e) =>    
+          setForm({    
+            ...form,    
+            [    
+              editingField    
+            ]:    
+              e.target    
+                .value,    
+          })    
+        }    
+        className="    
+          w-full    
+          h-12    
+          rounded-2xl    
+          bg-[#2a2b30]    
+          px-4    
+          text-white    
+        "    
+      />    
+
+    )}    
+
+    {/* SAVE */}    
+
+    <button    
+      onClick={() => {    
+
+        saveProfile();    
+
+        setEditingField(    
+          null    
+        );    
+
+      }}    
+      className="    
+        mt-5    
+        w-full    
+        h-12    
+        rounded-2xl    
+        bg-blue-600    
+        text-white    
+        font-bold    
+      "    
+    >    
+
+      Save    
+
+    </button>    
+
+  </div>    
+
+</div>
+
+)}
+
+</div>  );
+
+}
+
+// INFO CARD
+
+function Info({
+label,
+value,
+edit,
+isOwner,
+}) {
+
+return (
+
+<div    
+  className="    
+    bg-white/5    
+    rounded-2xl    
+    p-4    
+  "    
+>      <div className="flex items-center justify-between mb-1">    <div    
+  className="    
+    text-xs    
+    uppercase    
+    opacity-50    
+    text-white    
+  "    
+>    
+
+  {label}    
+
+</div>    
+
+{isOwner && (    
+
+  <button    
+    onClick={edit}    
+    className="    
+      text-white/60    
+      text-sm    
+    "    
+  >    
+
+    ✎    
+
+  </button>    
+
+)}
+
+  </div>      <div    
+    className="    
+      text-sm    
+      text-white    
+      break-words    
+    "    
+  >    {value || "Not set"}
+
+  </div>    </div>  );
+
         }
-      } catch (err) {
-        console.log(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchProfile();
-  }, [userId]);
-
-  // =========================
-  // BASE64 IMAGE CONVERT
-  // =========================
-  const convertToBase64 = (file) => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = (err) => reject(err);
-    });
-  };
-
-  // =========================
-  // IMAGE UPLOAD (NO CLOUDINARY)
-  // =========================
-  const uploadImage = async (file, type) => {
-    const base64 = await convertToBase64(file);
-
-    setForm((prev) => ({
-      ...prev,
-      [type]: base64,
-    }));
-
-    await saveField(type, base64);
-  };
-
-  // =========================
-  // SAVE FIELD (REALTIME FIX)
-  // =========================
-  const saveField = async (field, value) => {
-    try {
-      const res = await fetch("/api/update-profile", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          userId: currentUserId,
-          [field]: value,
-        }),
-      });
-
-      const data = await res.json();
-
-      if (!data.success) {
-        alert("Save failed");
-        return;
-      }
-
-      // REALTIME UPDATE (NO REFRESH)
-      setProfile((prev) => ({
-        ...prev,
-        [field]: value,
-      }));
-    } catch (err) {
-      console.log(err);
-    }
-  };
-
-  // =========================
-  // SAVE FULL FORM
-  // =========================
-  const saveProfile = async () => {
-    try {
-      const res = await fetch("/api/update-profile", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          userId: currentUserId,
-          ...form,
-        }),
-      });
-
-      const data = await res.json();
-
-      if (!data.success) {
-        alert("Failed to save");
-        return;
-      }
-
-      setProfile((prev) => ({
-        ...prev,
-        ...form,
-      }));
-
-      setEditingField(null);
-    } catch (err) {
-      console.log(err);
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="fixed inset-0 bg-black/60 flex items-center justify-center text-white">
-        Loading...
-      </div>
-    );
-  }
-
-  if (!profile) return null;
-
-  return (
-    <div className="fixed inset-0 z-[99999] bg-black/70 flex items-center justify-center p-3">
-
-      {/* MODAL */}
-      <div className="relative w-full max-w-2xl max-h-[95vh] overflow-y-auto bg-[#1e1f22] rounded-3xl border border-white/10">
-
-        {/* CLOSE */}
-        <button
-          onClick={close}
-          className="absolute top-3 right-3 w-10 h-10 bg-black/60 text-white rounded-full"
-        >
-          ✕
-        </button>
-
-        {/* MENU */}
-        {isOwnProfile && (
-          <div className="absolute top-4 left-4">
-            <button
-              onClick={() => setMenuOpen(!menuOpen)}
-              className="w-10 h-10 bg-black/60 text-white rounded-full"
-            >
-              ⋮
-            </button>
-
-            {menuOpen && (
-              <div className="bg-[#2a2b30] mt-2 rounded-xl overflow-hidden">
-                <button
-                  onClick={() => {
-                    setEditingField("avatar");
-                    setMenuOpen(false);
-                  }}
-                  className="block w-full px-4 py-2 text-white hover:bg-white/10"
-                >
-                  Change Avatar
-                </button>
-
-                <button
-                  onClick={() => {
-                    setEditingField("banner");
-                    setMenuOpen(false);
-                  }}
-                  className="block w-full px-4 py-2 text-white hover:bg-white/10"
-                >
-                  Change Banner
-                </button>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* BANNER */}
-        <div className="h-[200px] relative">
-
-          {form.banner ? (
-            <img src={form.banner} className="w-full h-full object-cover" />
-          ) : (
-            <div className="w-full h-full bg-gradient-to-r from-blue-600 to-purple-600" />
-          )}
-
-          {isOwnProfile && (
-            <label className="absolute bottom-2 right-2 bg-black/60 text-white px-3 py-1 text-sm rounded cursor-pointer">
-              Upload Banner
-              <input
-                type="file"
-                accept="image/*"
-                hidden
-                onChange={(e) =>
-                  uploadImage(e.target.files[0], "banner")
-                }
-              />
-            </label>
-          )}
-        </div>
-
-        {/* AVATAR */}
-        <div className="-mt-14 px-6 flex gap-4 items-end">
-
-          <div className="relative">
-
-            {form.avatar ? (
-              <img
-                src={form.avatar}
-                className="w-28 h-28 rounded-full border-4 border-[#1e1f22] object-cover"
-              />
-            ) : (
-              <div className="w-28 h-28 rounded-full bg-blue-600 flex items-center justify-center text-white text-3xl font-bold border-4 border-[#1e1f22]">
-                {profile.username?.charAt(0)}
-              </div>
-            )}
-
-            {isOwnProfile && (
-              <label className="absolute bottom-0 right-0 bg-black/70 text-white text-xs px-2 py-1 rounded-full cursor-pointer">
-                ✎
-                <input
-                  type="file"
-                  accept="image/*"
-                  hidden
-                  onChange={(e) =>
-                    uploadImage(e.target.files[0], "avatar")
-                  }
-                />
-              </label>
-            )}
-
-          </div>
-
-          <div className="text-white">
-            <h2 className="text-2xl font-bold">{profile.username}</h2>
-            <p className="text-white/60">{profile.userId}</p>
-          </div>
-
-        </div>
-
-        {/* BIO */}
-        <div className="px-6 mt-5">
-          <div className="flex justify-between">
-            <h3 className="text-white font-bold">Bio</h3>
-            <button onClick={() => setEditingField("bio")}>✎</button>
-          </div>
-          <p className="text-white/70 mt-2">{form.bio || "No bio yet"}</p>
-        </div>
-
-        {/* DETAILS */}
-        <div className="grid grid-cols-2 gap-3 p-6 text-white">
-
-          <Item label="Gender" value={form.gender} edit={() => setEditingField("gender")} />
-          <Item label="Hometown" value={form.hometown} edit={() => setEditingField("hometown")} />
-          <Item label="Birthday" value={form.birthday} edit={() => setEditingField("birthday")} />
-          <Item label="Status" value={form.status} edit={() => setEditingField("status")} />
-          <Item label="Language" value={form.language} edit={() => setEditingField("language")} />
-          <Item label="Work" value={form.work} edit={() => setEditingField("work")} />
-          <Item label="Education" value={form.education} edit={() => setEditingField("education")} />
-          <Item label="Hobbies" value={form.hobbies} edit={() => setEditingField("hobbies")} />
-
-        </div>
-
-        {/* EDIT MODAL */}
-        {editingField && (
-          <div className="fixed inset-0 bg-black/80 flex items-center justify-center">
-
-            <div className="bg-[#1e1f22] p-5 rounded-2xl w-80">
-
-              <h3 className="text-white font-bold mb-3 capitalize">
-                Edit {editingField}
-              </h3>
-
-              {editingField === "status" ? (
-                <select
-                  className="w-full h-10 bg-[#2a2b30] text-white"
-                  value={form.status}
-                  onChange={(e) =>
-                    setForm({ ...form, status: e.target.value })
-                  }
-                >
-                  <option>Single</option>
-                  <option>In a relationship</option>
-                  <option>Married</option>
-                </select>
-              ) : editingField === "gender" ? (
-                <select
-                  className="w-full h-10 bg-[#2a2b30] text-white"
-                  value={form.gender}
-                  onChange={(e) =>
-                    setForm({ ...form, gender: e.target.value })
-                  }
-                >
-                  <option>Male</option>
-                  <option>Female</option>
-                </select>
-              ) : (
-                <input
-                  className="w-full h-10 bg-[#2a2b30] text-white px-2"
-                  value={form[editingField]}
-                  onChange={(e) =>
-                    setForm({ ...form, [editingField]: e.target.value })
-                  }
-                />
-              )}
-
-              <button
-                onClick={saveProfile}
-                className="w-full mt-4 h-10 bg-blue-600 text-white rounded-xl"
-              >
-                Save
-              </button>
-
-            </div>
-
-          </div>
-        )}
-
-      </div>
-    </div>
-  );
-}
-
-function Item({ label, value, edit }) {
-  return (
-    <div className="bg-white/5 p-3 rounded-xl">
-      <div className="flex justify-between">
-        <span className="text-white/50 text-sm">{label}</span>
-        <button onClick={edit}>✎</button>
-      </div>
-      <p className="text-white">{value || "Not set"}</p>
-    </div>
-  );
-}
