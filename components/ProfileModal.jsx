@@ -730,29 +730,45 @@ setMenuOpen(false);
 
           {/* BIO */}
 
-          <div className="mt-6">
+<div className="mt-6">
 
-            <div className="flex items-center justify-between mb-2">
+  <div className="flex items-center justify-between mb-2">
 
-              <div className="text-lg font-bold text-white">
-                Bio
-              </div>
+    <div className="text-lg font-bold text-white">
+      Bio
+    </div>
 
-                <info
-                  label="bio"
-                  value={form.bio ||
-                "No bio yet"}
-                  edit={() =>
-                    setEditingField(
-                      "bio"
-                    )
-                  }
-                  isOwner={isOwner}
-                />
+    {isOwner && (
 
-            </div>
+      <button
+        onClick={() =>
+          setEditingField("bio")
+        }
+        className="text-white/60 text-xl"
+      >
+        ✎
+      </button>
 
-          </div>
+    )}
+
+  </div>
+
+  <div
+    className="
+      bg-white/5
+      rounded-2xl
+      p-4
+      text-white/80
+      text-sm
+      break-words
+    "
+  >
+
+    {form.bio || "No bio yet"}
+
+  </div>
+
+</div>
 
           {/* DETAILS */}
 
