@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-
+delete mongoose.models.User;
 /* =========================
    FRIENDS
 ========================= */
@@ -109,5 +109,4 @@ const UserSchema = new mongoose.Schema(
   }
 );
 
-export default mongoose.models.User ||
-  mongoose.model("User", UserSchema);
+export default mongoose.model("User", UserSchema);
