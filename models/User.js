@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+
 /* =========================
    FRIENDS
 ========================= */
@@ -64,11 +65,6 @@ const UserSchema = new mongoose.Schema(
       default: "",
     },
 
-    language: {
-      type: String,
-      default: "",
-    },
-
     gender: {
       type: String,
       default: "",
@@ -80,22 +76,27 @@ const UserSchema = new mongoose.Schema(
     },
 
     /* =========================
-       SIMPLE STRINGS
+       ARRAY FIELDS
     ========================= */
 
+    language: {
+      type: [String],
+      default: [],
+    },
+
     work: {
-      type: String,
-      default: "",
+      type: [String],
+      default: [],
     },
 
     education: {
-      type: String,
-      default: "",
+      type: [String],
+      default: [],
     },
 
     hobbies: {
-      type: String,
-      default: "",
+      type: [String],
+      default: [],
     },
 
     friends: {
@@ -108,4 +109,5 @@ const UserSchema = new mongoose.Schema(
   }
 );
 
-export default mongoose.model("User", UserSchema);
+export default mongoose.models.User ||
+  mongoose.model("User", UserSchema);
