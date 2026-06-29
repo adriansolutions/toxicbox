@@ -378,9 +378,28 @@ localStorage.setItem(
   // =========================
   if (!loaded) {
 
-    return null;
+  return (
 
-  }
+    <div className="realtime-loader">
+
+      <div className="loader-logo">
+        B
+      </div>
+
+      <div className="loader-dots">
+
+        <div className="loader-dot" />
+        <div className="loader-dot" />
+        <div className="loader-dot" />
+        <div className="loader-dot" />
+
+      </div>
+
+    </div>
+
+  );
+
+}
 
   // =========================
   // LOGIN / REGISTER
