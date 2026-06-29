@@ -580,51 +580,74 @@ className="sidebar-btn"
     />
 
     <div
-      className="
-        fixed
-        z-[9999]
-        w-[180px]
-        rounded-2xl
-        bg-[#1e1f22]
-        border
-        border-white/10
-        shadow-2xl
-        overflow-hidden
-      "
+  className="
+    fixed
+    z-[9999]
+    w-[200px]
+    rounded-2xl
+    bg-[#1e1f22]
+    border
+    border-white/10
+    shadow-2xl
+    overflow-hidden
+  "
+  style={{
+    left: friendMenu.x,
+    top: friendMenu.y,
+  }}
+>
 
-      style={{
-        left: friendMenu.x,
-        top: friendMenu.y,
-      }}
-    >
+  {/* VIEW PROFILE */}
 
-      <button
-        onClick={() => {
+  <button
+    onClick={() => {
 
-          setConfirmRemove(
-            friendMenu.friend
-          );
+      props.setViewingProfile?.(
+        friendMenu.friend
+      );
 
-          setFriendMenu(null);
+      setFriendMenu(null);
 
-        }}
+    }}
+    className="
+      w-full
+      px-4
+      py-3
+      text-left
+      hover:bg-white/10
+      text-white
+      transition
+    "
+  >
+    View Profile
+  </button>
 
-        className="
-          w-full
-          px-4
-          py-3
-          text-left
-          hover:bg-red-500/20
-          text-red-400
-          transition
-        "
-      >
+  {/* REMOVE FRIEND */}
 
-        Remove Friend
+  <button
+    onClick={() => {
 
-      </button>
+      setConfirmRemove(
+        friendMenu.friend
+      );
 
-    </div>
+      setFriendMenu(null);
+
+    }}
+    className="
+      w-full
+      px-4
+      py-3
+      text-left
+      hover:bg-red-500/20
+      text-red-400
+      transition
+    "
+  >
+    Remove Friend
+  </button>
+
+</div>
 
   </>
 
