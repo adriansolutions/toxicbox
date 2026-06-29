@@ -44,9 +44,26 @@ birthday: props.birthday,
 status: props.status,
 language: props.language,
 gender: props.gender,
-work: props.work,
-education: props.education,
-hobbies: props.hobbies,
+work:
+  Array.isArray(
+    props.work
+  ) ?
+  props.work :
+  [],
+  
+  education:
+  Array.isArray(
+    props.education
+  ) ?
+  props.education :
+  [],
+  
+  hobbies:
+  Array.isArray(
+    props.hobbies
+  ) ?
+  props.hobbies :
+  [],
 });
 
 // =========================
@@ -109,16 +126,25 @@ useEffect(() => {
           "",
 
         work:
-          parsed.work ||
-          "",
-
-        education:
-          parsed.education ||
-          "",
-
-        hobbies:
-          parsed.hobbies ||
-          "",
+  Array.isArray(
+    parsed.work
+  ) ?
+  parsed.work :
+  [],
+  
+  education:
+  Array.isArray(
+    parsed.education
+  ) ?
+  parsed.education :
+  [],
+  
+  hobbies:
+  Array.isArray(
+    parsed.hobbies
+  ) ?
+  parsed.hobbies :
+  [],
       });
 
     } catch (err) {
