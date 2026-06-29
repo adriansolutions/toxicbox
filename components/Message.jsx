@@ -9,6 +9,7 @@ setMessages,
 setReplyingTo,
 userId,
 setPreviewImage,
+setViewingProfile,
 }) {
 
 // REACT
