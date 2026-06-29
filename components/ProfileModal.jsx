@@ -43,13 +43,19 @@ export default function ProfileModal({
   profile?.language || [],
 
     work:
-      profile?.work || "",
+  Array.isArray(profile?.work)
+    ? profile.work
+    : [],
 
-    education:
-      profile?.education || "",
+education:
+  Array.isArray(profile?.education)
+    ? profile.education
+    : [],
 
-    hobbies:
-      profile?.hobbies || "",
+hobbies:
+  Array.isArray(profile?.hobbies)
+    ? profile.hobbies
+    : [],
 
     gender:
       profile?.gender || "",
@@ -99,13 +105,19 @@ export default function ProfileModal({
     : [],
 
       work:
-  safeProfile.work || [],
+  Array.isArray(safeProfile.work)
+    ? safeProfile.work
+    : [],
 
-      education:
-        safeProfile.education,
+education:
+  Array.isArray(safeProfile.education)
+    ? safeProfile.education
+    : [],
 
-      hobbies:
-        safeProfile.hobbies || [],
+hobbies:
+  Array.isArray(safeProfile.hobbies)
+    ? safeProfile.hobbies
+    : [],
 
       gender:
         safeProfile.gender,
@@ -212,20 +224,36 @@ const handleImageUpload =
     setSaving(true);
 
     const payload = {
-      userId: currentUser.userId,
-
-      avatar: form.avatar || "",
-      banner: form.banner || "",
-      bio: form.bio || "",
-      hometown: form.hometown || "",
-      birthday: form.birthday || "",
-      status: form.status || "",
-      language: form.language || "",
-      gender: form.gender || "",
-      work: form.work || "",
-      education: form.education || "",
-      hobbies: form.hobbies || "",
-    };
+  userId: currentUser.userId,
+  
+  avatar: form.avatar || "",
+  banner: form.banner || "",
+  bio: form.bio || "",
+  hometown: form.hometown || "",
+  birthday: form.birthday || "",
+  status: form.status || "",
+  gender: form.gender || "",
+  
+  // FIXED
+  language: Array.isArray(form.language) ?
+    form.language.join(", ") :
+    form.language || "",
+  
+  // FIXED
+  work: Array.isArray(form.work) ?
+    form.work :
+    [],
+  
+  // FIXED
+  education: Array.isArray(form.education) ?
+    form.education :
+    [],
+  
+  // FIXED
+  hobbies: Array.isArray(form.hobbies) ?
+    form.hobbies :
+    [],
+};
 
     const res =
       await fetch(
@@ -1132,7 +1160,7 @@ setMenuOpen(false);
       "
     >
 
-      <option value="">
+            <option value="">
         Select Language
       </option>
 
@@ -1158,7 +1186,7 @@ setMenuOpen(false);
 
     </select>
 
-     <div className="flex flex-wrap gap-2">
+    <div className="flex flex-wrap gap-2">
 
       {(Array.isArray(form.language)
         ? form.language
@@ -1600,4 +1628,4 @@ function Info({
 
   );
 
-  }
+}
