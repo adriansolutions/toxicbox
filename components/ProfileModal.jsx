@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function ProfileModal({
   close,
@@ -132,6 +132,63 @@ hobbies:
       gender:
         safeProfile.gender,
     });
+
+  useEffect(() => {
+
+  setForm({
+
+    avatar:
+      profile?.avatar || "",
+
+    banner:
+      profile?.banner || "",
+
+    bio:
+      profile?.bio || "",
+
+    hometown:
+      profile?.hometown || "",
+
+    birthday:
+      profile?.birthday || "",
+
+    status:
+      profile?.status || "",
+
+    language:
+      Array.isArray(
+        profile?.language
+      )
+        ? profile.language
+        : [],
+
+    work:
+      Array.isArray(
+        profile?.work
+      )
+        ? profile.work
+        : [],
+
+    education:
+      Array.isArray(
+        profile?.education
+      )
+        ? profile.education
+        : [],
+
+    hobbies:
+      Array.isArray(
+        profile?.hobbies
+      )
+        ? profile.hobbies
+        : [],
+
+    gender:
+      profile?.gender || "",
+
+  });
+
+}, [profile]);
 
 // =========================
 // IMAGE UPLOAD
