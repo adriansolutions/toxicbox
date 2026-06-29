@@ -5,7 +5,7 @@ import {
 } from "react";
 
 import {
-  FiReply,
+  FiCornerUpLeft,
   FiCopy,
 } from "react-icons/fi";
 
@@ -493,7 +493,7 @@ export default function Message({
                 "
               >
 
-                <FiReply size={24} />
+                <FiCornerUpLeft size={24} />
 
                 <span className="text-xs">
 
