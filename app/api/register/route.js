@@ -80,6 +80,21 @@ const user =
 
     avatar,
 
+    // FIXES
+    language: [],
+    work: [],
+    education: [],
+    hobbies: [],
+    friends: [],
+
+    bio: "",
+    hometown: "",
+    birthday: "",
+    status: "",
+    gender: "",
+
+    banner: "",
+
   });
 
 return NextResponse.json({
