@@ -828,206 +828,268 @@ ANIMATION
 }
 
 /* ========================================
+TABLET
+======================================== */
+
+@media (max-width: 900px) {
+
+  .sidebar-glass {
+
+    width: 95px;
+
+    padding: 12px;
+
+    overflow-y: auto;
+
+  }
+
+  .channel-name {
+
+    display: none;
+
+  }
+
+  .channel {
+
+    justify-content: center;
+
+    padding: 12px;
+
+  }
+
+  .channel-icon,
+  .avatar {
+
+    margin: 0 auto;
+
+  }
+
+}
+
+/* ========================================
 MOBILE
 ======================================== */
 
-@media(max-width:900px) {
-    
-    .sidebar-glass {
-        
-        width: 90px;
-        
-        padding: 12px;
-        
-    }
-    
-    .channel-name {
-        
-        display: none;
-        
-    }
-    
-}
+@media (max-width: 700px) {
 
-@media(max-width:700px) {
-    
-    html,
-    body {
-        
-        height: 100%;
-        overflow: hidden;
-        
-    }
-    
-    .app-shell {
-        
-        width: 100%;
-        height: 100%;
-        
-        padding: 0;
-        
-    }
-    
-    .app-container {
-        
-        width: 100%;
-        height: 100%;
-        
-        border-radius: 0;
-        
-    }
-    
-    .sidebar-glass {
-        
-        width: 78px !important;
-        
-        padding: 10px;
-        
-    }
-    
-    .chat-wrapper {
-        
-        flex: 1;
-        min-width: 0;
-        min-height: 0;
-        
-    }
-    
-    .chat-header {
-        
-        min-height: 70px;
-        
-        padding: 12px;
-        
-    }
-    
-    .logo-title {
-        
-        font-size: 17px;
-        
-    }
-    
-    .user-tag {
-        
-        max-width: 110px;
-        
-        font-size: 12px;
-        
-        overflow: hidden;
-        
-        text-overflow: ellipsis;
-        
-        white-space: nowrap;
-        
-    }
-    
-    .chat-messages {
-        
-        flex: 1;
-        
-        min-height: 0;
-        
-        padding: 12px;
-        
-        overflow-y: auto;
-        
-    }
-    
-    .chat-bubble {
-        
-        max-width: 75%;
-        
-        padding: 10px 12px;
-        
-    }
-    
-    .message-text {
-        
-        font-size: 12px;
-        
-        line-height: 1.45;
-        
-    }
-    
-    .message-time {
-        
-        font-size: 10px;
-        
-    }
-    
-    .chat-input-area {
-        
-        padding: 10px;
-        
-        flex-shrink: 0;
-        
-    }
-    
-    .chat-input {
-        
-        min-height: 56px;
-        
-        padding: 8px;
-        
-        border-radius: 18px;
-        
-    }
-    
-    .chat-input input {
-        
-        font-size: 14px;
-        
-    }
-    
-    .send-btn {
-        
-        height: 40px;
-        
-        padding: 0 14px;
-        
-        font-size: 13px;
-        
-        border-radius: 12px;
-        
-        flex-shrink: 0;
-        
-    }
-    
-    .avatar {
-        
-        width: 32px;
-        height: 32px;
-        
-        font-size: 13px;
-        
-    }
-    
-    .message-name {
-        
-        font-size: 13px;
-        
-    }
-    
-    .message-id {
-        
-        font-size: 10px;
-        
-    }
-    
-    .message-actions {
-        
-        gap: 6px;
-        
-    }
-    
-    .action-btn {
-        
-        min-height: 30px;
-        
-        padding: 6px 10px;
-        
-        font-size: 11px;
-        
-    }
-    
-    }
+  html,
+  body {
+
+    width: 100%;
+    height: 100%;
+
+    overflow: hidden;
+
+  }
+
+  .app-shell {
+
+    width: 100%;
+    height: 100%;
+
+    padding: 0;
+
+  }
+
+  .app-container {
+
+    width: 100%;
+    height: 100%;
+
+    border-radius: 0;
+
+  }
+
+  /* SIDEBAR */
+
+  .sidebar-glass {
+
+    width: 85px !important;
+
+    min-width: 85px !important;
+
+    max-width: 85px !important;
+
+    padding: 10px 6px;
+
+    overflow-y: auto;
+
+    align-items: center;
+
+  }
+
+  .sidebar-glass button {
+
+    max-width: 100%;
+
+  }
+
+  .channel {
+
+    width: 100%;
+
+    justify-content: center;
+
+    padding: 10px 6px;
+
+    gap: 0;
+
+  }
+
+  .channel-name {
+
+    display: none !important;
+
+  }
+
+  .channel-icon {
+
+    width: 42px;
+    height: 42px;
+
+    min-width: 42px;
+
+  }
+
+  .avatar {
+
+    width: 38px !important;
+    height: 38px !important;
+
+    min-width: 38px !important;
+    min-height: 38px !important;
+
+  }
+
+  /* PROFILE AREA */
+
+  .sidebar-profile {
+
+    width: 100%;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    justify-content: center;
+
+    text-align: center;
+
+    gap: 6px;
+
+  }
+
+  .sidebar-profile img {
+
+    margin: 0 auto;
+
+  }
+
+  .sidebar-profile-name,
+  .sidebar-profile-id {
+
+    display: none;
+
+  }
+
+  /* CHAT AREA */
+
+  .chat-wrapper {
+
+    flex: 1;
+
+    min-width: 0;
+
+    min-height: 0;
+
+  }
+
+  .chat-header {
+
+    min-height: 70px;
+
+    padding: 12px;
+
+  }
+
+  .logo-title {
+
+    font-size: 16px;
+
+  }
+
+  .user-tag {
+
+    max-width: 100px;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+
+    white-space: nowrap;
+
+    font-size: 11px;
+
+  }
+
+  .chat-messages {
+
+    padding: 12px;
+
+    gap: 12px;
+
+  }
+
+  .chat-bubble {
+
+    max-width: 85%;
+
+    padding: 10px 12px;
+
+  }
+
+  .message-text {
+
+    font-size: 13px;
+
+    line-height: 1.5;
+
+  }
+
+  .chat-input-area {
+
+    padding: 10px;
+
+  }
+
+  .chat-input {
+
+    min-height: 54px;
+
+    padding: 8px;
+
+    border-radius: 18px;
+
+  }
+
+  .chat-input input {
+
+    font-size: 14px;
+
+  }
+
+  .send-btn {
+
+    height: 40px;
+
+    padding: 0 14px;
+
+    font-size: 13px;
+
+    border-radius: 12px;
+
+  }
+
+}
