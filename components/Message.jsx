@@ -72,11 +72,20 @@ return (
 
       {msg.avatar && (
 
+  <button
+  onClick={() =>
+    setViewingProfile({
+      username: msg.username,
+      userId: msg.userId,
+      avatar: msg.avatar,
+    })
+  }
+>
   <img
     src={msg.avatar}
-    alt="avatar"
-    className="avatar object-cover"
+    className="avatar"
   />
+</button>
 
 )}
 
