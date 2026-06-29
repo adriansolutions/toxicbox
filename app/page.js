@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import Header from "../components/Header";
 import Sidebar from "../components/Sidebar";
 import ChatArea from "../components/ChatArea";
+import ProfileModal from "../components/ProfileModal";
 
 import Login from "../components/Login";
 import Register from "../components/Register";
@@ -37,6 +38,9 @@ export default function Home() {
       id: "general",
       name: "General",
     });
+    
+    const [viewingProfile, setViewingProfile] =
+  useState(null);
 
   // =========================
   // LOAD FRIENDS FROM API
@@ -445,9 +449,13 @@ export default function Home() {
             activeChat
           }
 
-          setActiveChat={
-            setActiveChat
-          }
+          setActiveChat = {
+  setActiveChat
+}
+
+setViewingProfile = {
+  setViewingProfile
+}
         />
 
         {/* CHAT */}
@@ -507,6 +515,26 @@ export default function Home() {
         </div>
 
       </div>
+
+{
+        viewingProfile && (
+          <ProfileModal
+            close={() =>
+              setViewingProfile(null)
+            }
+
+            profile={
+              viewingProfile
+            }
+
+            currentUser={
+              user
+            }
+
+            updateProfile={() => {}}
+          />
+        )
+      }
 
     </main>
 
