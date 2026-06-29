@@ -105,6 +105,74 @@ export async function POST(req) {
     // SAVE
     // =========================
 
+    // =========================
+    // FIX CORRUPTED FIELDS
+    // =========================
+
+    if (
+      !Array.isArray(
+        user.work
+      )
+    ) {
+
+      user.work = [];
+
+    }
+
+    if (
+      !Array.isArray(
+        user.education
+      )
+    ) {
+
+      user.education = [];
+
+    }
+
+    if (
+      !Array.isArray(
+        user.hobbies
+      )
+    ) {
+
+      user.hobbies = [];
+
+    }
+
+    if (
+      !Array.isArray(
+        friend.work
+      )
+    ) {
+
+      friend.work = [];
+
+    }
+
+    if (
+      !Array.isArray(
+        friend.education
+      )
+    ) {
+
+      friend.education = [];
+
+    }
+
+    if (
+      !Array.isArray(
+        friend.hobbies
+      )
+    ) {
+
+      friend.hobbies = [];
+
+    }
+
+    // =========================
+    // SAVE
+    // =========================
+
     await user.save();
 
     await friend.save();
