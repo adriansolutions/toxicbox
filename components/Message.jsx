@@ -24,12 +24,6 @@ export default function Message({
   const [menuOpen, setMenuOpen] =
     useState(false);
 
-  const [menuPos, setMenuPos] =
-    useState({
-      x: 0,
-      y: 0,
-    });
-
   const emojis = [
     "❤️",
     "😂",
@@ -39,7 +33,10 @@ export default function Message({
     "👍",
   ];
 
+  // =========================
   // REACT
+  // =========================
+
   const react = (emoji) => {
 
     socket.emit(
@@ -62,8 +59,7 @@ export default function Message({
 
       <div
         className={`message-row ${
-          msg.userId ===
-          userId
+          msg.userId === userId
             ? "own"
             : "other"
         }`}
@@ -80,27 +76,14 @@ export default function Message({
 
             e.preventDefault();
 
-            setMenuPos({
-              x: e.clientX,
-              y: e.clientY,
-            });
-
             setMenuOpen(true);
 
           }}
 
           onTouchStart={(e) => {
 
-            const touch =
-              e.touches[0];
-
             const timer =
               setTimeout(() => {
-
-                setMenuPos({
-                  x: touch.clientX,
-                  y: touch.clientY,
-                });
 
                 setMenuOpen(true);
 
@@ -330,7 +313,15 @@ export default function Message({
             msg.reactions
           ).length > 0 && (
 
-            <div className="message-reactions">
+            <div
+              className="
+                flex
+                flex-wrap
+                items-center
+                gap-2
+                mt-3
+              "
+            >
 
               {Object.entries(
                 msg.reactions
@@ -342,20 +333,45 @@ export default function Message({
 
                   count > 0 && (
 
-                    <div
+                    <button
                       key={emoji}
-                      className="reaction-pill"
+
+                      onClick={() =>
+                        react(
+                          emoji
+                        )
+                      }
+
+                      className="
+                        flex
+                        items-center
+                        gap-1
+
+                        px-3
+                        py-1.5
+
+                        rounded-full
+
+                        bg-black/10
+                        dark:bg-white/10
+
+                        text-sm
+
+                        whitespace-nowrap
+                      "
                     >
 
                       <span>
                         {emoji}
                       </span>
 
-                      <span>
+                      <span className="font-bold text-[12px]">
+
                         {count}
+
                       </span>
 
-                    </div>
+                    </button>
 
                   )
 
@@ -376,6 +392,8 @@ export default function Message({
 
         <>
 
+          {/* BACKDROP */}
+
           <div
             className="
               fixed
@@ -388,26 +406,32 @@ export default function Message({
             }
           />
 
+          {/* POPUP */}
+
           <div
             className="
               fixed
+              left-1/2
+              bottom-5
+              -translate-x-1/2
+
               z-[9999]
-              w-[270px]
-              rounded-3xl
-              bg-[#1e1f22]
+
+              w-[95%]
+              max-w-[420px]
+
+              rounded-[28px]
+
+              bg-[#1e1f22]/95
+              backdrop-blur-2xl
+
               border
               border-white/10
+
               shadow-2xl
-              overflow-hidden
+
+              p-4
             "
-
-            style={{
-              left:
-                menuPos.x,
-
-              top:
-                menuPos.y,
-            }}
           >
 
             {/* EMOJIS */}
@@ -417,10 +441,12 @@ export default function Message({
                 flex
                 items-center
                 justify-between
-                px-4
-                py-4
-                border-b
-                border-white/10
+
+                gap-2
+
+                overflow-x-auto
+
+                pb-3
               "
             >
 
@@ -444,8 +470,20 @@ export default function Message({
                     }}
 
                     className="
-                      text-2xl
-                      hover:scale-125
+                      flex
+                      items-center
+                      justify-center
+
+                      min-w-[52px]
+                      h-[52px]
+
+                      rounded-full
+
+                      bg-white/5
+
+                      text-[24px]
+
+                      active:scale-95
                       transition
                     "
                   >
@@ -463,10 +501,9 @@ export default function Message({
 
             <div
               className="
-                flex
-                items-center
-                justify-around
-                p-5
+                grid
+                grid-cols-2
+                gap-3
               "
             >
 
@@ -485,15 +522,24 @@ export default function Message({
                 }}
 
                 className="
+                  h-[70px]
+
+                  rounded-2xl
+
+                  bg-white/5
+
                   flex
                   flex-col
                   items-center
-                  gap-2
+                  justify-center
+
+                  gap-1
+
                   text-white
                 "
               >
 
-                <FiCornerUpLeft size={24} />
+                <FiCornerUpLeft size={22} />
 
                 <span className="text-xs">
 
@@ -518,15 +564,24 @@ export default function Message({
                 }}
 
                 className="
+                  h-[70px]
+
+                  rounded-2xl
+
+                  bg-white/5
+
                   flex
                   flex-col
                   items-center
-                  gap-2
+                  justify-center
+
+                  gap-1
+
                   text-white
                 "
               >
 
-                <FiCopy size={24} />
+                <FiCopy size={22} />
 
                 <span className="text-xs">
 
