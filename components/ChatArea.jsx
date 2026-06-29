@@ -34,11 +34,23 @@ export default function ChatArea({
 
   const [previewImage, setPreviewImage] =
     useState("");
+    
+  const [loading, setLoading] =
+useState(true);
 
   const bottomRef = useRef();
 
   // RECEIVE EVENTS
   useEffect(() => {
+    
+    setLoading(true);
+
+const timer =
+  setTimeout(() => {
+
+    setLoading(false);
+
+  }, 1200);
 
     // MESSAGE
     socket.on(
@@ -204,6 +216,8 @@ export default function ChatArea({
 
     // CLEANUP
     return () => {
+      
+      clearTimeout(timer);
 
       socket.off(
         "receive-message"
@@ -415,37 +429,75 @@ export default function ChatArea({
 
       <div className="chat-messages flex-1 overflow-y-auto px-2">
 
-        {filteredMessages.map(
-          (msg) => (
+        {loading ? (
 
-            <Message
-              key={msg.id}
+  <>
 
-              msg={msg}
+    <div className="message-skeleton">
 
-              messages={
-                messages
-              }
+      <div className="skeleton-avatar" />
 
-              setMessages={
-                setMessages
-              }
+      <div className="skeleton-content">
 
-              setReplyingTo={
-                setReplyingTo
-              }
+        <div className="skeleton-line short" />
 
-              userId={
-                userId
-              }
+        <div className="skeleton-line long" />
 
-              setPreviewImage={
-                setPreviewImage
-              }
-            />
+      </div>
 
-          )
-        )}
+    </div>
+
+    <div className="message-skeleton">
+
+      <div className="skeleton-avatar" />
+
+      <div className="skeleton-content">
+
+        <div className="skeleton-line short" />
+
+        <div className="skeleton-line long" />
+
+      </div>
+
+    </div>
+
+  </>
+
+) : (
+
+  filteredMessages.map(
+    (msg) => (
+
+      <Message
+        key={msg.id}
+
+        msg={msg}
+
+        messages={
+          messages
+        }
+
+        setMessages={
+          setMessages
+        }
+
+        setReplyingTo={
+          setReplyingTo
+        }
+
+        userId={
+          userId
+        }
+
+        setPreviewImage={
+          setPreviewImage
+        }
+      />
+
+    )
+  )
+
+)}
 
         <div
           ref={bottomRef}
