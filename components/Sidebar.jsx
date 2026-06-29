@@ -400,6 +400,7 @@ setOpenProfile(true)
 }
 
 className="
+sidebar-profile
 w-full
 flex
 items-center
@@ -452,13 +453,13 @@ text-xl
 
 <div className="flex-1 text-left min-w-0">
 
-<div className="font-bold truncate">
+<div className="sidebar-profile-name font-bold truncate">
 
 {userData.username}
 
 </div>
 
-<div className="text-xs opacity-60 truncate">
+<div className="sidebar-profile-id text-xs opacity-60 truncate">
 
 {userData.userId}
 
@@ -629,10 +630,7 @@ object-cover
 
 ) : (
 
-<div className="
-avatar
-shrink-0
-">
+<div className="avatar">
 
 {friend.username
 ?.charAt(0)
