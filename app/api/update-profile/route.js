@@ -28,22 +28,22 @@ export async function POST(req) {
     }
 
     // =========================
-    // NORMAL STRING FIELDS
+    // STRING FIELDS ONLY
     // =========================
 
     const stringFields = [
-  "avatar",
-  "banner",
-  "bio",
-  "hometown",
-  "birthday",
-  "status",
-  "gender",
-];
+      "avatar",
+      "banner",
+      "bio",
+      "hometown",
+      "birthday",
+      "status",
+      "gender",
+    ];
 
     stringFields.forEach((field) => {
       if (data[field] !== undefined) {
-        user[field] = data[field];
+        user[field] = String(data[field] || "");
       }
     });
 
@@ -52,20 +52,20 @@ export async function POST(req) {
     // =========================
 
     if (Array.isArray(data.language)) {
-  user.language = data.language;
-}
+      user.language = data.language;
+    }
 
-if (Array.isArray(data.work)) {
-  user.work = data.work;
-}
+    if (Array.isArray(data.work)) {
+      user.work = data.work;
+    }
 
-if (Array.isArray(data.education)) {
-  user.education = data.education;
-}
+    if (Array.isArray(data.education)) {
+      user.education = data.education;
+    }
 
-if (Array.isArray(data.hobbies)) {
-  user.hobbies = data.hobbies;
-}
+    if (Array.isArray(data.hobbies)) {
+      user.hobbies = data.hobbies;
+    }
 
     await user.save();
 
@@ -83,8 +83,7 @@ if (Array.isArray(data.hobbies)) {
 
     return Response.json({
       success: false,
-      message: "Server error",
-      error: err.message,
+      message: err.message,
     });
   }
 }
