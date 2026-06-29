@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-delete mongoose.models.User;
 /* =========================
    FRIENDS
 ========================= */
