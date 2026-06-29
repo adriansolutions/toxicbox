@@ -738,7 +738,7 @@ setMenuOpen(false);
                 Bio
               </div>
 
-                <info
+                <Info
                   edit={() =>
                     setEditingField(
                       "bio"
