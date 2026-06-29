@@ -51,21 +51,29 @@ export async function POST(req) {
     // ARRAY FIELDS
     // =========================
 
-    if (Array.isArray(data.language)) {
-      user.language = data.language;
-    }
+    // =========================
+// FIX OLD BROKEN DATABASE DATA
+// =========================
 
-    if (Array.isArray(data.work)) {
-      user.work = data.work;
-    }
+if (!Array.isArray(user.language)) {
+  user.language = [];
+}
 
-    if (Array.isArray(data.education)) {
-      user.education = data.education;
-    }
+if (!Array.isArray(user.work)) {
+  user.work = [];
+}
 
-    if (Array.isArray(data.hobbies)) {
-      user.hobbies = data.hobbies;
-    }
+if (!Array.isArray(user.education)) {
+  user.education = [];
+}
+
+if (!Array.isArray(user.hobbies)) {
+  user.hobbies = [];
+}
+
+if (!Array.isArray(user.friends)) {
+  user.friends = [];
+}
 
     await user.save();
 
