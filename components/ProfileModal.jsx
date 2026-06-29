@@ -740,16 +740,16 @@ setMenuOpen(false);
 
               {(
 
-                <button
-                  onClick={() =>
+                <info
+                  label = "bio"
+                  edit={() =>
                     setEditingField(
                       "bio"
                     )
                   }
+                  isOwner={isOwner}
                   className="text-white/60 text-xl"
-                >
-                  ✎
-                </button>
+                />
 
               )}
 
