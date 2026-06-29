@@ -738,10 +738,7 @@ setMenuOpen(false);
                 Bio
               </div>
 
-              {(
-
                 <info
-                  label = "bio"
                   edit={() =>
                     setEditingField(
                       "bio"
@@ -750,8 +747,6 @@ setMenuOpen(false);
                   isOwner={isOwner}
                   className="text-white/60 text-xl"
                 />
-
-              )}
 
             </div>
 
