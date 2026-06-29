@@ -42,6 +42,9 @@ export default function Home() {
     const [viewingProfile, setViewingProfile] =
   useState(null);
 
+const [viewingProfileId, setViewingProfileId] =
+  useState(null);
+
   // =========================
   // LOAD FRIENDS FROM API
   // =========================
@@ -274,62 +277,58 @@ localStorage.setItem(
 
   useEffect(() => {
 
-  if (!viewingProfile?.userId)
+  if (!viewingProfileId)
     return;
 
-  const loadViewedProfile =
-    async () => {
+  const interval =
+    setInterval(
+      async () => {
 
-      try {
+        try {
 
-        const res =
-          await fetch(
-            `/api/get-profile?userId=${viewingProfile.userId}`
-          );
+          const res =
+            await fetch(
+              `/api/get-profile?userId=${viewingProfileId}`
+            );
 
-        const data =
-          await res.json();
+          const data =
+            await res.json();
 
-        if (data.success) {
+          if (
+            data.success
+          ) {
 
-          setViewingProfile((prev) => {
+            setViewingProfile(
+              (prev) => {
 
-            // PREVENT SPAM RE-RENDER
-            if (
-              JSON.stringify(prev) ===
-              JSON.stringify(data.user)
-            ) {
-              return prev;
-            }
+                if (!prev)
+                  return prev;
 
-            return data.user;
+                // ONLY UPDATE CHANGED DATA
+                return {
+                  ...prev,
+                  ...data.user,
+                };
 
-          });
+              }
+            );
+
+          }
+
+        } catch (err) {
+
+          console.log(err);
 
         }
 
-      } catch (err) {
-
-        console.log(err);
-
-      }
-
-    };
-
-  // FIRST LOAD
-  loadViewedProfile();
-
-  // LIVE REFRESH
-  const interval =
-    setInterval(
-      loadViewedProfile,
+      },
       2000
     );
 
   return () =>
     clearInterval(interval);
 
-}, [viewingProfile?.userId]);
+}, [viewingProfileId]);
 
   // =========================
   // SAVE THEME
@@ -522,9 +521,15 @@ localStorage.setItem(
   setActiveChat
 }
 
-setViewingProfile = {
-  setViewingProfile
-}
+setViewingProfile={(profile) => {
+
+  setViewingProfile(profile);
+
+  setViewingProfileId(
+    profile?.userId || null
+  );
+
+}}
         />
 
         {/* CHAT */}
@@ -588,9 +593,13 @@ setViewingProfile = {
 {
         viewingProfile && (
           <ProfileModal
-            close={() =>
-              setViewingProfile(null)
-            }
+            close={() => {
+
+  setViewingProfile(null);
+
+  setViewingProfileId(null);
+
+}}
 
             profile={
               viewingProfile
