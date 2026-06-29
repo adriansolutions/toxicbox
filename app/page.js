@@ -262,6 +262,61 @@ export default function Home() {
 
   }, []);
 
+  useEffect(() => {
+
+    if (
+      !viewingProfile?.userId
+    )
+      return;
+
+    const loadViewedProfile =
+      async () => {
+
+        try {
+
+          const res =
+            await fetch(
+              `/api/get-profile?userId=${viewingProfile.userId}`
+            );
+
+          const data =
+            await res.json();
+
+          if (
+            data.success
+          ) {
+
+            setViewingProfile(
+              data.user
+            );
+
+          }
+
+        } catch (err) {
+
+          console.log(err);
+
+        }
+
+      };
+
+    // FIRST LOAD
+    loadViewedProfile();
+
+    // LIVE REFRESH
+    const interval =
+      setInterval(
+        loadViewedProfile,
+        2000
+      );
+
+    return () =>
+      clearInterval(
+        interval
+      );
+
+  }, [viewingProfile?.userId]);
+
   // =========================
   // SAVE THEME
   // =========================
