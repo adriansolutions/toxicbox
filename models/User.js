@@ -78,7 +78,10 @@ const UserSchema = new mongoose.Schema(
     hometown: { type: String, default: "" },
     birthday: { type: String, default: "" },
     status: { type: String, default: "" },
-    language: { type: String, default: "" },
+    language: {
+  type: [String],
+  default: [],
+},
     gender: { type: String, default: "" },
 
     online: { type: Boolean, default: false },
