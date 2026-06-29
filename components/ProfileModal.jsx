@@ -790,149 +790,429 @@ setMenuOpen(false);
 
             {/* INPUT */}
 
-            {editingField ===
-            "status" ? (
+{editingField === "status" ? (
 
-              <select
-                value={
-                  form.status
-                }
-                onChange={(e) =>
-                  setForm({
-                    ...form,
-                    status:
-                      e.target.value,
-                  })
-                }
-                className="
-                  w-full
-                  h-12
-                  rounded-2xl
-                  bg-[#2a2b30]
-                  px-4
-                  text-white
-                "
-              >
+  <select
+    value={form.status}
+    onChange={(e) =>
+      setForm({
+        ...form,
+        status: e.target.value,
+      })
+    }
+    className="
+      w-full
+      h-12
+      rounded-2xl
+      bg-[#2a2b30]
+      px-4
+      text-white
+    "
+  >
 
-                <option value="">
-                  Select Status
-                </option>
+    <option value="">
+      Select Status
+    </option>
 
-                <option>
-                  Single
-                </option>
+    <option>
+      Single
+    </option>
 
-                <option>
-                  In a relationship
-                </option>
+    <option>
+      In a relationship
+    </option>
 
-                <option>
-                  Engaged
-                </option>
+    <option>
+      Engaged
+    </option>
 
-                <option>
-                  Married
-                </option>
+    <option>
+      Married
+    </option>
 
-                <option>
-                  Divorced
-                </option>
+    <option>
+      Divorced
+    </option>
 
-              </select>
+  </select>
 
-            ) : editingField ===
-              "gender" ? (
+) : editingField === "gender" ? (
 
-              <select
-                value={
-                  form.gender
-                }
-                onChange={(e) =>
-                  setForm({
-                    ...form,
-                    gender:
-                      e.target.value,
-                  })
-                }
-                className="
-                  w-full
-                  h-12
-                  rounded-2xl
-                  bg-[#2a2b30]
-                  px-4
-                  text-white
-                "
-              >
+  <select
+    value={form.gender}
+    onChange={(e) =>
+      setForm({
+        ...form,
+        gender: e.target.value,
+      })
+    }
+    className="
+      w-full
+      h-12
+      rounded-2xl
+      bg-[#2a2b30]
+      px-4
+      text-white
+    "
+  >
 
-                <option value="">
-                  Select Gender
-                </option>
+    <option value="">
+      Select Gender
+    </option>
 
-                <option>
-                  Male
-                </option>
+    <option>
+      Male
+    </option>
 
-                <option>
-                  Female
-                </option>
+    <option>
+      Female
+    </option>
 
-              </select>
+    <option>
+      Non-Binary
+    </option>
 
-            ) : editingField ===
-              "bio" ? (
+  </select>
 
-              <textarea
-                value={
-                  form.bio
-                }
-                onChange={(e) =>
-                  setForm({
-                    ...form,
-                    bio:
-                      e.target.value,
-                  })
-                }
-                placeholder="Introduce yourself"
-                className="
-                  w-full
-                  min-h-[140px]
-                  rounded-2xl
-                  bg-[#2a2b30]
-                  p-4
-                  text-white
-                  resize-none
-                "
-              />
+) : editingField === "bio" ? (
 
-            ) : (
+  <div>
 
-              <input
-                value={
-                  form[
-                    editingField
-                  ] || ""
-                }
-                onChange={(e) =>
-                  setForm({
-                    ...form,
-                    [
-                      editingField
-                    ]:
-                      e.target
-                        .value,
-                  })
-                }
-                className="
-                  w-full
-                  h-12
-                  rounded-2xl
-                  bg-[#2a2b30]
-                  px-4
-                  text-white
-                "
-              />
+    <textarea
+      maxLength={32}
+      value={form.bio}
+      onChange={(e) =>
+        setForm({
+          ...form,
+          bio: e.target.value,
+        })
+      }
+      placeholder="Introduce yourself"
+      className="
+        w-full
+        min-h-[140px]
+        rounded-2xl
+        bg-[#2a2b30]
+        p-4
+        text-white
+        resize-none
+      "
+    />
 
-            )}
+    <div className="text-right text-xs text-white/50 mt-2">
+      {form.bio.length}/32
+    </div>
+
+  </div>
+
+) : editingField === "birthday" ? (
+
+  <input
+    type="date"
+    value={form.birthday}
+    onChange={(e) => {
+
+      const date =
+        new Date(e.target.value);
+
+      const formatted =
+        date.toLocaleDateString(
+          "en-US",
+          {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          }
+        );
+
+      setForm({
+        ...form,
+        birthday: formatted,
+      });
+
+    }}
+    className="
+      w-full
+      h-12
+      rounded-2xl
+      bg-[#2a2b30]
+      px-4
+      text-white
+    "
+  />
+
+) : editingField === "hometown" ? (
+
+  <div className="space-y-3">
+
+    <select
+      onChange={(e) =>
+        setForm({
+          ...form,
+          hometown:
+            `${e.target.value}, ${
+              form.city || ""
+            }`,
+        })
+      }
+      className="
+        w-full
+        h-12
+        rounded-2xl
+        bg-[#2a2b30]
+        px-4
+        text-white
+      "
+    >
+
+      <option value="">
+        Select Country
+      </option>
+
+      <option>
+        Philippines
+      </option>
+
+      <option>
+        United States
+      </option>
+
+      <option>
+        Japan
+      </option>
+
+      <option>
+        Korea
+      </option>
+
+      <option>
+        Canada
+      </option>
+
+      <option>
+        Australia
+      </option>
+
+    </select>
+
+    <input
+      placeholder="City"
+      value={form.city || ""}
+      onChange={(e) =>
+        setForm({
+          ...form,
+          city: e.target.value,
+        })
+      }
+      className="
+        w-full
+        h-12
+        rounded-2xl
+        bg-[#2a2b30]
+        px-4
+        text-white
+      "
+    />
+
+  </div>
+
+) : editingField === "language" ? (
+
+  <div className="space-y-3">
+
+    <select
+      onChange={(e) => {
+
+        if (
+          (form.language || [])
+            .length >= 5
+        ) return;
+
+        if (
+          (form.language || [])
+            .includes(
+              e.target.value
+            )
+        ) return;
+
+        setForm({
+          ...form,
+          language: [
+            ...(form.language || []),
+            e.target.value,
+          ],
+        });
+
+      }}
+      className="
+        w-full
+        h-12
+        rounded-2xl
+        bg-[#2a2b30]
+        px-4
+        text-white
+      "
+    >
+
+      <option value="">
+        Add Language
+      </option>
+
+      <option>
+        English
+      </option>
+
+      <option>
+        Filipino
+      </option>
+
+      <option>
+        Japanese
+      </option>
+
+      <option>
+        Korean
+      </option>
+
+      <option>
+        Chinese
+      </option>
+
+      <option>
+        Spanish
+      </option>
+
+    </select>
+
+    <div className="flex flex-wrap gap-2">
+
+      {(form.language || []).map(
+        (lang, index) => (
+
+          <div
+            key={index}
+            className="
+              px-3
+              py-2
+              rounded-xl
+              bg-blue-600
+              text-white
+              text-sm
+            "
+          >
+
+            {lang}
+
+          </div>
+
+        )
+      )}
+
+    </div>
+
+  </div>
+
+) : editingField === "hobbies" ? (
+
+    <div className="space-y-3">
+
+    <input
+      maxLength={12}
+      placeholder="Add Hobby"
+      onKeyDown={(e) => {
+
+        if (
+          e.key === "Enter"
+        ) {
+
+          e.preventDefault();
+
+          if (
+            !e.target.value
+          ) return;
+
+          if (
+            (form.hobbies || [])
+              .length >= 5
+          ) return;
+
+          setForm({
+            ...form,
+            hobbies: [
+              ...(form.hobbies || []),
+              e.target.value,
+            ],
+          });
+
+          e.target.value = "";
+
+        }
+
+      }}
+      className="
+        w-full
+        h-12
+        rounded-2xl
+        bg-[#2a2b30]
+        px-4
+        text-white
+      "
+    />
+
+    <div className="flex flex-wrap gap-2">
+
+      {(form.hobbies || []).map(
+        (hobby, index) => (
+
+          <div
+            key={index}
+            className="
+              px-3
+              py-2
+              rounded-xl
+              bg-purple-600
+              text-white
+              text-sm
+            "
+          >
+
+            {hobby}
+
+          </div>
+
+        )
+      )}
+
+    </div>
+
+  </div>
+
+) : (
+
+  <input
+    value={
+      form[
+        editingField
+      ] || ""
+    }
+    onChange={(e) =>
+      setForm({
+        ...form,
+        [editingField]:
+          e.target.value,
+      })
+    }
+    className="
+      w-full
+      h-12
+      rounded-2xl
+      bg-[#2a2b30]
+      px-4
+      text-white
+    "
+  />
+
+)}
 
             {/* SAVE */}
 
