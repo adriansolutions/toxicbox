@@ -40,7 +40,7 @@ export default function ProfileModal({
       profile?.status || "",
 
     language:
-      profile?.language || "",
+  profile?.language || [],
 
     work:
       profile?.work || "",
@@ -92,16 +92,20 @@ export default function ProfileModal({
         safeProfile.status,
 
       language:
-        safeProfile.language,
+  Array.isArray(
+    safeProfile.language
+  )
+    ? safeProfile.language
+    : [],
 
       work:
-        safeProfile.work,
+  safeProfile.work || [],
 
       education:
         safeProfile.education,
 
       hobbies:
-        safeProfile.hobbies,
+        safeProfile.hobbies || [],
 
       gender:
         safeProfile.gender,
@@ -700,15 +704,19 @@ setMenuOpen(false);
               />
 
               <Info
-                label="Language"
-                value={form.language}
-                edit={() =>
-                  setEditingField(
-                    "language"
-                  )
-                }
-                isOwner={isOwner}
-              />
+  label="Language"
+  value={
+    Array.isArray(form.language)
+      ? form.language.join(", ")
+      : form.language
+  }
+  edit={() =>
+    setEditingField(
+      "language"
+    )
+  }
+  isOwner={isOwner}
+/>
 
               <Info
                 label="Work"
@@ -788,7 +796,7 @@ setMenuOpen(false);
 
             </div>
 
-            {/* INPUT */}
+           {/* INPUT */}
 
 {editingField === "status" ? (
 
@@ -905,56 +913,28 @@ setMenuOpen(false);
 
   </div>
 
-) : editingField === "birthday" ? (
-
-  <input
-    type="date"
-    value={form.birthday}
-    onChange={(e) => {
-
-      const date =
-        new Date(e.target.value);
-
-      const formatted =
-        date.toLocaleDateString(
-          "en-US",
-          {
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-          }
-        );
-
-      setForm({
-        ...form,
-        birthday: formatted,
-      });
-
-    }}
-    className="
-      w-full
-      h-12
-      rounded-2xl
-      bg-[#2a2b30]
-      px-4
-      text-white
-    "
-  />
-
 ) : editingField === "hometown" ? (
 
   <div className="space-y-3">
 
     <select
-      onChange={(e) =>
-        setForm({
-          ...form,
+      value={form.country || ""}
+      onChange={(e) => {
+
+        const country =
+          e.target.value;
+
+        setForm((prev) => ({
+          ...prev,
+          country,
+
           hometown:
-            `${e.target.value}, ${
-              form.city || ""
-            }`,
-        })
-      }
+            prev.city
+              ? `${country}, ${prev.city}`
+              : country,
+        }));
+
+      }}
       className="
         w-full
         h-12
@@ -998,12 +978,22 @@ setMenuOpen(false);
     <input
       placeholder="City"
       value={form.city || ""}
-      onChange={(e) =>
-        setForm({
-          ...form,
-          city: e.target.value,
-        })
-      }
+      onChange={(e) => {
+
+        const city =
+          e.target.value;
+
+        setForm((prev) => ({
+          ...prev,
+          city,
+
+          hometown:
+            prev.country
+              ? `${prev.country}, ${city}`
+              : city,
+        }));
+
+      }}
       className="
         w-full
         h-12
@@ -1016,6 +1006,45 @@ setMenuOpen(false);
 
   </div>
 
+) : editingField === "birthday" ? (
+
+  <input
+    type="date"
+    value={form.birthdayRaw || ""}
+    onChange={(e) => {
+
+      const raw = e.target.value;
+
+      const date =
+        new Date(raw);
+
+      const formatted =
+        date.toLocaleDateString(
+          "en-US",
+          {
+            month: "long",
+            day: "numeric",
+            year: "numeric",
+          }
+        );
+
+      setForm({
+        ...form,
+        birthdayRaw: raw,
+        birthday: formatted,
+      });
+
+    }}
+    className="
+      w-full
+      h-12
+      rounded-2xl
+      bg-[#2a2b30]
+      px-4
+      text-white
+    "
+  />
+
 ) : editingField === "language" ? (
 
   <div className="space-y-3">
@@ -1023,22 +1052,32 @@ setMenuOpen(false);
     <select
       onChange={(e) => {
 
-        if (
-          (form.language || [])
-            .length >= 5
-        ) return;
+        if (!e.target.value)
+          return;
+
+        const current =
+          Array.isArray(
+            form.language
+          )
+            ? form.language
+            : [];
 
         if (
-          (form.language || [])
-            .includes(
-              e.target.value
-            )
-        ) return;
+          current.length >= 5
+        )
+          return;
+
+        if (
+          current.includes(
+            e.target.value
+          )
+        )
+          return;
 
         setForm({
           ...form,
           language: [
-            ...(form.language || []),
+            ...current,
             e.target.value,
           ],
         });
@@ -1055,7 +1094,7 @@ setMenuOpen(false);
     >
 
       <option value="">
-        Add Language
+        Select Language
       </option>
 
       <option>
@@ -1078,43 +1117,219 @@ setMenuOpen(false);
         Chinese
       </option>
 
-      <option>
-        Spanish
-      </option>
-
     </select>
 
-    <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2">
 
-      {(form.language || []).map(
-        (lang, index) => (
+      {(Array.isArray(form.language)
+        ? form.language
+        : []
+      ).map((lang, i) => (
 
-          <div
-            key={index}
-            className="
-              px-3
-              py-2
-              rounded-xl
-              bg-blue-600
-              text-white
-              text-sm
-            "
+        <div
+          key={i}
+          className="
+            px-3
+            py-1
+            rounded-full
+            bg-blue-600
+            text-white
+            text-sm
+            flex
+            items-center
+            gap-2
+          "
+        >
+
+          {lang}
+
+          <button
+            onClick={() => {
+
+              setForm({
+                ...form,
+                language:
+                  form.language.filter(
+                    (
+                      _,
+                      index
+                    ) =>
+                      index !== i
+                  ),
+              });
+
+            }}
           >
+            ✕
+          </button>
 
-            {lang}
+        </div>
 
-          </div>
-
-        )
-      )}
+      ))}
 
     </div>
 
   </div>
 
+) : editingField === "work" ? (
+
+  <div className="space-y-4">
+
+    {(Array.isArray(form.work)
+      ? form.work
+      : []
+    ).map((job, i) => (
+
+      <div
+        key={i}
+        className="space-y-2"
+      >
+
+        <input
+          placeholder="Workplace"
+          value={job.workplace || ""}
+          onChange={(e) => {
+
+            const updated =
+              [...form.work];
+
+            updated[i].workplace =
+              e.target.value;
+
+            setForm({
+              ...form,
+              work: updated,
+            });
+
+          }}
+          className="
+            w-full
+            h-12
+            rounded-2xl
+            bg-[#2a2b30]
+            px-4
+            text-white
+          "
+        />
+
+        <input
+          placeholder="Job Title"
+          value={job.title || ""}
+          onChange={(e) => {
+
+            const updated =
+              [...form.work];
+
+            updated[i].title =
+              e.target.value;
+
+            setForm({
+              ...form,
+              work: updated,
+            });
+
+          }}
+          className="
+            w-full
+            h-12
+            rounded-2xl
+            bg-[#2a2b30]
+            px-4
+            text-white
+          "
+        />
+
+      </div>
+
+    ))}
+
+    {(Array.isArray(form.work)
+      ? form.work.length
+      : 0
+    ) < 3 && (
+
+      <button
+        onClick={() =>
+          setForm({
+            ...form,
+            work: [
+              ...(Array.isArray(
+                form.work
+              )
+                ? form.work
+                : []),
+              {
+                workplace: "",
+                title: "",
+              },
+            ],
+          })
+        }
+        className="
+          w-full
+          h-12
+          rounded-2xl
+          bg-blue-600
+          text-white
+        "
+      >
+        Add Work
+      </button>
+
+    )}
+
+  </div>
+
+) : editingField === "education" ? (
+
+  <select
+    value={form.education}
+    onChange={(e) =>
+      setForm({
+        ...form,
+        education:
+          e.target.value,
+      })
+    }
+    className="
+      w-full
+      h-12
+      rounded-2xl
+      bg-[#2a2b30]
+      px-4
+      text-white
+    "
+  >
+
+    <option value="">
+      Select Education
+    </option>
+
+    <option>
+      Elementary
+    </option>
+
+    <option>
+      High School
+    </option>
+
+    <option>
+      Senior High School
+    </option>
+
+    <option>
+      College
+    </option>
+
+    <option>
+      Graduate School
+    </option>
+
+  </select>
+
 ) : editingField === "hobbies" ? (
 
-    <div className="space-y-3">
+  <div className="space-y-3">
 
     <input
       maxLength={12}
@@ -1127,19 +1342,25 @@ setMenuOpen(false);
 
           e.preventDefault();
 
-          if (
-            !e.target.value
-          ) return;
+          if (!e.target.value)
+            return;
+
+          const current =
+            Array.isArray(
+              form.hobbies
+            )
+              ? form.hobbies
+              : [];
 
           if (
-            (form.hobbies || [])
-              .length >= 5
-          ) return;
+            current.length >= 5
+          )
+            return;
 
           setForm({
             ...form,
             hobbies: [
-              ...(form.hobbies || []),
+              ...current,
               e.target.value,
             ],
           });
@@ -1161,27 +1382,51 @@ setMenuOpen(false);
 
     <div className="flex flex-wrap gap-2">
 
-      {(form.hobbies || []).map(
-        (hobby, index) => (
+      {(Array.isArray(form.hobbies)
+        ? form.hobbies
+        : []
+      ).map((hobby, i) => (
 
-          <div
-            key={index}
-            className="
-              px-3
-              py-2
-              rounded-xl
-              bg-purple-600
-              text-white
-              text-sm
-            "
+        <div
+          key={i}
+          className="
+            px-3
+            py-1
+            rounded-full
+            bg-purple-600
+            text-white
+            text-sm
+            flex
+            items-center
+            gap-2
+          "
+        >
+
+          {hobby}
+
+          <button
+            onClick={() => {
+
+              setForm({
+                ...form,
+                hobbies:
+                  form.hobbies.filter(
+                    (
+                      _,
+                      index
+                    ) =>
+                      index !== i
+                  ),
+              });
+
+            }}
           >
+            ✕
+          </button>
 
-            {hobby}
+        </div>
 
-          </div>
-
-        )
-      )}
+      ))}
 
     </div>
 
