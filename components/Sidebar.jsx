@@ -351,27 +351,32 @@ backdrop-blur-xl
 <div
 className={`
 sidebar-glass
-fixed
-md:relative
-top-0
-left-0
+
+fixed md:relative
+top-0 left-0
+
 z-[9998]
 
-w-[290px]
-sm:w-[320px]
+w-[85vw]
+max-w-[320px]
 md:w-[340px]
 
-h-screen
+h-[100dvh]
+md:h-screen
 
-transition-all
+transition-transform
 duration-300
 
 flex
 flex-col
 
 overflow-hidden
+
 border-r
 border-white/10
+
+bg-[#1e1f22]/95
+backdrop-blur-2xl
 
 ${
 mobileOpen
@@ -463,7 +468,7 @@ text-xl
 
 </button>
 
-<div className="flex items-center gap-3 px-4 mt-3">
+<div className="flex items-center gap-3 px-4 py-3 shrink-0">
 
 <div className="logo-circle">
 B
@@ -494,12 +499,15 @@ name: "General",
 
 className={`
 channel
+w-full
+min-w-0
 flex
 items-center
 gap-3
-w-full
-min-w-0
 overflow-hidden
+rounded-2xl
+px-3
+py-2
 ${
 props.activeChat?.id ===
 "general"
@@ -528,7 +536,7 @@ General
 
 </div>
 
-<div className="mt-5 px-3">
+<div className="mt-4 px-2 pb-4">
 
 <div className="h-[1px] bg-white/10 mb-3 rounded-full" />
 
@@ -621,7 +629,10 @@ object-cover
 
 ) : (
 
-<div className="avatar">
+<div className="
+avatar
+shrink-0
+">
 
 {friend.username
 ?.charAt(0)
