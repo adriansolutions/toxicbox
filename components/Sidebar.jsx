@@ -356,12 +356,22 @@ md:relative
 top-0
 left-0
 z-[9998]
+
+w-[290px]
+sm:w-[320px]
+md:w-[340px]
+
 h-screen
+
 transition-all
 duration-300
+
 flex
 flex-col
-justify-between
+
+overflow-hidden
+border-r
+border-white/10
 
 ${
 mobileOpen
@@ -371,7 +381,13 @@ mobileOpen
 `}
 >
 
-<div>
+<div
+className="
+flex-1
+overflow-y-auto
+min-h-0
+"
+>
 
 <button
 onClick={() =>
@@ -459,7 +475,13 @@ BlueChat
 
 </div>
 
-<div className="channels">
+<div
+className="
+channels
+px-2
+space-y-2
+"
+>
 
 <button
 onClick={() =>
@@ -472,6 +494,12 @@ name: "General",
 
 className={`
 channel
+flex
+items-center
+gap-3
+w-full
+min-w-0
+overflow-hidden
 ${
 props.activeChat?.id ===
 "general"
@@ -485,7 +513,14 @@ props.activeChat?.id ===
 G
 </div>
 
-<div className="channel-name">
+<div
+className="
+channel-name
+truncate
+flex-1
+min-w-0
+"
+>
 General
 </div>
 
