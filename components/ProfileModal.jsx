@@ -9,68 +9,70 @@ export default function ProfileModal({
   updateProfile,
 }) {
   const safeProfile = {
-    username:
-      profile?.username ||
-      currentUser?.username ||
-      "Unknown User",
+  username:
+    profile?.username ||
+    currentUser?.username ||
+    "Unknown User",
 
-    userId:
-      profile?.userId ||
-      currentUser?.userId ||
-      "Unknown ID",
+  userId:
+    profile?.userId ||
+    currentUser?.userId ||
+    "Unknown ID",
 
-    avatar:
-      profile?.avatar ||
-      currentUser?.avatar ||
-      "",
+  avatar:
+    profile?.avatar ||
+    currentUser?.avatar ||
+    "",
 
-    banner:
-      profile?.banner || "",
+  banner:
+    profile?.banner || "",
 
-    bio:
-      profile?.bio || "",
+  bio:
+    profile?.bio || "",
 
-    hometown:
-      profile?.hometown || "",
+  hometown:
+    profile?.hometown || "",
 
-    birthday:
-      profile?.birthday || "",
+  birthday:
+    profile?.birthday || "",
 
-    status:
-      profile?.status || "",
+  status:
+    profile?.status || "",
 
-    language:
-  profile?.language || [],
+  language:
+    Array.isArray(profile?.language)
+      ? profile.language
+      : [],
 
-    work:
-  Array.isArray(safeProfile.work)
-    ? safeProfile.work.filter(
-        (w) =>
-          typeof w === "object"
-      )
-    : [],
+  work:
+    Array.isArray(profile?.work)
+      ? profile.work.filter(
+          (w) =>
+            typeof w === "object"
+        )
+      : [],
 
-education:
-  Array.isArray(
-    safeProfile.education
-  )
-    ? safeProfile.education.filter(
-        (e) =>
-          typeof e === "object"
-      )
-    : [],
+  education:
+    Array.isArray(profile?.education)
+      ? profile.education.filter(
+          (e) =>
+            typeof e === "object"
+        )
+      : [],
 
-hobbies:
-  Array.isArray(profile?.hobbies)
-    ? profile.hobbies
-    : [],
+  hobbies:
+    Array.isArray(profile?.hobbies)
+      ? profile.hobbies
+      : [],
 
-    gender:
-      profile?.gender || "",
+  gender:
+    profile?.gender || "",
 
-    friends:
-      profile?.friends || [],
-  };
+  friends:
+    Array.isArray(profile?.friends)
+      ? profile.friends
+      : [],
+};
 
   const isOwner =
     currentUser?.userId ===
@@ -244,30 +246,20 @@ const handleImageUpload =
   
   // FIXED
   language: Array.isArray(form.language) ?
-    form.language.join(", ") :
-    form.language || "",
+  form.language :
+  [],
   
-  // FIXED
-  work:
-  Array.isArray(form.work)
-    ? form.work.filter(
-        (w) =>
-          typeof w === "object"
-      )
-    : [],
-
-education:
-  Array.isArray(form.education)
-    ? form.education.filter(
-        (e) =>
-          typeof e === "object"
-      )
-    : [],
+  work: Array.isArray(form.work) ?
+  form.work :
+  [],
   
-  // FIXED
+  education: Array.isArray(form.education) ?
+  form.education :
+  [],
+  
   hobbies: Array.isArray(form.hobbies) ?
-    form.hobbies :
-    [],
+  form.hobbies :
+  [],
 };
 
     const res =
