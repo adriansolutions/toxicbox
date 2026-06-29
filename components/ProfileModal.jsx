@@ -337,107 +337,146 @@ setMenuOpen(false);
   ✕
 </button>
 
-        {/* MENU */}
+{ /* MENU */ }
 
-        {isOwner && (
+<div className="absolute top-4 left-4 z-50">
 
-          <div className="absolute top-4 left-4 z-50">
+  <button
+    onClick={() =>
+      setMenuOpen(
+        !menuOpen
+      )
+    }
+    className="
+      w-11
+      h-11
+      rounded-full
+      bg-black/60
+      text-white
+      text-2xl
+    "
+  >
+    ⋮
+  </button>
 
-            <button
-              onClick={() =>
-                setMenuOpen(
-                  !menuOpen
+  {menuOpen && (
+
+    <div
+      className="
+        mt-2
+        w-[200px]
+        rounded-2xl
+        bg-[#2a2b30]
+        border
+        border-white/10
+        overflow-hidden
+      "
+    >
+
+      {isOwner ? (
+
+        <>
+
+          {/* CHANGE AVATAR */}
+
+          <label
+            className="
+              block
+              w-full
+              px-4
+              py-3
+              hover:bg-white/10
+              text-white
+              cursor-pointer
+            "
+          >
+
+            Change Avatar
+
+            <input
+              type="file"
+              accept="image/*"
+              hidden
+              onChange={(e) =>
+                handleImageUpload(
+                  e.target.files[0],
+                  "avatar"
                 )
               }
-              className="
-                w-11
-                h-11
-                rounded-full
-                bg-black/60
-                text-white
-                text-2xl
-              "
-            >
-              ⋮
-            </button>
+            />
 
-            {menuOpen && (
+          </label>
 
-              <div
-                className="
-                  mt-2
-                  w-[180px]
-                  rounded-2xl
-                  bg-[#2a2b30]
-                  border
-                  border-white/10
-                  overflow-hidden
-                "
-              >
+          {/* CHANGE BANNER */}
 
-                <label
-                  className="
-                    block
-                    w-full
-                    px-4
-                    py-3
-                    hover:bg-white/10
-                    text-white
-                    cursor-pointer
-                  "
-                >
+          <label
+            className="
+              block
+              w-full
+              px-4
+              py-3
+              hover:bg-white/10
+              text-white
+              cursor-pointer
+            "
+          >
 
-                  Change Avatar
+            Change Banner
 
-                  <input
-                    type="file"
-                    accept="image/*"
-                    hidden
-                    onChange={(e) =>
-                      handleImageUpload(
-                        e.target.files[0],
-                        "avatar"
-                      )
-                    }
-                  />
+            <input
+              type="file"
+              accept="image/*"
+              hidden
+              onChange={(e) =>
+                handleImageUpload(
+                  e.target.files[0],
+                  "banner"
+                )
+              }
+            />
 
-                </label>
+          </label>
 
-                <label
-                  className="
-                    block
-                    w-full
-                    px-4
-                    py-3
-                    hover:bg-white/10
-                    text-white
-                    cursor-pointer
-                  "
-                >
+        </>
 
-                  Change Banner
+      ) : (
 
-                  <input
-                    type="file"
-                    accept="image/*"
-                    hidden
-                    onChange={(e) =>
-                      handleImageUpload(
-                        e.target.files[0],
-                        "banner"
-                      )
-                    }
-                  />
+        <>
+          
+          {/* REPORT USER */}
 
-                </label>
+          <button
+            onClick={() => {
 
-              </div>
+              alert(
+                "User reported"
+              );
 
-            )}
+              setMenuOpen(false);
 
-          </div>
+            }}
+            className="
+              w-full
+              px-4
+              py-3
+              text-left
+              hover:bg-red-500/20
+              text-red-400
+              transition
+            "
+          >
+            Report User
+          </button>
 
-        )}
+        </>
+
+      )}
+
+    </div>
+
+  )}
+
+</div>
 
         {/* BANNER */}
 
@@ -607,7 +646,7 @@ setMenuOpen(false);
                 Bio
               </div>
 
-              {isOwner && (
+              {(
 
                 <button
                   onClick={() =>
@@ -1119,7 +1158,7 @@ setMenuOpen(false);
 
     </select>
 
-        <div className="flex flex-wrap gap-2">
+     <div className="flex flex-wrap gap-2">
 
       {(Array.isArray(form.language)
         ? form.language
@@ -1561,4 +1600,4 @@ function Info({
 
   );
 
-}
+  }
