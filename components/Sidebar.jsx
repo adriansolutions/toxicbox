@@ -848,9 +848,38 @@ updateProfile={async (newData) => {
       );
 
     const updatedUser = {
-      ...oldUser,
-      ...newData,
-    };
+  ...oldUser,
+
+  ...newData,
+
+  work:
+    Array.isArray(
+      newData.work
+    )
+      ? newData.work
+      : oldUser.work || [],
+
+  education:
+    Array.isArray(
+      newData.education
+    )
+      ? newData.education
+      : oldUser.education || [],
+
+  hobbies:
+    Array.isArray(
+      newData.hobbies
+    )
+      ? newData.hobbies
+      : oldUser.hobbies || [],
+
+  language:
+    Array.isArray(
+      newData.language
+    )
+      ? newData.language
+      : oldUser.language || [],
+};
 
     localStorage.setItem(
       "bluechat-user",
@@ -912,47 +941,63 @@ userData.avatar,
 }}
 
 profile={{
-username:
-userData.username,
+  username:
+    userData.username,
 
-userId:
-userData.userId,
+  userId:
+    userData.userId,
 
-avatar:
-userData.avatar,
+  avatar:
+    userData.avatar,
 
-banner:
-userData.banner || "",
+  banner:
+    userData.banner || "",
 
-bio:
-userData.bio || "",
+  bio:
+    userData.bio || "",
 
-hometown:
-userData.hometown || "",
+  hometown:
+    userData.hometown || "",
 
-birthday:
-userData.birthday || "",
+  birthday:
+    userData.birthday || "",
 
-status:
-userData.status || "",
+  status:
+    userData.status || "",
 
-language:
-userData.language || "",
+  language:
+    Array.isArray(
+      userData.language
+    )
+      ? userData.language
+      : [],
 
-work:
-userData.work || "",
+  work:
+    Array.isArray(
+      userData.work
+    )
+      ? userData.work
+      : [],
 
-education:
-userData.education || "",
+  education:
+    Array.isArray(
+      userData.education
+    )
+      ? userData.education
+      : [],
 
-hobbies:
-userData.hobbies || "",
+  hobbies:
+    Array.isArray(
+      userData.hobbies
+    )
+      ? userData.hobbies
+      : [],
 
-gender:
-userData.gender || "",
+  gender:
+    userData.gender || "",
 
-friends:
-friends,
+  friends:
+    friends,
 }}
 
 />
