@@ -531,7 +531,44 @@ setViewingProfile = {
               user
             }
 
-            updateProfile={() => {}}
+            updateProfile={(updatedData) => {
+
+  setUser((prev) => ({
+    ...prev,
+    ...updatedData,
+  }));
+
+  // UPDATE FRIENDS REALTIME
+  setFriends((prev) =>
+    prev.map((friend) => {
+
+      if (
+        friend.userId ===
+        user.userId
+      ) {
+
+        return {
+          ...friend,
+          ...updatedData,
+        };
+
+      }
+
+      return friend;
+
+    })
+  );
+
+  // UPDATE LOCAL STORAGE
+  localStorage.setItem(
+    "bluechat-user",
+    JSON.stringify({
+      ...user,
+      ...updatedData,
+    })
+  );
+
+}}
           />
         )
       }
