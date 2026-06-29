@@ -161,76 +161,129 @@ setMobileOpen(false);
 // =========================
 
 const removeFriend =
-async (friend) => {
+  async (friend) => {
 
-try {
+    try {
 
-const res =
-await fetch(
-"/api/remove-friend",
-{
-method: "POST",
+      if (
+        !props.userId ||
+        !friend?.userId
+      ) {
 
-headers: {
-"Content-Type":
-"application/json",
-},
+        alert(
+          "Missing friend data"
+        );
 
-body:
-JSON.stringify({
-userId:
-props.userId,
+        return;
 
-friendId:
-friend.userId,
-}),
-}
-);
+      }
 
-const data =
-await res.json();
+      const payload = {
+        userId:
+          String(
+            props.userId
+          ),
 
-if (!data.success) {
+        friendId:
+          String(
+            friend.userId
+          ),
+      };
 
-alert(
-data.message ||
-"Failed to remove friend"
-);
+      console.log(
+        "REMOVE PAYLOAD:",
+        payload
+      );
 
-return;
+      const res =
+        await fetch(
+          "/api/remove-friend",
+          {
+            method: "POST",
 
-}
+            headers: {
+              "Content-Type":
+                "application/json",
+            },
 
-props.setFriends((prev) =>
-prev.filter(
-(f) =>
-f.userId !==
-friend.userId
-)
-);
+            body:
+              JSON.stringify(
+                payload
+              ),
+          }
+        );
 
-if (
-props.activeChat?.id ===
-friend.userId
-) {
+      const data =
+        await res.json();
 
-props.setActiveChat({
-type: "channel",
-id: "general",
-name: "General",
-});
+      console.log(
+        "REMOVE RESPONSE:",
+        data
+      );
 
-}
+      if (!data.success) {
 
-setConfirmRemove(null);
+        alert(
+          data.message ||
+          "Failed to remove friend"
+        );
 
-} catch (err) {
+        return;
 
-console.log(err);
+      }
 
-}
+      // UPDATE UI
+      props.setFriends(
+        (prev) =>
+          prev.filter(
+            (f) =>
+              f.userId !==
+              friend.userId
+          )
+      );
 
-};
+      // RESET CHAT
+      if (
+        props.activeChat?.id ===
+        friend.userId
+      ) {
+
+        props.setActiveChat({
+          type:
+            "channel",
+
+          id:
+            "general",
+
+          name:
+            "General",
+        });
+
+      }
+
+      // CLOSE MODALS
+      setConfirmRemove(
+        null
+      );
+
+      setFriendMenu(
+        null
+      );
+
+    } catch (err) {
+
+      console.log(
+        "REMOVE FRIEND FRONTEND ERROR:",
+        err
+      );
+
+      alert(
+        "Server error"
+      );
+
+    }
+
+  };
 
 return (
 
