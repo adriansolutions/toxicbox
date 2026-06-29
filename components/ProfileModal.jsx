@@ -738,33 +738,17 @@ setMenuOpen(false);
                 Bio
               </div>
 
-                                <Info
+                <info
                   label="bio"
-                  value={form.bio}
+                  value={form.bio ||
+                "No bio yet"}
                   edit={() =>
                     setEditingField(
                       "bio"
                     )
                   }
                   isOwner={isOwner}
-                  className="text-white/60 text-xl"
                 />
-
-            </div>
-
-            <div
-              className="
-                bg-white/5
-                rounded-2xl
-                p-4
-                text-white/80
-                text-sm
-                break-words
-              "
-            >
-
-              {form.bio ||
-                "No bio yet"}
 
             </div>
 
