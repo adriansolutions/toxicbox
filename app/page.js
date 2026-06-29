@@ -226,16 +226,26 @@ export default function Home() {
                 userData.success
               ) {
 
-                setUser(
-                  userData.user
-                );
+                setUser((prev) => {
+  
+  // prevent useless rerender spam
+  if (
+    JSON.stringify(prev) ===
+    JSON.stringify(userData.user)
+  ) {
+    return prev;
+  }
+  
+  return userData.user;
+  
+});
 
-                localStorage.setItem(
-                  "bluechat-user",
-                  JSON.stringify(
-                    userData.user
-                  )
-                );
+localStorage.setItem(
+  "bluechat-user",
+  JSON.stringify(
+    userData.user
+  )
+);
 
                 await loadFriends(
                   userData.user.userId
@@ -264,58 +274,62 @@ export default function Home() {
 
   useEffect(() => {
 
-    if (
-      !viewingProfile?.userId
-    )
-      return;
+  if (!viewingProfile?.userId)
+    return;
 
-    const loadViewedProfile =
-      async () => {
+  const loadViewedProfile =
+    async () => {
 
-        try {
+      try {
 
-          const res =
-            await fetch(
-              `/api/get-profile?userId=${viewingProfile.userId}`
-            );
+        const res =
+          await fetch(
+            `/api/get-profile?userId=${viewingProfile.userId}`
+          );
 
-          const data =
-            await res.json();
+        const data =
+          await res.json();
 
-          if (
-            data.success
-          ) {
+        if (data.success) {
 
-            setViewingProfile(
-              data.user
-            );
+          setViewingProfile((prev) => {
 
-          }
+            // PREVENT SPAM RE-RENDER
+            if (
+              JSON.stringify(prev) ===
+              JSON.stringify(data.user)
+            ) {
+              return prev;
+            }
 
-        } catch (err) {
+            return data.user;
 
-          console.log(err);
+          });
 
         }
 
-      };
+      } catch (err) {
 
-    // FIRST LOAD
-    loadViewedProfile();
+        console.log(err);
 
-    // LIVE REFRESH
-    const interval =
-      setInterval(
-        loadViewedProfile,
-        2000
-      );
+      }
 
-    return () =>
-      clearInterval(
-        interval
-      );
+    };
 
-  }, [viewingProfile?.userId]);
+  // FIRST LOAD
+  loadViewedProfile();
+
+  // LIVE REFRESH
+  const interval =
+    setInterval(
+      loadViewedProfile,
+      2000
+    );
+
+  return () =>
+    clearInterval(interval);
+
+}, [viewingProfile?.userId]);
 
   // =========================
   // SAVE THEME
