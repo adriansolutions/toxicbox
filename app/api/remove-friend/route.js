@@ -1,18 +1,40 @@
 import connectDB from "../../../lib/mongodb";
 import User from "../../../models/User";
 
+export const dynamic = "force-dynamic";
+
 export async function POST(req) {
 
   try {
 
     await connectDB();
 
-    const {
-      userId,
-      friendId,
-    } = await req.json();
+    const body =
+      await req.json();
 
-    // FIND BOTH USERS
+    const userId =
+      body.userId;
+
+    const friendId =
+      body.friendId;
+
+    if (
+      !userId ||
+      !friendId
+    ) {
+
+      return Response.json({
+        success: false,
+        message:
+          "Missing IDs",
+      });
+
+    }
+
+    // =========================
+    // FIND USERS
+    // =========================
+
     const user =
       await User.findOne({
         userId,
@@ -20,37 +42,71 @@ export async function POST(req) {
 
     const friend =
       await User.findOne({
-        userId: friendId,
+        userId:
+          friendId,
       });
 
-    if (!user || !friend) {
+    if (
+      !user ||
+      !friend
+    ) {
 
       return Response.json({
         success: false,
-        message: "User not found",
+        message:
+          "User not found",
       });
 
     }
 
-    // REMOVE FRIEND FROM USER
+    // =========================
+    // ENSURE ARRAYS
+    // =========================
+
+    if (
+      !Array.isArray(
+        user.friends
+      )
+    ) {
+
+      user.friends = [];
+
+    }
+
+    if (
+      !Array.isArray(
+        friend.friends
+      )
+    ) {
+
+      friend.friends = [];
+
+    }
+
+    // =========================
+    // REMOVE BOTH SIDES
+    // =========================
+
     user.friends =
-      (user.friends || []).filter(
+      user.friends.filter(
         (f) =>
-          f.userId !== friendId
+          f.userId !==
+          friendId
       );
 
-    // REMOVE USER FROM FRIEND
     friend.friends =
-      (friend.friends || []).filter(
+      friend.friends.filter(
         (f) =>
-          f.userId !== userId
+          f.userId !==
+          userId
       );
 
-    // IMPORTANT
-    user.markModified("friends");
-    friend.markModified("friends");
+    // =========================
+    // SAVE
+    // =========================
 
     await user.save();
+
     await friend.save();
 
     return Response.json({
@@ -66,7 +122,10 @@ export async function POST(req) {
 
     return Response.json({
       success: false,
-      message: "Server error",
+      message:
+        "Server error",
+      error:
+        err.message,
     });
 
   }
