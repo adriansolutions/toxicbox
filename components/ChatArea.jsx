@@ -210,8 +210,6 @@ export default function ChatArea({
 
     // CLEANUP
     return () => {
-      
-      clearTimeout(timer);
 
       socket.off(
         "receive-message"
@@ -237,38 +235,6 @@ export default function ChatArea({
     });
 
   }, [messages]);
-  
-  useEffect(() => {
-  
-  if (
-    filteredMessages.length > 0
-  ) {
-    
-    setLoading(false);
-    
-  }
-  
-}, [filteredMessages]);
-
-useEffect(() => {
-
-  if (
-    filteredMessages.length >= 0
-  ) {
-
-    const timer =
-      setTimeout(() => {
-
-        setLoading(false);
-
-      }, 500);
-
-    return () =>
-      clearTimeout(timer);
-
-  }
-
-}, [filteredMessages]);
 
   // SEND MESSAGE
   const sendMessage = () => {
@@ -414,6 +380,22 @@ useEffect(() => {
       );
 
     });
+    
+    useEffect(() => {
+
+  setLoading(true);
+
+  const timer =
+    setTimeout(() => {
+
+      setLoading(false);
+
+    }, 700);
+
+  return () =>
+    clearTimeout(timer);
+
+}, [activeChat, filteredMessages.length]);
 
   return (
 
