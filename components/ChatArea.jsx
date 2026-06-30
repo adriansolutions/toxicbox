@@ -15,6 +15,7 @@ export default function ChatArea({
   userId,
   avatar,
   activeChat,
+  setViewingProfile,
 }) {
 
   const [messages, setMessages] =
@@ -491,6 +492,10 @@ const timer =
 
         setPreviewImage={
           setPreviewImage
+        }
+
+        setViewingProfile={
+    setViewingProfile
         }
       />
 
