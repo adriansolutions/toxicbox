@@ -143,84 +143,128 @@ export default function Message({
 
             {/* AVATAR */}
 
-            {msg.avatar && (
+{msg.avatar && (
 
-              <button
-  onClick={() => {
+  <div className="relative group">
 
-    setViewingProfile?.({
+    <img
+      src={msg.avatar}
+      className="
+        avatar
+        cursor-pointer
+      "
+    />
 
-      username:
-        msg.username,
+    {/* VIEW PROFILE BUTTON */}
 
-      userId:
-        msg.userId,
+    <button
+      onClick={() => {
 
-      avatar:
-        msg.avatar,
+        setViewingProfile?.({
 
-      banner:
-        msg.banner || "",
+          username:
+            msg.username,
 
-      bio:
-        msg.bio || "",
+          userId:
+            msg.userId,
 
-      hometown:
-        msg.hometown || "",
+          avatar:
+            msg.avatar,
 
-      birthday:
-        msg.birthday || "",
+          banner:
+            msg.banner || "",
 
-      status:
-        msg.status || "",
+          bio:
+            msg.bio || "",
 
-      language:
-        Array.isArray(
-          msg.language
-        )
-          ? msg.language
-          : [],
+          hometown:
+            msg.hometown || "",
 
-      work:
-        Array.isArray(
-          msg.work
-        )
-          ? msg.work
-          : [],
+          birthday:
+            msg.birthday || "",
 
-      education:
-        Array.isArray(
-          msg.education
-        )
-          ? msg.education
-          : [],
+          status:
+            msg.status || "",
 
-      hobbies:
-        Array.isArray(
-          msg.hobbies
-        )
-          ? msg.hobbies
-          : [],
+          language:
+            Array.isArray(
+              msg.language
+            )
+              ? msg.language
+              : [],
 
-      gender:
-        msg.gender || "",
+          work:
+            Array.isArray(
+              msg.work
+            )
+              ? msg.work
+              : [],
 
-      friends:
-        msg.friends || [],
+          education:
+            Array.isArray(
+              msg.education
+            )
+              ? msg.education
+              : [],
 
-    });
+          hobbies:
+            Array.isArray(
+              msg.hobbies
+            )
+              ? msg.hobbies
+              : [],
 
-  }}
->
+          gender:
+            msg.gender || "",
 
-                <img
-                  src={msg.avatar}
-                  className="avatar"
-                />
+          friends:
+            msg.friends || [],
 
-              </button>
+        });
 
-            )}
+      }}
+
+      className="
+        absolute
+        left-1/2
+        -translate-x-1/2
+
+        top-full
+        mt-2
+
+        px-3
+        py-2
+
+        rounded-xl
+
+        bg-[#1e1f22]
+        border
+        border-white/10
+
+        text-white
+        text-xs
+
+        whitespace-nowrap
+
+        opacity-0
+        pointer-events-none
+
+        group-hover:opacity-100
+        group-hover:pointer-events-auto
+
+        transition
+
+        z-[999]
+      "
+    >
+
+      View Profile
+
+    </button>
+
+  </div>
+
+)}
 
             {/* USER */}
 
