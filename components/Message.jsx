@@ -11,7 +11,9 @@ import {
 
 import socket from "../lib/socket";
 
-export default function Message({
+import { memo } from "react";
+
+function Message({
   msg,
   messages,
   setMessages,
@@ -679,3 +681,4 @@ export default function Message({
   );
 
 }
+export default memo(Message);
