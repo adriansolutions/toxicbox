@@ -146,19 +146,72 @@ export default function Message({
             {msg.avatar && (
 
               <button
-                onClick={() =>
-                  setViewingProfile({
-                    username:
-                      msg.username,
+  onClick={() => {
 
-                    userId:
-                      msg.userId,
+    setViewingProfile?.({
 
-                    avatar:
-                      msg.avatar,
-                  })
-                }
-              >
+      username:
+        msg.username,
+
+      userId:
+        msg.userId,
+
+      avatar:
+        msg.avatar,
+
+      banner:
+        msg.banner || "",
+
+      bio:
+        msg.bio || "",
+
+      hometown:
+        msg.hometown || "",
+
+      birthday:
+        msg.birthday || "",
+
+      status:
+        msg.status || "",
+
+      language:
+        Array.isArray(
+          msg.language
+        )
+          ? msg.language
+          : [],
+
+      work:
+        Array.isArray(
+          msg.work
+        )
+          ? msg.work
+          : [],
+
+      education:
+        Array.isArray(
+          msg.education
+        )
+          ? msg.education
+          : [],
+
+      hobbies:
+        Array.isArray(
+          msg.hobbies
+        )
+          ? msg.hobbies
+          : [],
+
+      gender:
+        msg.gender || "",
+
+      friends:
+        msg.friends || [],
+
+    });
+
+  }}
+>
 
                 <img
                   src={msg.avatar}
