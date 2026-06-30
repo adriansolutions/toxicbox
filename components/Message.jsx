@@ -145,7 +145,13 @@ export default function Message({
 
 {msg.avatar && (
 
-  <div className="relative group">
+  <div
+    className="
+      relative
+      group
+      inline-block
+    "
+  >
 
     <img
       src={msg.avatar}
@@ -188,6 +194,7 @@ export default function Message({
 
       className="
         absolute
+
         left-1/2
         -translate-x-1/2
 
@@ -209,14 +216,24 @@ export default function Message({
         whitespace-nowrap
 
         opacity-0
+        scale-95
+
         pointer-events-none
 
         group-hover:opacity-100
+        group-hover:scale-100
         group-hover:pointer-events-auto
 
-        transition
+        group-active:opacity-100
+        group-active:scale-100
+        group-active:pointer-events-auto
 
-        z-[999]
+        transition-all
+        duration-200
+
+        z-[99999]
+
+        shadow-2xl
       "
     >
 
