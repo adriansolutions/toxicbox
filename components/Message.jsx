@@ -158,69 +158,31 @@ export default function Message({
     {/* VIEW PROFILE BUTTON */}
 
     <button
-      onClick={() => {
+      onClick={async () => {
 
-        setViewingProfile?.({
+        try {
 
-          username:
-            msg.username,
+          const res =
+            await fetch(
+              `/api/get-profile?userId=${msg.userId}`
+            );
 
-          userId:
-            msg.userId,
+          const data =
+            await res.json();
 
-          avatar:
-            msg.avatar,
+          if (data.success) {
 
-          banner:
-            msg.banner || "",
+            setViewingProfile?.(
+              data.user
+            );
 
-          bio:
-            msg.bio || "",
+          }
 
-          hometown:
-            msg.hometown || "",
+        } catch (err) {
 
-          birthday:
-            msg.birthday || "",
+          console.log(err);
 
-          status:
-            msg.status || "",
-
-          language:
-            Array.isArray(
-              msg.language
-            )
-              ? msg.language
-              : [],
-
-          work:
-            Array.isArray(
-              msg.work
-            )
-              ? msg.work
-              : [],
-
-          education:
-            Array.isArray(
-              msg.education
-            )
-              ? msg.education
-              : [],
-
-          hobbies:
-            Array.isArray(
-              msg.hobbies
-            )
-              ? msg.hobbies
-              : [],
-
-          gender:
-            msg.gender || "",
-
-          friends:
-            msg.friends || [],
-
-        });
+        }
 
       }}
 
@@ -265,7 +227,6 @@ export default function Message({
   </div>
 
 )}
-
             {/* USER */}
 
             <div className="min-w-0">
