@@ -37,7 +37,7 @@ export default function ChatArea({
     useState("");
     
   const [loading, setLoading] =
-useState(true);
+  useState(messages.length === 0);
 
   const bottomRef = useRef();
 
@@ -51,7 +51,7 @@ const timer =
 
     setLoading(false);
 
-  }, 1200);
+  }, 800);
 
     // MESSAGE
     socket.on(
@@ -244,6 +244,18 @@ const timer =
     });
 
   }, [messages]);
+  
+  useEffect(() => {
+  
+  if (
+    filteredMessages.length > 0
+  ) {
+    
+    setLoading(false);
+    
+  }
+  
+}, [filteredMessages]);
 
   // SEND MESSAGE
   const sendMessage = () => {
