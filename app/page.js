@@ -603,6 +603,9 @@ setViewingProfile={(profile) => {
             activeChat={
               activeChat
             }
+              setViewingProfile={
+  setViewingProfile
+              }
           />
 
         </div>
