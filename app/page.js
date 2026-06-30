@@ -230,16 +230,19 @@ const [viewingProfileId, setViewingProfileId] =
               ) {
 
                 setUser((prev) => {
-  
+
   // prevent useless rerender spam
   if (
-    prev?.updatedAt === data.user?.updatedAt
+    JSON.stringify(prev) ===
+    JSON.stringify(userData.user)
   ) {
+
     return prev;
+
   }
-  
+
   return userData.user;
-  
+
 });
 
 localStorage.setItem(
@@ -676,4 +679,4 @@ setViewingProfile={(profile) => {
 
   );
 
-    }
+}
