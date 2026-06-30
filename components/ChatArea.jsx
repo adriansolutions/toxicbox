@@ -37,7 +37,7 @@ export default function ChatArea({
     useState("");
     
   const [loading, setLoading] =
-  useState(true);
+useState(true);
 
   const bottomRef = useRef();
 
@@ -45,6 +45,13 @@ export default function ChatArea({
   useEffect(() => {
     
     setLoading(true);
+
+const timer =
+  setTimeout(() => {
+
+    setLoading(false);
+
+  }, 1200);
 
     // MESSAGE
     socket.on(
@@ -210,6 +217,8 @@ export default function ChatArea({
 
     // CLEANUP
     return () => {
+      
+      clearTimeout(timer);
 
       socket.off(
         "receive-message"
@@ -380,22 +389,6 @@ export default function ChatArea({
       );
 
     });
-    
-    useEffect(() => {
-
-  setLoading(true);
-
-  const timer =
-    setTimeout(() => {
-
-      setLoading(false);
-
-    }, 700);
-
-  return () =>
-    clearTimeout(timer);
-
-}, [activeChat, filteredMessages.length]);
 
   return (
 
